@@ -21,11 +21,20 @@ app.use(express.static(`${__dirname}/public/`,{
 
 app.get("/about/mission/:id",(req, res)=>{
 
-    console.log(res.headersSent);
-   res.render('pages/about',{
-       name:"Bangladesh"
-   })
-   console.log(res.headersSent);
+res.format({
+    'text/plain':()=>{
+        res.send("from plain field")
+    },
+    'text/html':()=>{
+        res.send("from html view")
+    },
+    'application/json':()=>{
+        res.send({message:"from json"})
+    },
+    default:()=>{
+        res.status(406).send('not acceptable')
+    }
+})
 
 })
 
