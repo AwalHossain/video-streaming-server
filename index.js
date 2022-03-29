@@ -33,11 +33,13 @@ adminRoute.get("/dasboard", (req, res)=>{
 })
 
 
-app.get("/about/mission",(req, res)=>{
+app.get("/about/mission/:id",(req, res)=>{
     console.log(req.url);
-    console.log(req.baseUrl);
+    console.log(req.params);
+    console.log(req.hostname);
+    console.log(req.protocol);
     console.log(req.originalUrl);
-   res.render('pages/about')
+   res.send('kalm')
 })
 
 
