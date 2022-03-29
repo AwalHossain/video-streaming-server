@@ -48,6 +48,8 @@ app.get("/about/mission/:id",(req, res)=>{
 
 app.post("/mee",(req, res)=>{
     console.log(req.cookies);
+    console.log(req.route);
+    console.log(req.accepts());
     // console.log(req.body);
 
    res.send('from post')
