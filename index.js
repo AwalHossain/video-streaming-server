@@ -2,7 +2,11 @@ const express = require("express")
 
 const app = express();
 const adminRoute = express.Router();
+const cookieParser = require('cookie-parser')
 
+
+app.use(express.json())
+app.use(cookieParser())
 
 app.set('view engine', 'ejs')
 
@@ -41,6 +45,15 @@ app.get("/about/mission/:id",(req, res)=>{
     console.log(req.originalUrl);
    res.send('kalm')
 })
+
+app.post("/mee",(req, res)=>{
+    console.log(req.cookies);
+    // console.log(req.body);
+
+   res.send('from post')
+})
+
+
 
 
 
