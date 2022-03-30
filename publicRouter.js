@@ -5,10 +5,13 @@ const myLog =(req, res, next)=>{
     next();
 }
 
-router.all("*", myLog)
+router.param('user', (req, res, next, gd)=>{
+    req.user = gd ===  '1' ? 'Admin' : 'Anonymous'
+    next();
+})
 
 router.get("/:user",(req, res)=>{
-    res.send('From public router')
+    res.send(`From public router ${req.user}`)
 })
 router.get("/about",(req, res)=>{
     res.send('From public router about section')
