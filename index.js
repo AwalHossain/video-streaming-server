@@ -1,50 +1,38 @@
 const express = require("express")
 
 const app = express();
-const adminRoute = express.Router();
-const cookieParser = require('cookie-parser')
+
+const adminRoute = express()
+
+const middleware = (req, res, next)=>{
+    console.log(`${new Date(Date.now()).toLocaleString()}  - ${req.protocol} - ${req.method} - ${req.ip} - ${req.originalUrl}`);
+    
+    throw new Error('this is not an error')
+}
 
 
-app.use(express.json())
-app.use(cookieParser())
+adminRoute.use(middleware)
 
-app.set('view engine', 'ejs')
-
-
-
-app.use(express.static(`${__dirname}/public/`,{
-    index: 'homt.html'
-}))
-
-
-
-
-app.get("/about/mission/:id",(req, res)=>{
-
-res.format({
-    'text/plain':()=>{
-        res.send("from plain field")
-    },
-    'text/html':()=>{
-        res.send("from html view")
-    },
-    'application/json':()=>{
-        res.send({message:"from json"})
-    },
-    default:()=>{
-        res.status(406).send('not acceptable')
-    }
+adminRoute.get('/dashboard', (req, res)=>{
+    console.log('Hlloe there twinker bell');
+    res.send('from admin')
 })
 
-})
+const errorMiddleware =(err, req, res, next)=>{
+    console.log(err.message);
+    res.status(500).send('there was something wron in')
+}
 
-app.post("/mee",(req, res)=>{
-    console.log(req.cookies);
-    console.log(req.route);
-    console.log(req.accepts());
-    // console.log(req.body);
+adminRoute.use(errorMiddleware)
 
-   res.send('from post')
+app.use('/admin', adminRoute)
+
+// app.use(middleware)
+
+
+app.get("/mee",(req, res)=>{
+    res.send("from middlewae")
+    
 })
 
 
