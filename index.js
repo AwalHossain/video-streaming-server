@@ -1,42 +1,37 @@
 const express = require("express")
 const publicRouter = require('./publicRouter')
 const app = express();
-
+const fs = require('fs')
 
 
 
 // app.use('/admin', adminRoute)
 
 
-app.get("/",(req, res)=>{
-    for(let i = 0; i<=10; i++){
-        if(i===5){
-            next('there wan an error')
+app.get("/",(req, res, next)=>{
+    fs.readFile("/file-does-not-exist", (err, data)=>{
+        if(err){
+            next(err);
         }else{
-            res.write('a');
+            res.send(data)
         }
-    }
-
-    res.end()
+    })
 })
+
 
 app.use((req, res, next)=>{
-    next('Requseted url not found')
+    console.log("i am not called");
 })
+app.use((err,req, res, next)=>{
 
-app.use((err, req, res,next)=>{
-
-    if(res.headersSent){
-        next('There was problem header already sent')
-    }else{
-        if(err.message){
-            res.status(500).send(err.message)
-        }else{
-            res.status(500).send('there was an error')
-    
-        }
+    if(err){
+        console.log("i am  called");
+        res.status(500).send( err.message)
     }
+
 })
+
+app
 
 
 
