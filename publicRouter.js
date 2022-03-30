@@ -1,20 +1,26 @@
-const router = require("express").Router();
+const publicRouter = require("express").Router();
 
 const myLog =(req, res, next)=>{
     console.log("Click baji");
     next();
 }
 
-router.param('user', (req, res, next, gd)=>{
-    req.user = gd ===  '1' ? 'Admin' : 'Anonymous'
-    next();
+publicRouter.param((param, option)=>(req,res, next, val)=>{
+    console.log(val, option);
+    if(val === option){
+        next()
+    }else{
+        res.sendStatus(403)
+    }
 })
 
-router.get("/:user",(req, res)=>{
-    res.send(`From public router ${req.user}`)
+publicRouter.param('user', "12")
+
+publicRouter.get("/:user",(req, res)=>{
+    res.send(`From public publicRouter ${req.user}`)
 })
-router.get("/about",(req, res)=>{
-    res.send('From public router about section')
+publicRouter.get("/about",(req, res)=>{
+    res.send('From public publicRouter about section')
 })
 
-module.exports = router;
+module.exports = publicRouter;
