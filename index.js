@@ -1,31 +1,16 @@
 const express = require("express")
-
+const publicRouter = require('./publicRouter')
 const app = express();
 
-const adminRoute = express()
-
-const middleware = (req, res, next)=>{
-    console.log(`${new Date(Date.now()).toLocaleString()}  - ${req.protocol} - ${req.method} - ${req.ip} - ${req.originalUrl}`);
-    
-    throw new Error('this is not an error')
-}
 
 
-adminRoute.use(middleware)
 
-adminRoute.get('/dashboard', (req, res)=>{
-    console.log('Hlloe there twinker bell');
-    res.send('from admin')
-})
+// app.use('/admin', adminRoute)
 
-const errorMiddleware =(err, req, res, next)=>{
-    console.log(err.message);
-    res.status(500).send('there was something wron in')
-}
 
-adminRoute.use(errorMiddleware)
 
-app.use('/admin', adminRoute)
+
+app.use('/public', publicRouter)
 
 // app.use(middleware)
 
