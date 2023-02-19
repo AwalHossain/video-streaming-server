@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import app from "./app";
-import connect from "./module/db/mongo";
+import { connect } from "./module/db/mongo";
 
 
 const port = 4000;
