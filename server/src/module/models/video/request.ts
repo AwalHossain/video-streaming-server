@@ -14,10 +14,12 @@ const schema = Joi.object().keys({
 
 
 
-const validate = (data: object)=>{
+ const validate = (data: object)=>{
     const validationResult = schema.validate(data);
     console.log(`Validation Result`, validationResult);
 
     return validationResult;
     
 }
+
+export default validate;

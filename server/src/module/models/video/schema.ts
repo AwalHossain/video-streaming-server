@@ -99,7 +99,7 @@ const VIDEO_VISIBILITIES = ["PUBLIC", "PRIVATE", "UNLISTED"];
         /**
          * here should be db.command()
          */
-        db.runCommand({
+        db.command({
             collMod: name,
             validator
         })
@@ -107,7 +107,7 @@ const VIDEO_VISIBILITIES = ["PUBLIC", "PRIVATE", "UNLISTED"];
 
     // indexes: title, visibility, playlistId, recordingDate
     
-    await db.runCommand({
+    await db.command({
         createIndexes: name,
         indexes:[
             {
