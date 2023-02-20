@@ -10,7 +10,7 @@ type DesnitionCallBack = (error: Error | null, destination: string) => void;
 const BASE_URL = `/api/${name}`;
 
 
-export const setupRoutes = (app)=>{
+export const setupRoutes = (app: any)=>{
     console.log(`Setting up routes for ${name}`);
     
 
