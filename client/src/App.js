@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 
 import {
-  Stack,
   Alert,
-  Snackbar,
+  Snackbar, Stack
 } from "@mui/material";
 
 // routes
@@ -11,23 +10,22 @@ import Router from "./routes";
 // theme
 import ThemeProvider from "./theme";
 // components
-import ScrollToTop from "./components/scroll-to-top";
 import { StyledChart } from "./components/chart";
+import ScrollToTop from "./components/scroll-to-top";
 
-import { useSocket } from "./contexts/SocketContext";
 
 export default function App() {
-  const socket = useSocket();
+  // const socket = useSocket();
   const [wsResponse, setWsResponse] = useState(null);
 
-  useEffect(() => {
-    socket.on("hello", (msg) => {
-      console.log("hello", msg);
-      setWsResponse(
-        `Video ${msg.title} HLS conversion completed as ${msg.originalname}`
-      );
-    });
-  }, [socket]);
+  // useEffect(() => {
+  //   socket.on("hello", (msg) => {
+  //     console.log("hello", msg);
+  //     setWsResponse(
+  //       `Video ${msg.title} HLS conversion completed as ${msg.originalname}`
+  //     );
+  //   });
+  // }, [socket]);
 
   return (
     <ThemeProvider>
