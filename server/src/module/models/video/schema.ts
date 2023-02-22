@@ -1,6 +1,6 @@
 import { collectionName as name } from './model';
 
-const VIDEO_VISIBILITIES = ["PUBLIC", "PRIVATE", "UNLISTED"];
+const VIDEO_VISIBILITIES = ["Public", "Private", "Unlisted"];
 
 
 
@@ -8,7 +8,7 @@ const VIDEO_VISIBILITIES = ["PUBLIC", "PRIVATE", "UNLISTED"];
 /**
  *  Video properties: 
     title, description, videoLink, fileName, visibility, 
-    thumbnailUrl, playlistId, tags, language, recordingDate, 
+    thumbnailUrl, playlistId, language, recordingDate, 
     category, viewsCount, likesCount, dislikesCount, 
 */
 
@@ -46,10 +46,7 @@ const VIDEO_VISIBILITIES = ["PUBLIC", "PRIVATE", "UNLISTED"];
                     bsonType: "objectId",
                     description: "must be an objectId and is required",
                 },
-                tags:{
-                    bsonType:"array",
-                    description: "must be an array and is required"
-                },
+
                 language: {
                     bsonType: "string",
                     description: "must be a string and is required",
