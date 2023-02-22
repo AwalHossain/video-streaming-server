@@ -85,7 +85,7 @@ export const setupRoutes = (app: any)=>{
             upload(req, res, (err:string)=>{
                 if(err){
                     console.error(err);
-                    res.status(400).json({ status: "error", message: err });
+                    res.status(400).json({ status: "error", error: err });
                 }else{
                     console.log("upload success", req.file);
         // res.status(200).json({ status: "success", message: "upload success" });
