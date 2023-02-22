@@ -1,6 +1,6 @@
 
 import { Request, Response } from 'express';
-import multer, { FileFilterCallback } from 'multer';
+import multer from 'multer';
 import { collectionName as name } from './model';
 import validate from './request';
 
@@ -63,13 +63,13 @@ export const setupRoutes = (app: any)=>{
       });
 
 
-      const fileFilter = (req: Request, file:Express.Multer.File, cb:FileFilterCallback):void=>{
+      const fileFilter = (req: Request, file:Express.Multer.File, cb:any):void=>{
         if(file.mimetype === 'video/mp4' || file.mimetype === "video/x-matroska"){
             console.log(`File type supported`, file);
             cb(null, true);
         }else{
-            console.log(`File type not supported`, file);
-            cb(null, false)
+            // console.log(`File type not supported`, file);
+            cb(new multer.MulterError("LIMIT_UNEXPECTED_FILE","File type not supported"), false)
         }
       }
 
@@ -89,7 +89,7 @@ export const setupRoutes = (app: any)=>{
                 }else{
                     console.log("upload success", req.file);
         // res.status(200).json({ status: "success", message: "upload success" });
-        next();   
+                 next();   
                 }
             })
       
