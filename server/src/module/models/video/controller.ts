@@ -102,7 +102,7 @@ export const setupRoutes = (app: any)=>{
                 const payload = {...req.body};
                 console.log("user given metadata", "title", payload.title);
                 
-                res.send(req.file)
+                res.status(200).json({status:"success", message:"upload success", ...req.file})
                 
             }catch(error){
                 console.error(error);
