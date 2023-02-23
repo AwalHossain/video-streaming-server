@@ -1,6 +1,6 @@
 import { ConnectionOptions, Job, QueueEvents, Worker } from 'bullmq';
 import console from 'console';
-import { QUEUES } from './common';
+import { QUEUES_EVENTS } from './common';
 const queueName = "video";
 
 const redisConnection:ConnectionOptions  = {
@@ -18,8 +18,6 @@ const listenQueueEvent = (queueName)=>{
     const queueEvents = new QueueEvents(queueName,{
         connection: redisConnection
     })
-
-    console.log("Hey there");
     
     // queueEvents.on("waiting", ({jobId}): void=>{
     //     console.log(`A job wih ID ${jobId} is waiting`);
@@ -33,10 +31,10 @@ const listenQueueEvent = (queueName)=>{
     // })
     
 
-    // queueEvents.on("failed", ({jobId, failedReason})=>{
-    //     console.log(`${jobId} has failed with reason ${failedReason}`);
+    queueEvents.on("failed", ({jobId, failedReason})=>{
+        console.log(`${jobId} has failed with reason ${failedReason}`);
         
-    // })
+    })
 
 
     const worker = new Worker(
@@ -73,7 +71,7 @@ const listenQueueEvent = (queueName)=>{
 
   
  export const setupAllQueueEvents = () =>{
-    Object.values(QUEUES).map((queueName)=>
+    Object.values(QUEUES_EVENTS).map((queueName)=>
 {        console.log(queueName,"ch;eck")
         
      return   listenQueueEvent(queueName)}

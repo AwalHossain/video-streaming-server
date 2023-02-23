@@ -1,7 +1,7 @@
 
 import { Request, Response } from 'express';
 import multer from 'multer';
-import { QUEUES } from '../../queues/common';
+import { QUEUES_EVENTS } from '../../queues/common';
 import { addQueueItem } from '../../queues/queue';
 import { collectionName as name } from './model';
 import validate from './request';
@@ -103,7 +103,7 @@ export const setupRoutes = (app: any)=>{
 
                 const payload = {...req.body};
                 console.log("user given metadata", "title", payload.title);
-                await addQueueItem(QUEUES.VIDEO_UPLOADED, {...payload, ...req.file})
+                await addQueueItem(QUEUES_EVENTS.VIDEO_UPLOADED, {...payload, ...req.file})
                 res.status(200).json({status:"success", message:"upload success", ...req.file})
                 
             }catch(error){
@@ -111,14 +111,6 @@ export const setupRoutes = (app: any)=>{
                 res.send(error);
                 
             }
-      })
-
-      app.use(()=>(err:any, req:Request, res: Response, next: any)=>{
-        console.log("Error handler", err);
-        if(err instanceof multer.MulterError){
-            return res.status(418).send(err.code)
-        }
-        next();
       })
 
 

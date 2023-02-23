@@ -1,5 +1,5 @@
 import { Queue } from 'bullmq';
-import { QUEUES } from './common';
+import { QUEUES_EVENTS } from './common';
 
 
 const queueName = "video";
@@ -10,7 +10,7 @@ const redisConnection = {
 
 
 
-const queues = Object.values(QUEUES).map((queueName: string)=>{
+const queues = Object.values(QUEUES_EVENTS).map((queueName: string)=>{
     return{
         name: queueName,
         queueObj: new Queue(queueName, {connection: redisConnection})
