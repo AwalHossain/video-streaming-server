@@ -47,6 +47,8 @@ const listenQueueEvent = (queueName)=>{
           }
 
           const result = await handler(job);
+          console.log("Response", result);
+          
           return result;
         },
         { connection: redisConnection }
