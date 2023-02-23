@@ -52,3 +52,11 @@ const worker = new Worker(
     },
     { connection: redisConnection }
   );
+
+
+  worker.on("completed", (job:Job)=>{
+    console.log(`${job.id} has completed`);
+    
+  })
+
+  

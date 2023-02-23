@@ -1,4 +1,5 @@
 import { Queue } from 'bullmq';
+import { QUEUES } from './common';
 
 
 const queueName = "video";
@@ -7,22 +8,30 @@ const redisConnection = {
 };
 
 
-const myQueue = new Queue<any, any, string>(queueName, {connection: redisConnection})
-
-async function addJobs() {
-        await myQueue.add("myJobName", { foo: "bar", date: new Date() });
-        await myQueue.add("myJobName", { foo: "bar", date: new Date() })
-}
 
 
+const queues = Object.values(QUEUES).map((queueName: string)=>{
+    return{
+        name: queueName,
+        queueObj: new Queue(queueName, {connection: redisConnection})
+    }
+})  
 
-export const addQueueItem =async (item:any) => {
 
-    await myQueue.add("video.uploaded", item, {
-        removeOnComplete: true,
-        removeOnFail: false
-    })
-}
 
+
+   export const addQueueItem =async (queueName:string, item: any) => {
+        const queue = queues.find((q)=> q.name === queueName);
+
+        if (!queue) {
+            throw new Error(`queue ${queueName} not found`);
+            
+        }
+
+        await queue.queueObj.add(queueName, item, {
+            removeOnComplete: true,
+            removeOnFail:false
+        })
+    }
 
 
