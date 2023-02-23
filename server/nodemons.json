@@ -4,3 +4,5 @@
     "ignore": [],
     "exec": "npx ts-node ./src/app.ts"
   }
+
+  
