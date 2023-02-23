@@ -6,6 +6,7 @@
   "scripts": {
     "build": "tsc -p .",
     "dev": "nodemon src/server.ts",
+    "queue":"nodemon src/queue.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

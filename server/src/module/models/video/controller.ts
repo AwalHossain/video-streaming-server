@@ -1,6 +1,8 @@
 
 import { Request, Response } from 'express';
 import multer from 'multer';
+import { QUEUES } from '../../queues/common';
+import { addQueueItem } from '../../queues/queue';
 import { collectionName as name } from './model';
 import validate from './request';
 
@@ -101,7 +103,7 @@ export const setupRoutes = (app: any)=>{
 
                 const payload = {...req.body};
                 console.log("user given metadata", "title", payload.title);
-                
+                await addQueueItem(QUEUES.VIDEO_UPLOADED, {...payload, ...req.file})
                 res.status(200).json({status:"success", message:"upload success", ...req.file})
                 
             }catch(error){
