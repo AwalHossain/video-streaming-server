@@ -1,6 +1,6 @@
 import { ConnectionOptions, Job, QueueEvents, Worker } from 'bullmq';
 import console from 'console';
-import { QUEUES_EVENTS } from './common';
+import { QUEUES_EVENTS, QUEUE_EVENT_HANDLERS } from './common';
 const queueName = "video";
 
 const redisConnection:ConnectionOptions  = {
@@ -40,8 +40,14 @@ const listenQueueEvent = (queueName)=>{
     const worker = new Worker(
         queueName,
         async (job: Job) => {
-          console.log("i am the worker!", job.data);
-          return {...job.data, completed: true}
+          console.log("i am queue!",queueName, job.data);
+          const handler = QUEUE_EVENT_HANDLERS[queueName];
+          if (!handler) {
+            throw new Error(`No handler found for ${queueName}`);
+          }
+
+          const result = await handler(job);
+          return result;
         },
         { connection: redisConnection }
       );

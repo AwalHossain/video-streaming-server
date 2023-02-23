@@ -69,7 +69,7 @@ export const QUEUES_EVENTS = {
 
   /** Each of the queue will be associated with the handler and create an object */
 
-  export const QUEUE_HANDLERS = {
+  export const QUEUE_EVENT_HANDLERS = {
     [QUEUES_EVENTS.VIDEO_UPLOADED]: uploadedHandler,
     [QUEUES_EVENTS.VIDEO_PROCESSING]: processingHandler,
     [QUEUES_EVENTS.VIDEO_PROCESSED]: processedHandler,
