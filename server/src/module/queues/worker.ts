@@ -1,6 +1,7 @@
 import { ConnectionOptions, Job, QueueEvents, Worker } from 'bullmq';
 import console from 'console';
 import { QUEUES_EVENTS, QUEUE_EVENT_HANDLERS } from './common';
+import { addQueueItem } from './queue';
 const queueName = "video";
 
 const redisConnection:ConnectionOptions  = {
@@ -29,6 +30,12 @@ const listenQueueEvent = (queueName)=>{
     //         `Job ${jobId} is now active: previous status was ${prev}`, others
     //     ); 
     // })
+
+    queueEvents.on("completed", ({jobId, returnvalue})=>{
+      
+        console.log( `Job ${jobId} has completed with return value `,returnvalue);
+
+    })
     
 
     queueEvents.on("failed", ({jobId, failedReason})=>{
@@ -40,15 +47,16 @@ const listenQueueEvent = (queueName)=>{
     const worker = new Worker(
         queueName,
         async (job: Job) => {
-          console.log("i am queue!",queueName, job.data);
+          console.log("i am queue!",queueName);
           const handler = QUEUE_EVENT_HANDLERS[queueName];
           if (!handler) {
             throw new Error(`No handler found for ${queueName}`);
           }
 
           const result = await handler(job);
-          console.log("Response", result);
-          
+          if(result.next){
+            await addQueueItem(result.next, result);
+          }
           return result;
         },
         { connection: redisConnection }
@@ -80,8 +88,7 @@ const listenQueueEvent = (queueName)=>{
   
  export const setupAllQueueEvents = () =>{
     Object.values(QUEUES_EVENTS).map((queueName)=>
-{        console.log(queueName,"ch;eck")
-        
+{       
      return   listenQueueEvent(queueName)}
     );
   };

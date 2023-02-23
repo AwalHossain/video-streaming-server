@@ -22,7 +22,7 @@ export const QUEUES_EVENTS = {
 
 
    const uploadedHandler = async (job:any) => {
-    console.log("I am uploaded handler", job.data);
+    console.log("I am uploaded handler", job.data.mimetype);
     
     return {...job.data, completed: true, next: QUEUES_EVENTS.VIDEO_PROCESSING};
   }
@@ -53,7 +53,7 @@ export const QUEUES_EVENTS = {
   }
 
   const watermarkingHandler = async (job:any) => {
-    console.log("i am Video watermarking handler", job.data.filename);
+    console.log("i am Video watermarking handler", job.data.originalname);
 
     return {...job.data, completed: true,  next: QUEUES_EVENTS.VIDEO_WATERMARKED};
   }
