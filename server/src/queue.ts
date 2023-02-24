@@ -1,3 +1,3 @@
-import { setupAllQueueEvents } from './module/queues/worker';
+import { setupAllQueueEvents } from "./module/queues/worker";
 
 setupAllQueueEvents();
