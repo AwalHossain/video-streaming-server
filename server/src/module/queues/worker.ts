@@ -1,24 +1,24 @@
-import { ConnectionOptions, Job, QueueEvents, Worker } from 'bullmq';
-import console from 'console';
-import { QUEUES_EVENTS, QUEUE_EVENT_HANDLERS } from './common';
-import { addQueueItem } from './queue';
+import { ConnectionOptions, Job, QueueEvents, Worker } from "bullmq";
+import console from "console";
+import { QUEUES_EVENTS, QUEUE_EVENT_HANDLERS } from "./common";
+import { addQueueItem } from "./queue";
 const queueName = "video";
 
 const redisConnection: ConnectionOptions = {
   host: "localhost",
-  port: 6379
-}
+  port: 6379,
+};
 
 interface JobImp {
-  name: string,
-  payload?: Record<string, unknown>
-  failed: (job: Job) => void
+  name: string;
+  payload?: Record<string, unknown>;
+  failed: (job: Job) => void;
 }
 
-const listenQueueEvent = (queueName) => {
+const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {
-    connection: redisConnection
-  })
+    connection: redisConnection,
+  });
 
   // queueEvents.on("waiting", ({jobId}): void=>{
   //     console.log(`A job wih ID ${jobId} is waiting`);
@@ -28,21 +28,16 @@ const listenQueueEvent = (queueName) => {
   // queueEvents.on("active", ({jobId, prev, ...others}):void=>{
   //     console.log(
   //         `Job ${jobId} is now active: previous status was ${prev}`, others
-  //     ); 
+  //     );
   // })
 
   queueEvents.on("completed", ({ jobId, returnvalue }) => {
-
     console.log(`Job ${jobId} has completed with return value `, returnvalue);
-
-  })
-
+  });
 
   queueEvents.on("failed", ({ jobId, failedReason }) => {
     console.log(`${jobId} has failed with reason ${failedReason}`);
-
-  })
-
+  });
 
   const worker = new Worker(
     queueName,
@@ -62,33 +57,20 @@ const listenQueueEvent = (queueName) => {
     { connection: redisConnection }
   );
 
-
   worker.on("completed", (job: Job) => {
     console.log(`${job.id} has completed`);
-
-  })
+  });
 
   console.log(queueName, "Worker started", new Date().toTimeString());
-
-
-}
-
-
-
-
-
+};
 
 interface WorkerReply {
   status: number;
-  message: string
+  message: string;
 }
-
-
-
 
 export const setupAllQueueEvents = () => {
   Object.values(QUEUES_EVENTS).map((queueName) => {
-    return listenQueueEvent(queueName)
-  }
-  );
+    return listenQueueEvent(queueName);
+  });
 };
