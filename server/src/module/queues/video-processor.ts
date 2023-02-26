@@ -10,7 +10,7 @@ interface Output {
   outputFileName: string;
 }
 
-const execute = async (
+export const execute = async (
   filePath: string,
   outputFolder: string
 ): Promise<Output> => {
