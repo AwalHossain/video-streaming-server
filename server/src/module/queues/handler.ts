@@ -8,21 +8,16 @@ video.watermarking
 video.watermarked
 */
 
-export const QUEUES_EVENTS = {
-  VIDEO_UPLOADED: "video.uploaded",
-  VIDEO_PROCESSING: "video.processing",
-  VIDEO_PROCESSED: "video.processed",
-  VIDEO_HLS_CONVERTING: "video.hls-converting",
-  VIDEO_HLS_CONVERTED: "video.hls.converted",
-  VIDEO_WATERMARKING: "video.watermarking",
-  VIDEO_WATERMARKED: "video.watermarked",
-};
-
-/** Each of the queue will have different queue handler function */
+import { QUEUES_EVENTS } from "./constants";
+import { addQueueItem } from "./queue";
 
 const uploadedHandler = async (job: any) => {
   console.log("I am uploaded handler", job.data.mimetype);
 
+  await addQueueItem(QUEUES_EVENTS.VIDEO_PROCESSING, {
+    ...job.data,
+    completed: true,
+  });
   return { ...job.data, completed: true, next: QUEUES_EVENTS.VIDEO_PROCESSING };
 };
 

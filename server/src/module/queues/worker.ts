@@ -1,7 +1,7 @@
 import { ConnectionOptions, Job, QueueEvents, Worker } from "bullmq";
 import console from "console";
-import { QUEUES_EVENTS, QUEUE_EVENT_HANDLERS } from "./common";
-import { addQueueItem } from "./queue";
+import { QUEUES_EVENTS } from "./constants";
+import { QUEUE_EVENT_HANDLERS } from "./handler";
 const queueName = "video";
 
 const redisConnection: ConnectionOptions = {
@@ -49,9 +49,7 @@ const listenQueueEvent = (queueName: string) => {
       }
 
       const result = await handler(job);
-      if (result.next) {
-        await addQueueItem(result.next, result);
-      }
+
       return result;
     },
     { connection: redisConnection }

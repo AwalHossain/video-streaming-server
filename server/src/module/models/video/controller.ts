@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import multer from "multer";
-import { QUEUES_EVENTS } from "../../queues/common";
+import { QUEUES_EVENTS } from "../../queues/constants";
 import { addQueueItem } from "../../queues/queue";
 import { collectionName as name } from "./model";
 import validate from "./request";

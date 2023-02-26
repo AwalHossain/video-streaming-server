@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { QUEUES_EVENTS } from "./common";
+import { QUEUES_EVENTS } from "./constants";
 
 const queueName = "video";
 const redisConnection = {
