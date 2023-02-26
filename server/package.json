@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc -p .",
     "dev": "nodemon src/server.ts",
-    "queue":"nodemon src/queue.ts",
+    "queue": "nodemon src/queue.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -20,6 +20,7 @@
     "dotenv": "^16.0.3",
     "ejs": "^3.1.6",
     "express": "^4.17.3",
+    "fluent-ffmpeg": "^2.1.2",
     "joi": "^17.8.1",
     "mongodb": "^5.0.1",
     "multer": "^1.4.5-lts.1"
