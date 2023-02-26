@@ -2,6 +2,8 @@ import { exec } from "child_process";
 import ffmpeg from "fluent-ffmpeg";
 import path from "path";
 import { promisify } from "util";
+import { QUEUES_EVENTS } from "./constants";
+import { addQueueItem } from "./queue";
 
 const execAsync = promisify(exec);
 
@@ -12,7 +14,8 @@ interface Output {
 
 export const execute = async (
   filePath: string,
-  outputFolder: string
+  outputFolder: string,
+  jobData: object
 ): Promise<Output> => {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath);
@@ -31,6 +34,8 @@ export const execute = async (
     })
     .on("end", () => {
       console.log("Finished processing");
+
+      addQueueItem(QUEUES_EVENTS.VIDEO_PROCESSED, { ...jobData });
     })
     .on("error", (err: Error) => {
       console.log("An error occurred", err.message);

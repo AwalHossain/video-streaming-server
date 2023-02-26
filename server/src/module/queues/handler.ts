@@ -26,7 +26,11 @@ const uploadedHandler = async (job: any) => {
 const processingHandler = async (job: any) => {
   console.log("I am the Video processing handler", job.data.path);
 
-  const processed = await execute(`./${job.data.path}`, "./upload/processed");
+  const processed = await execute(`./${job.data.path}`, "./upload/processed", {
+    ...job.data,
+    completed: true,
+    next: QUEUES_EVENTS.VIDEO_PROCESSED,
+  });
 
   console.log("processed", processed);
 
