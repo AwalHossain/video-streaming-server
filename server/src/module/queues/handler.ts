@@ -10,7 +10,7 @@ video.watermarked
 
 import { QUEUES_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
-import { processRawFiletoMp4 } from "./video-processor";
+import { processMp4ToHls, processRawFiletoMp4 } from "./video-processor";
 
 const uploadedHandler = async (job: any) => {
   console.log("I am uploaded handler", job.data.mimetype);
@@ -41,8 +41,18 @@ const processingHandler = async (job: any) => {
 };
 
 const processedHandler = async (job: any) => {
-  console.log("i am Video processed handler", job.data.fieldname);
+  console.log("i am Video processed handler", job.data.path);
 
+  const hlsConverted = await processMp4ToHls(
+    `./${job.data.path}`,
+    "./upload/hls",
+    {
+      ...job.data,
+      completed: true,
+      next: QUEUES_EVENTS.VIDEO_HLS_CONVERTED,
+    }
+  );
+  console.log("hlsConverted", hlsConverted);
   return {
     ...job.data,
     completed: true,

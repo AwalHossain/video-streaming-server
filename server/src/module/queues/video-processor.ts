@@ -76,7 +76,10 @@ export const processMp4ToHls = async (
     .on("end", () => {
       console.log("Finished processing");
 
-      addQueueItem(QUEUES_EVENTS.VIDEO_HLS_CONVERTED, { ...jobData });
+      addQueueItem(QUEUES_EVENTS.VIDEO_HLS_CONVERTED, {
+        ...jobData,
+        path: outputFileName,
+      });
     })
     .on("error", (err: Error) => {
       console.log("An error occurred", err.message);
