@@ -2,7 +2,6 @@ import { ConnectionOptions, Job, QueueEvents, Worker } from "bullmq";
 import console from "console";
 import { QUEUES_EVENTS } from "./constants";
 import { QUEUE_EVENT_HANDLERS } from "./handler";
-const queueName = "video";
 
 const redisConnection: ConnectionOptions = {
   host: "localhost",
@@ -31,8 +30,11 @@ const listenQueueEvent = (queueName: string) => {
   //     );
   // })
 
-  queueEvents.on("completed", ({ jobId, returnvalue }) => {
-    console.log(`Job ${jobId} has completed with return value `, returnvalue);
+  queueEvents.on("completed", ({ jobId, returnvalue }: any) => {
+    console.log(
+      `Job ${jobId} has completed with return value `,
+      returnvalue.next
+    );
   });
 
   queueEvents.on("failed", ({ jobId, failedReason }) => {
@@ -41,7 +43,7 @@ const listenQueueEvent = (queueName: string) => {
 
   const worker = new Worker(
     queueName,
-    async (job: Job) => {
+    async (job: any) => {
       console.log("i am queue!", queueName);
       const handler = QUEUE_EVENT_HANDLERS[queueName];
       if (!handler) {

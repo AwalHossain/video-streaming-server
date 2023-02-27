@@ -15,8 +15,8 @@ interface Output {
 export const processRawFiletoMp4 = async (
   filePath: string,
   outputFolder: string,
-  jobData: object
-): Promise<Output> => {
+  jobData: any
+) => {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath);
 
@@ -35,49 +35,9 @@ export const processRawFiletoMp4 = async (
     .on("end", () => {
       console.log("Finished processing");
 
-      addQueueItem(QUEUES_EVENTS.VIDEO_PROCESSED, { ...jobData });
-    })
-    .on("error", (err: Error) => {
-      console.log("An error occurred", err.message);
-    })
-    .run();
-
-  return {
-    fileName,
-    outputFileName,
-  };
-};
-
-export const processMp4ToHls = async (
-  filePath: string,
-  outputFolder: string,
-  jobData: object
-): Promise<Output> => {
-  const fileName = path.basename(filePath);
-  const fileExt = path.extname(filePath);
-
-  const fileNameWithoutExt = path.basename(filePath, fileExt);
-  const outputFileName = `${outputFolder}/${fileNameWithoutExt}.m3u8`;
-
-  const command = ffmpeg(filePath)
-    .output(outputFileName)
-    .outputOptions([
-      "-hls_time 10",
-      "-hls_list_size 0",
-      "-hls_segment_filename",
-      `${outputFolder}/${fileNameWithoutExt}_%03d.ts`,
-    ])
-    .on("start", (commandLine: string) => {
-      console.log(`Spawned Ffmpeg with command`, commandLine);
-    })
-    .on("progress", (progress: ffmpeg.Progress) => {
-      console.log("Processing " + progress.percent + "% done");
-    })
-    .on("end", () => {
-      console.log("Finished processing");
-
-      addQueueItem(QUEUES_EVENTS.VIDEO_HLS_CONVERTED, {
+      addQueueItem(QUEUES_EVENTS.VIDEO_PROCESSED, {
         ...jobData,
+        completed: true,
         path: outputFileName,
       });
     })
@@ -90,4 +50,41 @@ export const processMp4ToHls = async (
     fileName,
     outputFileName,
   };
+};
+
+export const processMp4ToHls = async (filePath, outputFolder, jobData) => {
+  const fileName = path.basename(filePath);
+  const fileExt = path.extname(filePath);
+  const fileNameWithoutExt = path.basename(filePath, fileExt);
+
+  const outputFileName = `${outputFolder}/${fileNameWithoutExt}.m3u8`;
+
+  const command = ffmpeg(filePath)
+    .output(outputFileName)
+    .outputOptions([
+      "-hls_time 10",
+      "-hls_list_size 0",
+      "-hls_flags delete_segments",
+      "-hls_segment_filename",
+      `${outputFolder}/${fileNameWithoutExt}_%03d.ts`,
+    ])
+    .on("start", function (commandLine: string) {
+      console.log("Spawned Ffmpeg with command: " + commandLine);
+    })
+    .on("progress", function (progress: ffmpeg.Progress) {
+      console.log("Processing: " + progress.percent + "% done");
+    })
+    .on("end", function () {
+      console.log("Finished processing");
+      addQueueItem(QUEUES_EVENTS.VIDEO_HLS_CONVERTED, {
+        ...jobData,
+        path: outputFileName,
+      });
+    })
+    .on("error", function (err: Error) {
+      console.log("An error occurred: " + err.message);
+    })
+    .run();
+
+  return { fileName, outputFileName };
 };

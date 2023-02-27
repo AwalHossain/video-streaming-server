@@ -43,6 +43,22 @@ const processingHandler = async (job: any) => {
 const processedHandler = async (job: any) => {
   console.log("i am Video processed handler", job.data.path);
 
+  await addQueueItem(QUEUES_EVENTS.VIDEO_HLS_CONVERTING, {
+    ...job.data,
+    completed: true,
+    next: QUEUES_EVENTS.VIDEO_HLS_CONVERTING,
+  });
+
+  return {
+    ...job.data,
+    completed: true,
+    next: QUEUES_EVENTS.VIDEO_HLS_CONVERTING,
+  };
+};
+
+const hlsConvertingHandler = async (job: any) => {
+  console.log("i am Video hls converting handler", job.data.path);
+
   const hlsConverted = await processMp4ToHls(
     `./${job.data.path}`,
     "./upload/hls",
@@ -53,16 +69,6 @@ const processedHandler = async (job: any) => {
     }
   );
   console.log("hlsConverted", hlsConverted);
-  return {
-    ...job.data,
-    completed: true,
-    next: QUEUES_EVENTS.VIDEO_HLS_CONVERTING,
-  };
-};
-
-const hlsConvertingHandler = async (job: any) => {
-  console.log("i am Video hls converting handler", job.data.originalname);
-
   return {
     ...job.data,
     completed: true,
