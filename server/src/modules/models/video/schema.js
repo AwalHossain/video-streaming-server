@@ -1,4 +1,4 @@
-import { collectionName as name } from "./model";
+const { name } = require("./model");
 
 const VIDEO_VISIBILITIES = ["Public", "Private", "Unlisted"];
 
@@ -7,9 +7,8 @@ const VIDEO_VISIBILITIES = ["Public", "Private", "Unlisted"];
     title, description, videoLink, fileName, visibility, 
     thumbnailUrl, playlistId, language, recordingDate, 
     category, viewsCount, likesCount, dislikesCount, 
-*/
-
-const updateSchema = async (db: any) => {
+ */
+const updateSchema = async (db) => {
   const validator = {
     $jsonSchema: {
       bsonType: "object",
@@ -24,25 +23,25 @@ const updateSchema = async (db: any) => {
       properties: {
         title: {
           bsonType: "string",
-          description: "must be a string ans is required",
+          description: "must be a string and is required",
         },
         description: {
           bsonType: "string",
-          description: "must be a string ans is required",
+          description: "must be a string and is required",
         },
         viewsCount: {
-          bsonType: "string",
+          bsonType: "int",
+          minimum: 0,
           description: "must be an integer",
         },
         visibility: {
           enum: VIDEO_VISIBILITIES,
-          description: "must be a string ans is required",
+          description: "can only be one of the enum values and is required",
         },
         playlistId: {
           bsonType: "objectId",
           description: "must be an objectId and is required",
         },
-
         language: {
           bsonType: "string",
           description: "must be a string and is required",
@@ -86,21 +85,18 @@ const updateSchema = async (db: any) => {
   };
 
   const collections = await db.listCollections({ name }).toArray();
-
   if (collections.length === 0) {
+    console.log(`creating collection ${name}`);
     await db.createCollection(name, { validator });
   } else {
-    /**
-     * here should be db.command()
-     */
-    db.command({
+    console.log(`updating collection ${name}`);
+    await db.command({
       collMod: name,
       validator,
     });
   }
 
   // indexes: title, visibility, playlistId, recordingDate
-
   await db.command({
     createIndexes: name,
     indexes: [
@@ -109,7 +105,7 @@ const updateSchema = async (db: any) => {
         name: "custom_title_index",
       },
       {
-        key: { titlle: "text" },
+        key: { title: "text" },
         name: "title_text_index",
       },
       {
@@ -128,4 +124,6 @@ const updateSchema = async (db: any) => {
   });
 };
 
-export default updateSchema;
+module.exports = {
+  updateSchema,
+};

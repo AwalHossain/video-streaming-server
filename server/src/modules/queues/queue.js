@@ -1,19 +1,15 @@
-import { Queue } from "bullmq";
-import { QUEUES_EVENTS } from "./constants";
+const { Queue } = require("bullmq");
+const { QUEUE_EVENTS } = require("./constants");
+const redisConnection = { host: "localhost", port: 6379 };
 
-const redisConnection = {
-  host: "localhost",
-  port: 6379,
-};
-
-const queues = Object.values(QUEUES_EVENTS).map((queueName) => {
+const queues = Object.values(QUEUE_EVENTS).map((queueName) => {
   return {
     name: queueName,
     queueObj: new Queue(queueName, { connection: redisConnection }),
   };
 });
 
-export const addQueueItem = async (queueName: string, item: any) => {
+const addQueueItem = async (queueName, item) => {
   const queue = queues.find((q) => q.name === queueName);
   if (!queue) {
     throw new Error(`queue ${queueName} not found`);
@@ -23,3 +19,5 @@ export const addQueueItem = async (queueName: string, item: any) => {
     removeOnFail: false,
   });
 };
+
+module.exports = { addQueueItem };

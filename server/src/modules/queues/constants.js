@@ -1,4 +1,4 @@
-export const QUEUES_EVENTS = {
+const QUEUE_EVENTS = {
   VIDEO_UPLOADED: "video.uploaded",
   VIDEO_PROCESSING: "video.processing",
   VIDEO_PROCESSED: "video.processed",
@@ -7,3 +7,5 @@ export const QUEUES_EVENTS = {
   VIDEO_WATERMARKING: "video.watermarking",
   VIDEO_WATERMARKED: "video.watermarked",
 };
+
+module.exports = { QUEUE_EVENTS };
