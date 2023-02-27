@@ -12,43 +12,36 @@ import { QUEUES_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
 import { processMp4ToHls, processRawFiletoMp4 } from "./video-processor";
 
-const uploadedHandler = async (job: any) => {
-  console.log("I am uploaded handler", job.data.mimetype);
-
+const uploadedHandler = async (job) => {
+  console.log("i am the uploaded handler!", job.data.title);
   await addQueueItem(QUEUES_EVENTS.VIDEO_PROCESSING, {
     ...job.data,
     completed: true,
   });
-  return { ...job.data, completed: true, next: QUEUES_EVENTS.VIDEO_PROCESSING };
+  return { added: true, next: QUEUES_EVENTS.VIDEO_PROCESSING };
 };
 
-const processingHandler = async (job: any) => {
-  console.log("I am the Video processing handler", job.data.path);
-
+const processingHandler = async (job) => {
+  console.log("i am the processing handler!", job.data.path);
   const processed = await processRawFiletoMp4(
     `./${job.data.path}`,
-    "./upload/processed",
+    `./upload/processed`,
     {
       ...job.data,
       completed: true,
       next: QUEUES_EVENTS.VIDEO_PROCESSED,
     }
   );
-
   console.log("processed", processed);
-
   return { ...job.data, completed: true, next: QUEUES_EVENTS.VIDEO_PROCESSED };
 };
 
-const processedHandler = async (job: any) => {
-  console.log("i am Video processed handler", job.data.path);
-
+const processedHandler = async (job) => {
+  console.log("i am the processed handler!", job.data.path);
   await addQueueItem(QUEUES_EVENTS.VIDEO_HLS_CONVERTING, {
     ...job.data,
     completed: true,
-    next: QUEUES_EVENTS.VIDEO_HLS_CONVERTING,
   });
-
   return {
     ...job.data,
     completed: true,
@@ -56,12 +49,11 @@ const processedHandler = async (job: any) => {
   };
 };
 
-const hlsConvertingHandler = async (job: any) => {
-  console.log("i am Video hls converting handler", job.data.path);
-
+const hlsConvertingHandler = async (job) => {
+  console.log("i am the hls converting handler!", job.data.path);
   const hlsConverted = await processMp4ToHls(
     `./${job.data.path}`,
-    "./upload/hls",
+    `./upload/hls`,
     {
       ...job.data,
       completed: true,
@@ -76,9 +68,8 @@ const hlsConvertingHandler = async (job: any) => {
   };
 };
 
-const hlsConvertedHandler = async (job: any) => {
-  console.log("i am Video hls converted handler", job.data.filename);
-
+const hlsConvertedHandler = async (job) => {
+  console.log("i am the hls converted handler!", job.data.filename);
   return {
     ...job.data,
     completed: true,
