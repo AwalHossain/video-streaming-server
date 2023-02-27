@@ -10,8 +10,7 @@ video.watermarked
 
 import { QUEUES_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
-import { execute } from "./video-processor";
-// import second from ''
+import { processRawFiletoMp4 } from "./video-processor";
 
 const uploadedHandler = async (job: any) => {
   console.log("I am uploaded handler", job.data.mimetype);
@@ -26,11 +25,15 @@ const uploadedHandler = async (job: any) => {
 const processingHandler = async (job: any) => {
   console.log("I am the Video processing handler", job.data.path);
 
-  const processed = await execute(`./${job.data.path}`, "./upload/processed", {
-    ...job.data,
-    completed: true,
-    next: QUEUES_EVENTS.VIDEO_PROCESSED,
-  });
+  const processed = await processRawFiletoMp4(
+    `./${job.data.path}`,
+    "./upload/processed",
+    {
+      ...job.data,
+      completed: true,
+      next: QUEUES_EVENTS.VIDEO_PROCESSED,
+    }
+  );
 
   console.log("processed", processed);
 
