@@ -1,4 +1,5 @@
-const Joi = require("joi");
+import Joi from "joi";
+
 // validate required fields of videos schema from ./schema.js
 const schema = Joi.object().keys({
   _id: Joi.string().optional(),
@@ -9,12 +10,15 @@ const schema = Joi.object().keys({
   videoLink: Joi.string().min(3).max(30).required(),
 });
 
-const validate = (data) => {
-  const validationResult = schema.validate(data);
+interface ValidationResult {
+  error: Error | undefined;
+  value: any;
+}
+
+const validate = (data: any): ValidationResult => {
+  const validationResult: ValidationResult = schema.validate(data);
   console.log(`validationResult:`, validationResult);
   return validationResult;
 };
 
-module.exports = {
-  validate,
-};
+export default validate;

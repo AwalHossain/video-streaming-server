@@ -1,4 +1,4 @@
-const { getDb } = require("../../db/mongo");
+import { getDb } from "../../db/mongo";
 
 const collectionName = "videos2";
 
@@ -9,7 +9,5 @@ const getCollection = () => {
   return collection;
 };
 
-module.exports = {
-  Video: getCollection(),
-  name: collectionName,
-};
+export const Video = getCollection();
+export const name = collectionName;
