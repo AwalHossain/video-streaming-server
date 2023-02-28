@@ -1,14 +1,16 @@
-const { name } = require("./model");
+import { Db } from "mongodb";
+
+import { name } from "./model";
 
 const VIDEO_VISIBILITIES = ["Public", "Private", "Unlisted"];
 
 /**
- *  Video properties: 
-    title, description, videoLink, fileName, visibility, 
-    thumbnailUrl, playlistId, language, recordingDate, 
-    category, viewsCount, likesCount, dislikesCount, 
+ *  Video properties:
+    title, description, videoLink, fileName, visibility,
+    thumbnailUrl, playlistId, language, recordingDate,
+    category, viewsCount, likesCount, dislikesCount,
  */
-const updateSchema = async (db) => {
+const updateSchema = async (db: Db): Promise<void> => {
   const validator = {
     $jsonSchema: {
       bsonType: "object",
@@ -124,6 +126,4 @@ const updateSchema = async (db) => {
   });
 };
 
-module.exports = {
-  updateSchema,
-};
+export { updateSchema };

@@ -7,8 +7,7 @@ import multer from "multer";
 
 import { QUEUE_EVENTS } from "../../queues/constants";
 import { name } from "./model";
-import { validate } from "./request";
-import { deleteById, getById, insert, search, update } from "./service";
+// import { deleteById, getById, insert, search, update } from "./service";
 
 import { addQueueItem } from "../../queues/queue";
 
@@ -18,68 +17,68 @@ const setupRoutes = (app: Express): void => {
   console.log(`Setting up routes for ${name}`);
 
   // return empty response with success message for the base route
-  app.get(`${BASE_URL}/`, async (req: Request, res: Response) => {
-    console.log(`GET`, req.params);
-    res.send({ status: "success", message: "OK", timestamp: new Date() });
-  });
+  // app.get(`${BASE_URL}/`, async (req: Request, res: Response) => {
+  //   console.log(`GET`, req.params);
+  //   res.send({ status: "success", message: "OK", timestamp: new Date() });
+  // });
 
-  app.get(`${BASE_URL}/detail/:id`, async (req: Request, res: Response) => {
-    console.log(`GET`, req.params);
-    const student = await getById(req.params.id);
-    res.send(student);
-  });
+  // app.get(`${BASE_URL}/detail/:id`, async (req: Request, res: Response) => {
+  //   console.log(`GET`, req.params);
+  //   const student = await getById(req.params.id);
+  //   res.send(student);
+  // });
 
-  // TODO: Proper searching with paging and ordering
-  app.post(`${BASE_URL}/search`, async (req: Request, res: Response) => {
-    console.log("POST search", req.body);
-    const result = await search(req.body);
-    res.send(result);
-  });
+  // // TODO: Proper searching with paging and ordering
+  // app.post(`${BASE_URL}/search`, async (req: Request, res: Response) => {
+  //   console.log("POST search", req.body);
+  //   const result = await search(req.body);
+  //   res.send(result);
+  // });
 
-  app.post(`${BASE_URL}/create`, async (req: Request, res: Response) => {
-    console.log("POST create", req.body);
-    const validationResult = validate(req.body);
-    if (!validationResult.error) {
-      const result = await insert(req.body);
-      if (result instanceof Error) {
-        res.status(400).json(JSON.parse(result.message));
-        return;
-      }
-      return res.json(result);
-    }
-    return res
-      .status(400)
-      .json({ status: "error", message: validationResult.error });
-  });
+  // app.post(`${BASE_URL}/create`, async (req: Request, res: Response) => {
+  //   console.log("POST create", req.body);
+  //   const validationResult = validate(req.body);
+  //   if (!validationResult.error) {
+  //     const result = await insert(req.body);
+  //     if (result instanceof Error) {
+  //       res.status(400).json(JSON.parse(result.message));
+  //       return;
+  //     }
+  //     return res.json(result);
+  //   }
+  //   return res
+  //     .status(400)
+  //     .json({ status: "error", message: validationResult.error });
+  // });
 
-  app.put(`${BASE_URL}/update/:id`, async (req: Request, res: Response) => {
-    console.log("PUT", req.params.id);
-    const validationResult = validate(req.body);
-    if (req.params.id && !validationResult.error) {
-      const result = await update(req.params.id, req.body);
-      if (result instanceof Error) {
-        res.status(400).json(JSON.parse(result.message));
-        return;
-      }
-      return res.json(result);
-    }
-    return res
-      .status(400)
-      .json({ status: "error", message: validationResult.error });
-  });
+  // app.put(`${BASE_URL}/update/:id`, async (req: Request, res: Response) => {
+  //   console.log("PUT", req.params.id);
+  //   const validationResult = validate(req.body);
+  //   if (req.params.id && !validationResult.error) {
+  //     const result = await update(req.params.id, req.body);
+  //     if (result instanceof Error) {
+  //       res.status(400).json(JSON.parse(result.message));
+  //       return;
+  //     }
+  //     return res.json(result);
+  //   }
+  //   return res
+  //     .status(400)
+  //     .json({ status: "error", message: validationResult.error });
+  // });
 
-  app.delete(`${BASE_URL}/delete/:id`, async (req: Request, res: Response) => {
-    console.log("DELETE", req.params.id);
-    if (req.params.id) {
-      const result = await deleteById(req.params.id);
-      if (result instanceof Error) {
-        res.status(400).json(JSON.parse(result.message));
-        return;
-      }
-      return res.json(result);
-    }
-    return res.status(400).json({ status: "error", message: "Id required" });
-  });
+  // app.delete(`${BASE_URL}/delete/:id`, async (req: Request, res: Response) => {
+  //   console.log("DELETE", req.params.id);
+  //   if (req.params.id) {
+  //     const result = await deleteById(req.params.id);
+  //     if (result instanceof Error) {
+  //       res.status(400).json(JSON.parse(result.message));
+  //       return;
+  //     }
+  //     return res.json(result);
+  //   }
+  //   return res.status(400).json({ status: "error", message: "Id required" });
+  // });
 
   // upload videos handler using multer package routes below.
 
