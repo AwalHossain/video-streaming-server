@@ -1,6 +1,6 @@
-const { Worker, QueueEvents } = require("bullmq");
-const { QUEUE_EVENTS } = require("./constants");
-const { QUEUE_EVENT_HANDLERS } = require("./handlers");
+import { Job, QueueEvents, Worker } from "bullmq";
+import { QUEUE_EVENTS } from "./constants";
+import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
 const redisConnection = { host: "localhost", port: 6379 };
 
@@ -20,7 +20,7 @@ Object.values(QUEUE_EVENTS).map((queueName) => {
     );
   });
 
-  queueEvents.on("completed", ({ jobId, returnvalue }) => {
+  queueEvents.on("completed", ({ jobId, returnvalue }: any) => {
     console.log(`${jobId} has completed and returned.next`, returnvalue.next);
   });
 
@@ -30,7 +30,7 @@ Object.values(QUEUE_EVENTS).map((queueName) => {
 
   const worker = new Worker(
     queueName,
-    async (job) => {
+    async (job: Job) => {
       console.log("i am queue:", queueName);
       const handler = QUEUE_EVENT_HANDLERS[queueName];
       if (handler) {
@@ -43,7 +43,7 @@ Object.values(QUEUE_EVENTS).map((queueName) => {
     { connection: redisConnection }
   );
 
-  worker.on("completed", (job) => {
+  worker.on("completed", (job: Job) => {
     console.log(`${job.id} has completed!`);
   });
 
