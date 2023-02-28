@@ -1,8 +1,9 @@
-const { QUEUE_EVENTS } = require("./constants");
-const { processRawFileToMp4, processMp4ToHls } = require("./video-processor");
-const { addQueueItem } = require("./queue");
+import { Job } from "bullmq";
+import { QUEUE_EVENTS } from "./constants";
+import { addQueueItem } from "./queue";
+import { processMp4ToHls, processRawFileToMp4 } from "./video-processor";
 
-const uploadedHandler = async (job) => {
+const uploadedHandler = async (job: Job) => {
   console.log("i am the uploaded handler!", job.data.title);
   await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSING, {
     ...job.data,
@@ -11,7 +12,7 @@ const uploadedHandler = async (job) => {
   return { added: true, next: QUEUE_EVENTS.VIDEO_PROCESSING };
 };
 
-const processingHandler = async (job) => {
+const processingHandler = async (job: Job) => {
   console.log("i am the processing handler!", job.data.path);
   const processed = await processRawFileToMp4(
     `./${job.data.path}`,
@@ -26,7 +27,7 @@ const processingHandler = async (job) => {
   return { ...job.data, completed: true, next: QUEUE_EVENTS.VIDEO_PROCESSED };
 };
 
-const processedHandler = async (job) => {
+const processedHandler = async (job: Job) => {
   console.log("i am the processed handler!", job.data.path);
   await addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTING, {
     ...job.data,
@@ -39,7 +40,7 @@ const processedHandler = async (job) => {
   };
 };
 
-const hlsConvertingHandler = async (job) => {
+const hlsConvertingHandler = async (job: Job) => {
   console.log("i am the hls converting handler!", job.data.path);
   const hlsConverted = await processMp4ToHls(
     `./${job.data.path}`,
@@ -67,12 +68,12 @@ const hlsConvertedHandler = async (job) => {
   };
 };
 
-const watermarkingHandler = async (job) => {
+const watermarkingHandler = async (job: Job) => {
   console.log("i am the watermarking handler!", job.data.size);
   return { ...job.data, completed: true, next: QUEUE_EVENTS.VIDEO_WATERMARKED };
 };
 
-const watermarkedHandler = async (job) => {
+const watermarkedHandler = async (job: Job) => {
   console.log("i am the watermarked handler!", job.data.completed);
   return { ...job.data, completed: true, next: null };
 };
@@ -89,6 +90,4 @@ const QUEUE_EVENT_HANDLERS = {
   [QUEUE_EVENTS.VIDEO_WATERMARKED]: watermarkedHandler,
 };
 
-module.exports = {
-  QUEUE_EVENT_HANDLERS,
-};
+export { QUEUE_EVENT_HANDLERS };

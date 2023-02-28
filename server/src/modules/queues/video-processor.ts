@@ -1,11 +1,25 @@
 /** execute function will take a filePath and run  ffmpeg command to convert it to mp4 */
+import ffmpeg from "fluent-ffmpeg";
+import path from "path";
+import { QUEUE_EVENTS } from "./constants";
+import { addQueueItem } from "./queue";
 
-const ffmpeg = require("fluent-ffmpeg");
-const path = require("path");
-const { QUEUE_EVENTS } = require("./constants");
-const { addQueueItem } = require("./queue");
+interface JobData {
+  completed: boolean;
+  path: string;
+  // other properties
+}
 
-const processRawFileToMp4 = async (filePath, outputFolder, jobData) => {
+interface ProcessedFile {
+  fileName: string;
+  outputFileName: string;
+}
+
+const processRawFileToMp4 = async (
+  filePath: string,
+  outputFolder: string,
+  jobData: JobData
+): Promise<ProcessedFile> => {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
@@ -14,10 +28,10 @@ const processRawFileToMp4 = async (filePath, outputFolder, jobData) => {
 
   const command = ffmpeg(filePath)
     .output(outputFileName)
-    .on("start", function (commandLine) {
+    .on("start", function (commandLine: string) {
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
-    .on("progress", function (progress) {
+    .on("progress", function (progress: any) {
       console.log("Processing: " + progress.percent + "% done");
     })
     .on("end", function () {
@@ -28,7 +42,7 @@ const processRawFileToMp4 = async (filePath, outputFolder, jobData) => {
         path: outputFileName,
       });
     })
-    .on("error", function (err) {
+    .on("error", function (err: Error) {
       console.log("An error occurred: " + err.message);
     })
     .run();
@@ -36,7 +50,11 @@ const processRawFileToMp4 = async (filePath, outputFolder, jobData) => {
   return { fileName, outputFileName };
 };
 
-const processMp4ToHls = async (filePath, outputFolder, jobData) => {
+const processMp4ToHls = async (
+  filePath: string,
+  outputFolder: string,
+  jobData: JobData
+): Promise<ProcessedFile> => {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
@@ -52,10 +70,10 @@ const processMp4ToHls = async (filePath, outputFolder, jobData) => {
       "-hls_segment_filename",
       `${outputFolder}/${fileNameWithoutExt}_%03d.ts`,
     ])
-    .on("start", function (commandLine) {
+    .on("start", function (commandLine: string) {
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
-    .on("progress", function (progress) {
+    .on("progress", function (progress: any) {
       console.log("Processing: " + progress.percent + "% done");
     })
     .on("end", function () {
@@ -65,7 +83,7 @@ const processMp4ToHls = async (filePath, outputFolder, jobData) => {
         path: outputFileName,
       });
     })
-    .on("error", function (err) {
+    .on("error", function (err: Error) {
       console.log("An error occurred: " + err.message);
     })
     .run();
@@ -73,4 +91,4 @@ const processMp4ToHls = async (filePath, outputFolder, jobData) => {
   return { fileName, outputFileName };
 };
 
-module.exports = { processRawFileToMp4, processMp4ToHls };
+export { processRawFileToMp4, processMp4ToHls };
