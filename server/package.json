@@ -5,8 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon ./src/server.js",
-    "queue": "nodemon ./src/queue.js",
+    "start": "nodemon ./src/server.ts",
+    "queue": "nodemon ./src/queue.ts",
     "video-server": "nodemon ./src/video-server.js"
   },
   "keywords": [],

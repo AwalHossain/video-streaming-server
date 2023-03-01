@@ -2,9 +2,12 @@ import { getDb } from "../../db/mongo";
 
 const collectionName = "videos2";
 
-const getCollection = () => {
+const getCollection = async () => {
   console.log(`getCollection: ${collectionName}`);
-  const db = getDb();
+  const db = await getDb();
+
+  if (!db) throw new Error("db not found");
+
   const collection = db.collection(collectionName);
   return collection;
 };

@@ -1,18 +1,28 @@
-import { Db, MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
 
-let _db: Db | null = null;
+let db = null;
 
-// create a connect
-export const connect = async (): Promise<Db> => {
+const connect = async () => {
   const client = new MongoClient("mongodb://localhost:27023");
-  console.log("connecting to MongoDB");
   await client.connect();
-  _db = client.db("videodb");
-  console.log("connected to MongoDB");
-  return _db;
+  const db = client.db("videodb");
+  /**
+   * insert one document
+   */
+
+  // console.log("connected to db", db.collection("videos2").insertOne("hello"));
+  return db;
 };
 
-// create a getdb
-export const getDb = (): Db | null => {
-  return _db;
+// Create a getDb
+
+const getDb = async () => {
+  if (!db) {
+    db = await connect();
+  }
+  return db;
 };
+
+// getDb();
+
+export { connect, getDb };

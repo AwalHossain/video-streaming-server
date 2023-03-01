@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import { Db } from "mongodb";
 import app from "./app";
 import { connect } from "./modules/db/mongo";
 import { setupRoutes } from "./modules/models/video/controller";
@@ -6,7 +7,7 @@ import { updateSchema } from "./modules/models/video/schema";
 
 const PORT: number = 4000;
 
-const setup = async (db: any) => {
+const setup = async (db: Db) => {
   await updateSchema(db);
   setupRoutes(app);
 };
