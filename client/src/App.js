@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -10,22 +10,40 @@ import Router from "./routes";
 // theme
 import ThemeProvider from "./theme";
 // components
+import { io } from 'socket.io-client';
 import { StyledChart } from "./components/chart";
 import ScrollToTop from "./components/scroll-to-top";
+
+const socket = io('http://127.0.0.1:4000');
 
 
 export default function App() {
   // const socket = useSocket();
   const [wsResponse, setWsResponse] = useState(null);
 
-  // useEffect(() => {
-  //   socket.on("hello", (msg) => {
-  //     console.log("hello", msg);
-  //     setWsResponse(
-  //       `Video ${msg.title} HLS conversion completed as ${msg.originalname}`
-  //     );
-  //   });
-  // }, [socket]);
+useEffect(() => {
+  socket.on('connect', () => {
+    console.log('connected')
+  })
+
+
+  socket.on('disconnect', () => {
+    console.log("disconnect",false);
+  });
+
+    socket.on('message', (data) => {
+      console.log(data)
+      // setWsResponse(data)
+    })
+
+    socket.emit("mn", "hello")
+
+  return () => {
+    socket.off('connect');
+    socket.off('disconnect');
+    socket.off('pong');
+  };
+}, [])
 
   return (
     <ThemeProvider>
