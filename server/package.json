@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./src/server.ts",
     "queue": "nodemon ./src/queue.ts",
-    "video-server": "nodemon ./src/video-server.js"
+    "video-server": "nodemon ./src/video-server.ts"
   },
   "keywords": [],
   "author": "",
