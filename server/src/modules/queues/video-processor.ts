@@ -88,7 +88,7 @@ const processMp4ToHls = async (
     })
     .run();
 
-  return { fileName, outputFileName };
+  return;
 };
 
 export { processRawFileToMp4, processMp4ToHls };

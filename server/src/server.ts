@@ -29,7 +29,7 @@ listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
 
 evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
   console.log("data", data);
-  io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, data);
+  io.emit("hello", data);
 });
 
 io.on("connection", (socket) => {
@@ -39,7 +39,7 @@ io.on("connection", (socket) => {
   });
 
   // setInterval(() => {
-  io.emit("hello", Date.now().toString());
+  io.emit("msg", Date.now().toString());
   // socket.on("mn", (data) => {
   //   console.log("data", data);
   // });

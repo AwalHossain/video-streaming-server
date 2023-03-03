@@ -56,15 +56,15 @@ const hlsConvertedHandler = async (job) => {
   return;
 };
 
-const watermarkingHandler = async (job: Job) => {
-  console.log("i am the watermarking handler!", job.data.size);
-  return;
-};
+// const watermarkingHandler = async (job: Job) => {
+//   console.log("i am the watermarking handler!", job.data.size);
+//   return;
+// };
 
-const watermarkedHandler = async (job: Job) => {
-  console.log("i am the watermarked handler!", job.data.completed);
-  return;
-};
+// const watermarkedHandler = async (job: Job) => {
+//   console.log("i am the watermarked handler!", job.data.completed);
+//   return;
+// };
 /** Each of the queue event will be associated with the handler and create an object */
 
 export const QUEUE_EVENT_HANDLERS = {
@@ -73,7 +73,7 @@ export const QUEUE_EVENT_HANDLERS = {
   [QUEUE_EVENTS.VIDEO_PROCESSED]: processedHandler,
   [QUEUE_EVENTS.VIDEO_HLS_CONVERTING]: hlsConvertingHandler,
   [QUEUE_EVENTS.VIDEO_HLS_CONVERTED]: hlsConvertedHandler,
-  [QUEUE_EVENTS.VIDEO_WATERMARKING]: watermarkingHandler,
-  [QUEUE_EVENTS.VIDEO_WATERMARKED]: watermarkedHandler,
+  // [QUEUE_EVENTS.VIDEO_WATERMARKING]: watermarkingHandler,
+  // [QUEUE_EVENTS.VIDEO_WATERMARKED]: watermarkedHandler,
   [NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED]: hlsConvertedHandler,
 };

@@ -18,14 +18,17 @@ import { useSocket } from './contexts/SocketContext';
 
 export default function App() {
   const socket = useSocket();
-  const [wsResponse, setWsResponse] = useState(null);
+  const [wsResponse, setWsResponse] = useState(null); 
 
 useEffect(() => {
 
     // socket.emit("mn", "hello")
     console.log("socket", socket);
-    socket.on("hello", (data) => {
-      console.log("got data", data);
+    socket.on("hello", (msg) => {
+      console.log("got data", msg);
+      setWsResponse(
+        `Video ${msg} HLS stream is ready to be played as ${msg.originalname}.m3u8`
+      );
     }
     );
 }, [socket])
