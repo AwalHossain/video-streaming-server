@@ -10,40 +10,25 @@ import Router from "./routes";
 // theme
 import ThemeProvider from "./theme";
 // components
-import { io } from 'socket.io-client';
 import { StyledChart } from "./components/chart";
 import ScrollToTop from "./components/scroll-to-top";
 
-const socket = io('http://127.0.0.1:4000');
+import { useSocket } from './contexts/SocketContext';
 
 
 export default function App() {
-  // const socket = useSocket();
+  const socket = useSocket();
   const [wsResponse, setWsResponse] = useState(null);
 
 useEffect(() => {
-  socket.on('connect', () => {
-    console.log('connected')
-  })
 
-
-  socket.on('disconnect', () => {
-    console.log("disconnect",false);
-  });
-
-    socket.on('message', (data) => {
-      console.log(data)
-      // setWsResponse(data)
-    })
-
-    socket.emit("mn", "hello")
-
-  return () => {
-    socket.off('connect');
-    socket.off('disconnect');
-    socket.off('pong');
-  };
-}, [])
+    // socket.emit("mn", "hello")
+    console.log("socket", socket);
+    socket.on("hello", (data) => {
+      console.log("got data", data);
+    }
+    );
+}, [socket])
 
   return (
     <ThemeProvider>

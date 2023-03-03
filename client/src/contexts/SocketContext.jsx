@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useMemo } from 'react';
 
 import { io } from 'socket.io-client';
 
@@ -7,17 +7,19 @@ const socketContext = createContext();
 
 
 export const SocketProvider = ({children}) => {
-    const [socket, setSocket] = useState(null);
-    useEffect(() => {
-      const newSocket = io('http://localhost:4000');
 
-      setSocket(newSocket);
-    
-      return () => {
-       newSocket.close();
-      }
-    }, [])
-    
+// useEffect(() => {
+//   console.log("Socket object created:", newSocket);
+//   setSocket(newSocket);
+
+//   console.log("Socket object set to:", newSocket);
+
+//   return () => {
+//     newSocket.close();
+//   };
+// }, [newSocket]);
+
+    const socket = useMemo(() => io("http://127.0.0.1:4000"), []);
 
       return (
   
@@ -32,4 +34,14 @@ export const SocketProvider = ({children}) => {
   }
 
 
-  export const useSocket = () => useContext(socketContext);
+export const useSocket = () => {
+  const socket = useContext(socketContext);
+
+  console.log("Socket object retrieved from context:", socket);
+
+  if (!socket) {
+    throw new Error("Socket context not found");
+  }
+  return socket;
+};
+

@@ -28,12 +28,12 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 
-  setInterval(() => {
-    io.emit("message", "hello world");
-    socket.on("mn", (data) => {
-      console.log("data", data);
-    });
-  }, 5000);
+  // setInterval(() => {
+  io.emit("hello", Date.now().toString());
+  // socket.on("mn", (data) => {
+  //   console.log("data", data);
+  // });
+  // }, 5000);
   // io.emit("message", "hello world");
 });
 
