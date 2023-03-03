@@ -4,25 +4,25 @@ import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
 const redisConnection = { host: "localhost", port: 6379 };
 
-const listenQueueEvent = (queueName: string) => {
+export const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {
     connection: redisConnection,
   });
 
-  queueEvents.on("waiting", ({ jobId }) => {
-    console.log(`A job with ID ${jobId} is waiting`);
-  });
+  // queueEvents.on("waiting", ({ jobId }) => {
+  //   console.log(`A job with ID ${jobId} is waiting`);
+  // });
 
-  queueEvents.on("active", ({ jobId, prev, ...others }) => {
-    console.log(
-      `Job ${jobId} is now active; previous status was ${prev}`,
-      others
-    );
-  });
+  // queueEvents.on("active", ({ jobId, prev, ...others }) => {
+  //   console.log(
+  //     `Job ${jobId} is now active; previous status was ${prev}`,
+  //     others
+  //   );
+  // });
 
-  queueEvents.on("completed", ({ jobId, returnvalue }: any) => {
-    console.log(`${jobId} has completed and returned.next`, returnvalue.next);
-  });
+  // queueEvents.on("completed", ({ jobId, returnvalue }: any) => {
+  //   console.log(`${jobId} has completed and returned.next`, returnvalue.next);
+  // });
 
   queueEvents.on("failed", ({ jobId, failedReason }) => {
     console.log(`${jobId} has failed with reason ${failedReason}`);

@@ -4,9 +4,12 @@ import http from "http";
 import { Db } from "mongodb";
 import { Server } from "socket.io";
 import app from "./app";
+import evenEmitter from "./event-manager";
 import { connect } from "./modules/db/mongo";
 import { setupRoutes } from "./modules/models/video/controller";
 import { updateSchema } from "./modules/models/video/schema";
+import { NOTIFY_EVENTS } from "./modules/queues/constants";
+import { listenQueueEvent } from "./modules/queues/worker";
 
 const PORT: number = 4000;
 const server = http.createServer(app);
@@ -21,6 +24,13 @@ const setup = async (db: Db) => {
   await updateSchema(db);
   setupRoutes(app);
 };
+
+listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
+
+evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
+  console.log("data", data);
+  io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, data);
+});
 
 io.on("connection", (socket) => {
   console.log("a user connected");
