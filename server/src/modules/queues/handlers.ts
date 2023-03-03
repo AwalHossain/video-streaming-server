@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { QUEUE_EVENTS } from "./constants";
+import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
 import { processMp4ToHls, processRawFileToMp4 } from "./video-processor";
 
@@ -9,7 +9,7 @@ const uploadedHandler = async (job: Job) => {
     ...job.data,
     completed: true,
   });
-  return { added: true, next: QUEUE_EVENTS.VIDEO_PROCESSING };
+  return;
 };
 
 const processingHandler = async (job: Job) => {
@@ -24,7 +24,7 @@ const processingHandler = async (job: Job) => {
     }
   );
   console.log("processed", processed);
-  return { ...job.data, completed: true, next: QUEUE_EVENTS.VIDEO_PROCESSED };
+  return;
 };
 
 const processedHandler = async (job: Job) => {
@@ -33,11 +33,7 @@ const processedHandler = async (job: Job) => {
     ...job.data,
     completed: true,
   });
-  return {
-    ...job.data,
-    completed: true,
-    next: QUEUE_EVENTS.VIDEO_HLS_CONVERTING,
-  };
+  return;
 };
 
 const hlsConvertingHandler = async (job: Job) => {
@@ -52,35 +48,26 @@ const hlsConvertingHandler = async (job: Job) => {
     }
   );
   console.log("hlsConverted", hlsConverted);
-  return {
-    ...job.data,
-    completed: true,
-    next: QUEUE_EVENTS.VIDEO_HLS_CONVERTED,
-  };
+  return;
 };
 
 const hlsConvertedHandler = async (job) => {
   console.log("i am the hls converted handler!", job.data.filename);
-  return {
-    ...job.data,
-    completed: true,
-    next: QUEUE_EVENTS.VIDEO_WATERMARKING,
-  };
+  return;
 };
 
 const watermarkingHandler = async (job: Job) => {
   console.log("i am the watermarking handler!", job.data.size);
-  return { ...job.data, completed: true, next: QUEUE_EVENTS.VIDEO_WATERMARKED };
+  return;
 };
 
 const watermarkedHandler = async (job: Job) => {
   console.log("i am the watermarked handler!", job.data.completed);
-  return { ...job.data, completed: true, next: null };
+  return;
 };
-
 /** Each of the queue event will be associated with the handler and create an object */
 
-const QUEUE_EVENT_HANDLERS = {
+export const QUEUE_EVENT_HANDLERS = {
   [QUEUE_EVENTS.VIDEO_UPLOADED]: uploadedHandler,
   [QUEUE_EVENTS.VIDEO_PROCESSING]: processingHandler,
   [QUEUE_EVENTS.VIDEO_PROCESSED]: processedHandler,
@@ -88,6 +75,5 @@ const QUEUE_EVENT_HANDLERS = {
   [QUEUE_EVENTS.VIDEO_HLS_CONVERTED]: hlsConvertedHandler,
   [QUEUE_EVENTS.VIDEO_WATERMARKING]: watermarkingHandler,
   [QUEUE_EVENTS.VIDEO_WATERMARKED]: watermarkedHandler,
+  [NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED]: hlsConvertedHandler,
 };
-
-export { QUEUE_EVENT_HANDLERS };

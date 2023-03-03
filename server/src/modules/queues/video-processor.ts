@@ -26,7 +26,7 @@ const processRawFileToMp4 = async (
 
   const outputFileName = `${outputFolder}/${fileNameWithoutExt}.mp4`;
 
-  const command = ffmpeg(filePath)
+  ffmpeg(filePath)
     .output(outputFileName)
     .on("start", function (commandLine: string) {
       console.log("Spawned Ffmpeg with command: " + commandLine);
@@ -47,7 +47,7 @@ const processRawFileToMp4 = async (
     })
     .run();
 
-  return { fileName, outputFileName };
+  return;
 };
 
 const processMp4ToHls = async (
@@ -61,7 +61,7 @@ const processMp4ToHls = async (
 
   const outputFileName = `${outputFolder}/${fileNameWithoutExt}.m3u8`;
 
-  const command = ffmpeg(filePath)
+  ffmpeg(filePath)
     .output(outputFileName)
     .outputOptions([
       "-hls_time 10",
