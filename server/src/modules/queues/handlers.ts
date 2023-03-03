@@ -1,4 +1,5 @@
 import { Job } from "bullmq";
+import eventEmitter from "../../event-manager";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
 import { processMp4ToHls, processRawFileToMp4 } from "./video-processor";
@@ -53,6 +54,10 @@ const hlsConvertingHandler = async (job: Job) => {
 
 const hlsConvertedHandler = async (job) => {
   console.log("i am the hls converted handler!", job.data.filename);
+  await addQueueItem(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, {
+    ...job.data,
+    completed: true,
+  });
   return;
 };
 
@@ -65,7 +70,12 @@ const hlsConvertedHandler = async (job) => {
 //   console.log("i am the watermarked handler!", job.data.completed);
 //   return;
 // };
-/** Each of the queue event will be associated with the handler and create an object */
+
+const notifyHlsConvertedHandler = async (job: Job) => {
+  console.log("i am the notify hls converted handler!", job.data);
+  eventEmitter.emit(`NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED`, job.data);
+  return;
+};
 
 export const QUEUE_EVENT_HANDLERS = {
   [QUEUE_EVENTS.VIDEO_UPLOADED]: uploadedHandler,
@@ -75,5 +85,5 @@ export const QUEUE_EVENT_HANDLERS = {
   [QUEUE_EVENTS.VIDEO_HLS_CONVERTED]: hlsConvertedHandler,
   // [QUEUE_EVENTS.VIDEO_WATERMARKING]: watermarkingHandler,
   // [QUEUE_EVENTS.VIDEO_WATERMARKED]: watermarkedHandler,
-  [NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED]: hlsConvertedHandler,
+  [NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED]: notifyHlsConvertedHandler,
 };
