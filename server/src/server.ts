@@ -23,14 +23,13 @@ const io = new Server(server, {
 const setup = async (db: Db) => {
   await updateSchema(db);
   setupRoutes(app);
+
+  listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
+  evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
+    console.log("data", data);
+    io.emit("hello", data);
+  });
 };
-
-listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
-
-evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
-  console.log("data", data);
-  io.emit("hello", data);
-});
 
 io.on("connection", (socket) => {
   console.log("a user connected");
