@@ -4,7 +4,7 @@ import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
 const redisConnection = { host: "localhost", port: 6379 };
 
-Object.values(QUEUE_EVENTS).map((queueName) => {
+const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {
     connection: redisConnection,
   });
@@ -35,21 +35,25 @@ Object.values(QUEUE_EVENTS).map((queueName) => {
       const handler = QUEUE_EVENT_HANDLERS[queueName];
       if (handler) {
         const handledResponse = await handler(job);
-        console.log("handledResponse.next", handledResponse.next);
         return handledResponse;
       }
-      throw new Error("No handler found for queue: " + queueName);
     },
-    { connection: redisConnection }
+    {
+      connection: redisConnection,
+    }
   );
 
-  worker.on("completed", (job: Job) => {
-    console.log(`${job.id} has completed!`);
+  worker.on("completed", (job) => {
+    console.log(`Job ${job.id} has completed!`);
   });
 
   worker.on("failed", (job, err) => {
-    console.log(`${job.id} has failed with ${err.message}`);
+    console.log(`Job ${job.id} has failed with ${err.message}`);
   });
+};
 
-  console.log(queueName, " worker started", new Date().toTimeString());
-});
+export const setupAllQueueEvent = () => {
+  Object.values(QUEUE_EVENTS).map((queueName) => {
+    listenQueueEvent(queueName);
+  });
+};
