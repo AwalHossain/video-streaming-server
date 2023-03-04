@@ -1,4 +1,4 @@
-import { Job, QueueEvents, Worker } from "bullmq";
+import { QueueEvents, Worker } from "bullmq";
 import { QUEUE_EVENTS } from "./constants";
 import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
@@ -30,25 +30,22 @@ export const listenQueueEvent = (queueName: string) => {
 
   const worker = new Worker(
     queueName,
-    async (job: Job) => {
-      console.log("i am queue:", queueName);
+    async (job) => {
       const handler = QUEUE_EVENT_HANDLERS[queueName];
       if (handler) {
-        const handledResponse = await handler(job);
-        return handledResponse;
+        return await handler(job);
       }
+      throw new Error("No handler found for queue: " + queueName);
     },
-    {
-      connection: redisConnection,
-    }
+    { connection: redisConnection }
   );
 
   worker.on("completed", (job) => {
-    console.log(`Job ${job.id} has completed!`);
+    console.log(`${job.id} has completed!`);
   });
 
   worker.on("failed", (job, err) => {
-    console.log(`Job ${job.id} has failed with ${err.message}`);
+    console.log(`${job.id} has failed with ${err.message}`);
   });
 
   console.log(queueName, " worker started", new Date().toTimeString());

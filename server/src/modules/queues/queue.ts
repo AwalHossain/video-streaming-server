@@ -1,5 +1,5 @@
 import { Queue } from "bullmq";
-import { QUEUE_EVENTS } from "./constants";
+import { ALL_EVENTS as QUEUE_EVENTS } from "./constants";
 
 const redisConnection = { host: "localhost", port: 6379 };
 
