@@ -77,7 +77,7 @@ const processMp4ToHls = async (
       console.log("Processing: " + progress.percent + "% done");
     })
     .on("end", function () {
-      console.log("Finished processing");
+      console.log("Finished processing hls", outputFileName);
       addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTED, {
         ...jobData,
         path: outputFileName,

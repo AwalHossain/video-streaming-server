@@ -2,10 +2,10 @@ import ReactDOM from "react-dom/client";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter } from "react-router-dom";
 
+import { SocketProvider } from "./contexts/SocketContext";
 
 //
 import App from "./App";
-import { SocketProvider } from "./contexts/SocketContext";
 import reportWebVitals from "./reportWebVitals";
 import * as serviceWorker from "./serviceWorker";
 
@@ -15,12 +15,10 @@ const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
   <HelmetProvider>
-
-
     <BrowserRouter>
-    <SocketProvider>
+      <SocketProvider>
         <App />
-    </SocketProvider>
+      </SocketProvider>
     </BrowserRouter>
   </HelmetProvider>
 );

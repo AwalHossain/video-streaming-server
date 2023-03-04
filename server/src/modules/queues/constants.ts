@@ -6,13 +6,12 @@ export const VIDEO_QUEUE_EVENTS = {
   VIDEO_HLS_CONVERTED: "video.hls.converted",
   // VIDEO_WATERMARKING: "video.watermarking",
   // VIDEO_WATERMARKED: "video.watermarked",
+  NOTIFY_VIDEO_HLS_CONVERTED: "notify.video.hls.converted",
 };
 
 export const QUEUE_EVENTS = VIDEO_QUEUE_EVENTS;
 
-export const NOTIFY_EVENTS = {
-  NOTIFY_VIDEO_HLS_CONVERTED: "notify.video.hls.converted",
-};
+export const NOTIFY_EVENTS = {};
 
 export const ALL_EVENTS = {
   ...QUEUE_EVENTS,

@@ -23,7 +23,7 @@ const queues: QueueObj[] = Object.values(QUEUE_EVENTS).map((queueName) => {
 const addQueueItem = async (queueName: string, item: QueueItem) => {
   const queue = queues.find((q) => q.name === queueName);
   if (!queue) {
-    throw new Error(`queue ${queueName} not found`);
+    throw new Error(`queue ${queueName} not found from queues file`);
   }
   await queue.queueObj.add(queueName, item, {
     removeOnComplete: true,

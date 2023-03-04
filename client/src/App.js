@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   Alert,
@@ -13,25 +13,21 @@ import ThemeProvider from "./theme";
 import { StyledChart } from "./components/chart";
 import ScrollToTop from "./components/scroll-to-top";
 
-import { useSocket } from './contexts/SocketContext';
-
+import { useSocket } from "./contexts/SocketContext";
 
 export default function App() {
   const socket = useSocket();
-  const [wsResponse, setWsResponse] = useState(null); 
+  const [wsResponse, setWsResponse] = useState(null);
 
-useEffect(() => {
-
-    // socket.emit("mn", "hello")
-    console.log("socket", socket);
+  useEffect(() => {
+    console.log("socket connect tolen d", socket.id);
     socket.on("hello", (msg) => {
-      console.log("got data", msg);
+      console.log("hello", msg);
       setWsResponse(
-        `Video ${msg} HLS stream is ready to be played as ${msg.originalname}.m3u8`
+        `Video ${msg.title} HLS conversion completed as ${msg.originalname}`
       );
-    }
-    );
-}, [socket])
+    });
+  }, [socket]);
 
   return (
     <ThemeProvider>
