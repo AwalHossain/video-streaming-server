@@ -130,7 +130,7 @@ export default function VideoUploadPage() {
             </Typography>
             <Stack>
               <ReactPlayer
-                url="http://localhost:4001/video-1677662483082-422318973.m3u8"
+                url="http://127.0.0.1:4001/video-1677858774227-417351750.m3u8"
                 controls
                 playing
                 width="100%"
