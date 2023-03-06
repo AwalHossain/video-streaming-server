@@ -1,5 +1,6 @@
 // @mui
 import { GlobalStyles as MUIGlobalStyles } from '@mui/material';
+import React from 'react';
 
 // ----------------------------------------------------------------------
 

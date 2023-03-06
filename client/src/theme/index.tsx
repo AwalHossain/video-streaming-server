@@ -2,14 +2,15 @@ import PropTypes from 'prop-types';
 import { useMemo } from 'react';
 // @mui
 import { CssBaseline } from '@mui/material';
-import { ThemeProvider as MUIThemeProvider, createTheme, StyledEngineProvider } from '@mui/material/styles';
+import { createTheme, StyledEngineProvider, ThemeProvider as MUIThemeProvider } from '@mui/material/styles';
 //
+import React from 'react';
+import customShadows from './customShadows';
+import GlobalStyles from './globalStyles';
+import componentsOverride from './overrides';
 import palette from './palette';
 import shadows from './shadows';
 import typography from './typography';
-import GlobalStyles from './globalStyles';
-import customShadows from './customShadows';
-import componentsOverride from './overrides';
 
 // ----------------------------------------------------------------------
 
@@ -18,7 +19,7 @@ ThemeProvider.propTypes = {
 };
 
 export default function ThemeProvider({ children }) {
-  const themeOptions = useMemo(
+  const themeOptions: any = useMemo(
     () => ({
       palette,
       shape: { borderRadius: 6 },
