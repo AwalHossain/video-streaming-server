@@ -1,10 +1,18 @@
-import { createContext, useContext, useMemo, useState } from 'react';
-import { io } from 'socket.io-client';
+import React, { createContext, useContext, useMemo, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
 
-const SocketContext = createContext(null);
+interface SocketContextProps {
+  socket: Socket | null;
+}
+interface SocketProviderProps {
+  children: React.ReactNode;
+}
 
-export const SocketProvider = ({ children }) => {
-  const [socket, setSocket] = useState(null);
+
+const SocketContext = createContext<SocketContextProps>({ socket: null });
+
+export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
+  const [socket, setSocket] = useState<Socket | null>(null);
   const [loading, setLoading] = useState(true);
 
   useMemo(() => {
@@ -25,7 +33,7 @@ export const SocketProvider = ({ children }) => {
   }
 
   return (
-    <SocketContext.Provider value={socket}>
+    <SocketContext.Provider value={{ socket }}>
       {children}
     </SocketContext.Provider>
   );
