@@ -1,9 +1,9 @@
-import { useState } from "react";
+import React, { useState } from 'react';
 import { Helmet } from "react-helmet-async";
 // @mui
 import { LoadingButton } from "@mui/lab";
 import {
-  Alert, Button, Container, FormControl, Snackbar, Stack,
+  Alert, AlertColor, Button, Container, FormControl, Snackbar, Stack,
   TextField, Typography
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
@@ -15,7 +15,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-import { useFormik } from "formik";
+import { FormikProps, useFormik } from "formik";
 import * as yup from "yup";
 
 import axios from "axios";
@@ -31,6 +31,17 @@ const StyledContent = styled("div")(({ theme }) => ({
   flexDirection: "column",
   padding: theme.spacing(12, 0),
 }));
+
+interface FormValues {
+  title: string;
+  description: string;
+  visibility: string;
+  thumbnailUrl: string;
+  language: string;
+  recordingDate: Date | null;
+  category: string;
+  videoFile: File | null;
+}
 
 /**
  *  Create a MUI form to save below video properties: 
@@ -49,12 +60,14 @@ const validationSchema = yup.object({
   category: yup.string().required("Category is required"),
 });
 
-export default function VideoUploadPage() {
+
+
+export default function VideoUploadPage(): JSX.Element {
   const [uploadResponse, setUploadResponse] = useState(null);
-  const [alertType, setAlertType] = useState("success");
+  const [alertType, setAlertType] = useState<AlertColor>("success");
 
   // axios post the values to the backend
-  const postToServer = async (values) => {
+  const postToServer = async (values: FormValues) => {
     const { title } = values;
     const videoFile = values.videoFile;
     const formData = new FormData();
@@ -81,7 +94,7 @@ export default function VideoUploadPage() {
     }
   };
 
-  const formik = useFormik({
+  const formik: FormikProps<FormValues> = useFormik<FormValues>({
     initialErrors: {
       videoFile: "Video file is required",
     },
@@ -100,7 +113,9 @@ export default function VideoUploadPage() {
       await postToServer(values);
     },
     validate: (values) => {
-      const errors = {};
+      const errors = {
+        videoFile: "Video file is required"
+      };
       if (!values.videoFile) {
         errors.videoFile = "Video file is required";
       }
@@ -159,7 +174,8 @@ export default function VideoUploadPage() {
                 <TextField
                   value={formik.values.videoFile?.name}
                   error={Boolean(formik.errors?.videoFile)}
-                  helperText={formik.errors?.videoFile}
+                  helperText={String(formik.errors.category)}
+
                 />
                 <TextField
                   id="title"
@@ -196,7 +212,7 @@ export default function VideoUploadPage() {
                     value={formik.values.visibility}
                     onChange={formik.handleChange}
                     error={Boolean(formik.errors.visibility)}
-                    helperText={formik.errors.visibility}
+
                   >
                     <MenuItem value={"public"}>Public</MenuItem>
                     <MenuItem value={"private"}>Private</MenuItem>
@@ -226,7 +242,6 @@ export default function VideoUploadPage() {
                     value={formik.values.language}
                     onChange={formik.handleChange}
                     error={Boolean(formik.errors.language)}
-                    // helperText={formik.errors.language}
                   >
                     <MenuItem value={"English"}>English</MenuItem>
                     <MenuItem value={"Bangla"}>Bangla</MenuItem>
@@ -255,7 +270,6 @@ export default function VideoUploadPage() {
                     label="Category"
                     onChange={formik.handleChange}
                     error={Boolean(formik.errors.category)}
-                    helperText={formik.errors.category}
                   >
                     <MenuItem value={"Education"}>Education</MenuItem>
                     <MenuItem value={"Technology"}>Technology</MenuItem>
