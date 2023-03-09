@@ -8,7 +8,6 @@ import {
 
 // routes
 import Router from "./routes";
-
 // theme
 import ThemeProvider from "./theme";
 
@@ -16,11 +15,10 @@ import ThemeProvider from "./theme";
 import { StyledChart } from "./components/chart";
 import ScrollToTop from "./components/scroll-to-top";
 
-import { Socket } from 'socket.io-client';
 import { useSocket } from "./contexts/SocketContext";
 
 export default function App(): JSX.Element {
-  const socket: Socket = useSocket();
+  const { socket } = useSocket();
   const [wsResponse, setWsResponse] = useState<string | null>(null);
 
   useEffect(() => {
