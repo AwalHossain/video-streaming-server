@@ -3,7 +3,7 @@ import { Helmet } from "react-helmet-async";
 // @mui
 import { LoadingButton } from "@mui/lab";
 import {
-  Alert, AlertColor, Button, Container, FormControl, Snackbar, Stack,
+  Alert, Button, Container, FormControl, Snackbar, Stack,
   TextField, Typography
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
@@ -15,7 +15,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
-import { FormikProps, useFormik } from "formik";
+import { useFormik } from "formik";
 import * as yup from "yup";
 
 import axios from "axios";
@@ -32,16 +32,16 @@ const StyledContent = styled("div")(({ theme }) => ({
   padding: theme.spacing(12, 0),
 }));
 
-interface FormValues {
-  title: string;
-  description: string;
-  visibility: string;
-  thumbnailUrl: string;
-  language: string;
-  recordingDate: Date | null;
-  category: string;
-  videoFile: File | null;
-}
+// interface FormValues {
+//   title: string;
+//   description: string;
+//   visibility: string;
+//   thumbnailUrl: string;
+//   language: string;
+//   recordingDate: Date | null;
+//   category: string;
+//   videoFile: File | null;
+// }
 
 /**
  *  Create a MUI form to save below video properties: 
@@ -62,12 +62,12 @@ const validationSchema = yup.object({
 
 
 
-export default function VideoUploadPage(): JSX.Element {
+export default function VideoUploadPage() {
   const [uploadResponse, setUploadResponse] = useState(null);
-  const [alertType, setAlertType] = useState<AlertColor>("success");
+  const [alertType, setAlertType] = useState("success");
 
   // axios post the values to the backend
-  const postToServer = async (values: FormValues) => {
+  const postToServer = async (values) => {
     const { title } = values;
     const videoFile = values.videoFile;
     const formData = new FormData();
@@ -94,18 +94,18 @@ export default function VideoUploadPage(): JSX.Element {
     }
   };
 
-  const formik: FormikProps<FormValues> = useFormik<FormValues>({
+  const formik = useFormik({
     initialErrors: {
-      videoFile: "Video file is required",
+      videoFile: 'Video file is required',
     },
     initialValues: {
-      title: "title1",
-      description: "desc",
-      visibility: "public",
-      thumbnailUrl: "test",
-      language: "Bangla",
+      title: 'title1',
+      description: 'desc',
+      visibility: 'public',
+      thumbnailUrl: 'test',
+      language: 'Bangla',
       recordingDate: new Date(),
-      category: "Education",
+      category: 'Education',
       videoFile: null,
     },
     validationSchema: validationSchema,
@@ -114,22 +114,21 @@ export default function VideoUploadPage(): JSX.Element {
     },
     validate: (values) => {
       const errors = {
-        videoFile: "Video file is required"
       };
       if (!values.videoFile) {
-        errors.videoFile = "Video file is required";
+        errors.videoFile = 'Video file is required';
       }
       // check videoFile size
       if (values.videoFile?.size > 52428000) {
-        errors.videoFile = "Video file size should be less than 50MB";
+        errors.videoFile = 'Video file size should be less than 50MB';
       }
-
+      console.log(values.videoFile?.type);
       // check videoFile type, must be video/mp4 or video/x-matroska
       if (
-        values.videoFile?.type !== "video/mp4" &&
-        values.videoFile?.type !== "video/x-matroska"
+        values.videoFile?.type !== 'video/mp4' &&
+        values.videoFile?.type !== 'video/webm'
       ) {
-        errors.videoFile = "Video file type should be .mp4 or .mkv";
+        errors.videoFile = 'Video file type should be .mp4 or .webm';
       }
 
       return errors;
@@ -145,27 +144,27 @@ export default function VideoUploadPage(): JSX.Element {
       <>
         <Container>
           <StyledContent>
-            <Typography variant="h4" sx={{ mb: 5 }}>
+            <Typography variant='h4' sx={{ mb: 5 }}>
               Upload video
             </Typography>
             <form onSubmit={formik.handleSubmit}>
               <Stack spacing={3}>
-                <label htmlFor="video">
+                <label htmlFor='video'>
                   <input
-                    style={{ display: "none" }}
-                    name="video"
-                    accept="video/*"
-                    id="video"
-                    type="file"
+                    style={{ display: 'none' }}
+                    name='video'
+                    accept='video/*'
+                    id='video'
+                    type='file'
                     onChange={(e) => {
                       const file = e.currentTarget.files[0];
-                      formik.setFieldValue("videoFile", file);
+                      formik.setFieldValue('videoFile', file);
                     }}
                   />
                   <Button
-                    color="secondary"
-                    variant="contained"
-                    component="span"
+                    color='secondary'
+                    variant='contained'
+                    component='span'
                   >
                     Upload video
                   </Button>
@@ -174,22 +173,21 @@ export default function VideoUploadPage(): JSX.Element {
                 <TextField
                   value={formik.values.videoFile?.name}
                   error={Boolean(formik.errors?.videoFile)}
-                  helperText={String(formik.errors.category)}
-
+                  helperText={formik.errors?.videoFile}
                 />
                 <TextField
-                  id="title"
-                  name="title"
-                  label="Video title"
+                  id='title'
+                  name='title'
+                  label='Video title'
                   value={formik.values.title}
                   onChange={formik.handleChange}
                   error={formik.touched.title && Boolean(formik.errors.title)}
                   helperText={formik.touched.title && formik.errors.title}
                 />
                 <TextField
-                  id="description"
-                  name="description"
-                  label="Video description"
+                  id='description'
+                  name='description'
+                  label='Video description'
                   value={formik.values.description}
                   onChange={formik.handleChange}
                   error={
@@ -201,28 +199,28 @@ export default function VideoUploadPage(): JSX.Element {
                   }
                 />
                 <FormControl fullWidth>
-                  <InputLabel id="visibility-select-label">
+                  <InputLabel id='visibility-select-label'>
                     Visibility
                   </InputLabel>
                   <Select
-                    labelId="visibility-select-label"
-                    id="visibility-simple-select"
-                    name="visibility"
-                    label="Visibility"
+                    labelId='visibility-select-label'
+                    id='visibility-simple-select'
+                    name='visibility'
+                    label='Visibility'
                     value={formik.values.visibility}
                     onChange={formik.handleChange}
                     error={Boolean(formik.errors.visibility)}
-
+                    helperText={formik.errors.visibility}
                   >
-                    <MenuItem value={"public"}>Public</MenuItem>
-                    <MenuItem value={"private"}>Private</MenuItem>
-                    <MenuItem value={"unlisted"}>Unlisted</MenuItem>
+                    <MenuItem value={'public'}>Public</MenuItem>
+                    <MenuItem value={'private'}>Private</MenuItem>
+                    <MenuItem value={'unlisted'}>Unlisted</MenuItem>
                   </Select>
                 </FormControl>
                 <TextField
-                  id="thumbnailUrl"
-                  name="thumbnailUrl"
-                  label="Thumbnail URL"
+                  id='thumbnailUrl'
+                  name='thumbnailUrl'
+                  label='Thumbnail URL'
                   value={formik.values.thumbnailUrl}
                   onChange={formik.handleChange}
                   error={
@@ -234,54 +232,56 @@ export default function VideoUploadPage(): JSX.Element {
                   }
                 />
                 <FormControl fullWidth>
-                  <InputLabel id="language-select-label">Language</InputLabel>
+                  <InputLabel id='language-select-label'>Language</InputLabel>
                   <Select
-                    labelId="language-select-label"
-                    id="language-simple-select"
-                    label="Language"
+                    labelId='language-select-label'
+                    id='language-simple-select'
+                    label='Language'
                     value={formik.values.language}
                     onChange={formik.handleChange}
                     error={Boolean(formik.errors.language)}
+                    helperText={formik.errors.language}
                   >
-                    <MenuItem value={"English"}>English</MenuItem>
-                    <MenuItem value={"Bangla"}>Bangla</MenuItem>
-                    <MenuItem value={"Spanish"}>Spanish</MenuItem>
-                    <MenuItem value={"Hindi"}>Hindi</MenuItem>
-                    <MenuItem value={"Urdu"}>Urdu</MenuItem>
+                    <MenuItem value={'English'}>English</MenuItem>
+                    <MenuItem value={'Bangla'}>Bangla</MenuItem>
+                    <MenuItem value={'Spanish'}>Spanish</MenuItem>
+                    <MenuItem value={'Hindi'}>Hindi</MenuItem>
+                    <MenuItem value={'Urdu'}>Urdu</MenuItem>
                   </Select>
                 </FormControl>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
-                    label="Basic example"
+                    label='Basic example'
                     value={formik.values.recordingDate}
-                    inputFormat="DD/MM/YYYY"
+                    inputFormat='DD/MM/YYYY'
                     onChange={(newValue) => {
-                      formik.setFieldValue("recordingDate", newValue);
+                      formik.setFieldValue('recordingDate', newValue);
                     }}
                     renderInput={(params) => <TextField {...params} />}
                   />
                 </LocalizationProvider>
                 <FormControl fullWidth>
-                  <InputLabel id="category-select-label">Category</InputLabel>
+                  <InputLabel id='category-select-label'>Category</InputLabel>
                   <Select
-                    labelId="category-select-label"
-                    id="category-simple-select"
+                    labelId='category-select-label'
+                    id='category-simple-select'
                     value={formik.values.category}
-                    label="Category"
+                    label='Category'
                     onChange={formik.handleChange}
                     error={Boolean(formik.errors.category)}
+                    helperText={formik.errors.category}
                   >
-                    <MenuItem value={"Education"}>Education</MenuItem>
-                    <MenuItem value={"Technology"}>Technology</MenuItem>
-                    <MenuItem value={"Travel"}>Travel</MenuItem>
-                    <MenuItem value={"Others"}>Others</MenuItem>
+                    <MenuItem value={'Education'}>Education</MenuItem>
+                    <MenuItem value={'Technology'}>Technology</MenuItem>
+                    <MenuItem value={'Travel'}>Travel</MenuItem>
+                    <MenuItem value={'Others'}>Others</MenuItem>
                   </Select>
                 </FormControl>
                 <LoadingButton
                   //fullWidth
-                  size="large"
-                  type="submit"
-                  variant="contained"
+                  size='large'
+                  type='submit'
+                  variant='contained'
                   disabled={formik.isSubmitting || !formik.isValid}
                 >
                   Upload
@@ -295,7 +295,7 @@ export default function VideoUploadPage(): JSX.Element {
                 onClose={() => {
                   setUploadResponse(null);
                 }}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
               >
                 <Alert
                   onClose={() => {
