@@ -10,6 +10,7 @@ import { name } from "./model";
 // import { deleteById, getById, insert, search, update } from "./service";
 
 import { addQueueItem } from "../../queues/queue";
+import { getFakeVideosData } from "./data";
 
 const BASE_URL = `/api/${name}`;
 
@@ -17,10 +18,15 @@ const setupRoutes = (app: Express): void => {
   console.log(`Setting up routes for ${name}`);
 
   // return empty response with success message for the base route
-  // app.get(`${BASE_URL}/`, async (req: Request, res: Response) => {
-  //   console.log(`GET`, req.params);
-  //   res.send({ status: "success", message: "OK", timestamp: new Date() });
-  // });
+  app.get(`${BASE_URL}/`, async (req: Request, res: Response) => {
+    console.log(`GET`, req.params);
+    res.send({
+      status: "success",
+      message: "OK",
+      timestamp: new Date(),
+      data: getFakeVideosData(),
+    });
+  });
 
   // app.get(`${BASE_URL}/detail/:id`, async (req: Request, res: Response) => {
   //   console.log(`GET`, req.params);

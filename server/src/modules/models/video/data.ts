@@ -33,7 +33,7 @@ User:
 	updatedAt
  */
 
-const getFakeVideosData = () => {
+export const getFakeVideosData = () => {
   const videos = [];
   for (let i = 0; i < 10; i++) {
     videos.push({
