@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 // @mui
-import { Box, Card, Link, Typography, Stack } from '@mui/material';
+import { Box, Card, Link, Stack, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 // utils
-import { fCurrency } from '../../../utils/formatNumber';
 // components
-import Label from '../../../components/label';
+import React from 'react';
 import { ColorPreview } from '../../../components/color-utils';
+import Label from '../../../components/label';
 
 // ----------------------------------------------------------------------
 
@@ -21,11 +21,11 @@ const StyledProductImg = styled('img')({
 // ----------------------------------------------------------------------
 
 ShopProductCard.propTypes = {
-  product: PropTypes.object,
+  video: PropTypes.object,
 };
 
-export default function ShopProductCard({ product }) {
-  const { name, cover, price, colors, status, priceSale } = product;
+export default function ShopProductCard({ video }) {
+  const { title: name, thumbnailUrl: cover, viewCount: price, colors, duration: status, publisedAt } = video;
 
   return (
     <Card>
@@ -58,18 +58,11 @@ export default function ShopProductCard({ product }) {
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <ColorPreview colors={colors} />
           <Typography variant="subtitle1">
-            <Typography
-              component="span"
-              variant="body1"
-              sx={{
-                color: 'text.disabled',
-                textDecoration: 'line-through',
-              }}
-            >
-              {priceSale && fCurrency(priceSale)}
-            </Typography>
-            &nbsp;
-            {fCurrency(price)}
+            {publisedAt.toLocaleDateString()}
+          </Typography>
+          <Typography
+          >
+            {price} views
           </Typography>
         </Stack>
       </Stack>

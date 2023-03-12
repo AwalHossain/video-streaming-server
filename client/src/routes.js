@@ -4,13 +4,13 @@ import DashboardLayout from "./layouts/dashboard";
 import SimpleLayout from "./layouts/simple";
 //
 import BlogPage from "./pages/BlogPage";
-import UserPage from "./pages/UserPage";
+import DashboardAppPage from "./pages/DashboardAppPage";
 import LoginPage from "./pages/LoginPage";
 import Page404 from "./pages/Page404";
-import ProductsPage from "./pages/ProductsPage";
-import VideoUploadPage from "./pages/VideoUploadPage";
+import UserPage from "./pages/UserPage";
+import VideoListPage from "./pages/VideoListPage";
 import VideoPlayerPage from "./pages/VideoPlayerPage";
-import DashboardAppPage from "./pages/DashboardAppPage";
+import VideoUploadPage from "./pages/VideoUploadPage";
 
 // ----------------------------------------------------------------------
 
@@ -23,7 +23,7 @@ export default function Router() {
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: "app", element: <DashboardAppPage /> },
         { path: "user", element: <UserPage /> },
-        { path: "products", element: <ProductsPage /> },
+        { path: "videos", element: <VideoListPage /> },
         { path: "blog", element: <BlogPage /> },
         { path: "video-upload", element: <VideoUploadPage /> },
         { path: "video-player", element: <VideoPlayerPage /> },
