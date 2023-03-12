@@ -1,11 +1,12 @@
-import { Helmet } from 'react-helmet-async';
 import { useState } from 'react';
+import { Helmet } from 'react-helmet-async';
 // @mui
 import { Container, Stack, Typography } from '@mui/material';
 // components
-import { ProductSort, ProductList, ProductCartWidget, ProductFilterSidebar } from '../sections/@dashboard/products';
+import { ProductCartWidget, ProductFilterSidebar, ProductList, ProductSort } from '../sections/@dashboard/products';
 // mock
-import PRODUCTS from '../_mock/products';
+import React from 'react';
+import { getFakerVideosData as VIDEOS } from '../_mock/video';
 
 // ----------------------------------------------------------------------
 
@@ -42,7 +43,7 @@ export default function ProductsPage() {
           </Stack>
         </Stack>
 
-        <ProductList products={PRODUCTS} />
+        <ProductList products={VIDEOS} />
         <ProductCartWidget />
       </Container>
     </>
