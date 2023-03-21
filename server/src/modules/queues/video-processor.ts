@@ -50,6 +50,31 @@ const processRawFileToMp4 = async (
   return;
 };
 
+/** Video watermarking function */
+
+export const addWatermark = async (
+  videoPath: string,
+  outputPath: string,
+  watermarkPath: string
+) => {
+  // console.log(
+  //   videoPath,
+  //   "video path is checking",
+  //   outputPath,
+  //   "output path",
+  //   watermarkPath
+  // );
+  ffmpeg(videoPath)
+    .complexFilter([
+      `[0:v]scale=1280:-1[background];`,
+      `[background][1:v]overlay=10:10[watermark]`,
+    ])
+    .outputOptions(["-c:a copy"])
+    .output(outputPath)
+    .on("end", () => console.log("Video processing finished"))
+    .run();
+};
+
 const processMp4ToHls = async (
   filePath: string,
   outputFolder: string,

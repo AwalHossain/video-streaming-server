@@ -4,8 +4,8 @@ export const VIDEO_QUEUE_EVENTS = {
   VIDEO_PROCESSED: "video.processed",
   VIDEO_HLS_CONVERTING: "video.hls-converting",
   VIDEO_HLS_CONVERTED: "video.hls.converted",
-  // VIDEO_WATERMARKING: "video.watermarking",
-  // VIDEO_WATERMARKED: "video.watermarked",
+  VIDEO_WATERMARKING: "video.watermarking",
+  VIDEO_WATERMARKED: "video.watermarked",
 };
 
 export const QUEUE_EVENTS = VIDEO_QUEUE_EVENTS;
