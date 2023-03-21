@@ -44,7 +44,7 @@ const waterMarkingdHandler = async (job: Job) => {
   console.log("i am the watermarking handler!", job.data.path);
   await addWatermark(
     `./${job.data.path}`,
-    `./uploads/waterMarked`,
+    `./uploads/hls`,
     "./uploads/watermark.png"
   );
   return;

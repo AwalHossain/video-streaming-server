@@ -49,27 +49,48 @@ const processRawFileToMp4 = async (
 
   return;
 };
+export const addWatermark = async (
+  filePath: string,
+  outputFolder: string,
+  watermarkPath: string
+): Promise<ProcessedFile> => {
+  try {
+    const fileName = path.basename(filePath);
+    const fileExt = path.extname(filePath);
+    const fileNameWithoutExt = path.basename(filePath, fileExt);
+
+    const outputFileName = `${outputFolder}/${fileNameWithoutExt}.mp4`;
+
+    const command = ffmpeg(filePath)
+      .input(watermarkPath)
+      .complexFilter("[0:v][1:v]overlay=W-w-10:H-h-10");
+
+    await command.output(outputFileName).run();
+
+    console.log(`Video with watermark saved: ${outputFileName}`);
+    return;
+  } catch (error) {
+    console.error("Error while adding watermark to video:", error);
+    throw error;
+  }
+};
 
 /** Video watermarking function */
 
-export const addWatermark = async (
+export const addWatermarek = async (
   videoPath: string,
   outputPath: string,
   watermarkPath: string
 ) => {
-  // console.log(
-  //   videoPath,
-  //   "video path is checking",
-  //   outputPath,
-  //   "output path",
-  //   watermarkPath
-  // );
-  ffmpeg(videoPath)
-    .complexFilter([
-      `[0:v]scale=1280:-1[background];`,
-      `[background][1:v]overlay=10:10[watermark]`,
-    ])
-    .outputOptions(["-c:a copy"])
+  const command = ffmpeg(videoPath);
+  const watermarkSettings = {
+    file: watermarkPath,
+    position: "SE",
+    size: "25%",
+  };
+
+  command
+    .input(watermarkPath)
     .output(outputPath)
     .on("end", () => console.log("Video processing finished"))
     .run();
