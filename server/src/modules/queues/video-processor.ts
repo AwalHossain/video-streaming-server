@@ -15,16 +15,23 @@ interface ProcessedFile {
   outputFileName: string;
 }
 
+interface WatermarkFile {
+  fileName: string;
+  outputFileName: string;
+  watermarkImage: string;
+}
+
 const processRawFileToMp4 = async (
   filePath: string,
   outputFolder: string,
-  jobData: JobData
+  jobData: JobData,
 ): Promise<ProcessedFile> => {
   const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
 
   const outputFileName = `${outputFolder}/${fileNameWithoutExt}.mp4`;
+  
 
   ffmpeg(filePath)
     .output(outputFileName)
@@ -49,6 +56,55 @@ const processRawFileToMp4 = async (
 
   return;
 };
+
+const processMp4ToWatermark = async (
+  filePath: string,
+  outputFolder: string,
+  watermarkImageFilePath: string,
+  jobData: JobData
+
+): Promise<WatermarkFile> => {
+  const fileName = path.basename(filePath);
+  const fileExt = path.extname(filePath);
+  const fileNameWithoutExt = path.basename(filePath, fileExt);
+
+  const outputFileName = `${outputFolder}/${fileNameWithoutExt}.mp4`;
+  // const watermarkImage = fs.readFileSync(watermarkImageFilePath);
+
+  console.log(outputFileName, watermarkImageFilePath,'watermarkImageFilePath');
+
+  ffmpeg(filePath)
+    .input(watermarkImageFilePath)
+    .complexFilter([
+      "[0:v]scale=640:-1[bg];" +
+      "[1:v]scale=iw/10:ih/10[watermark];" +
+      "[bg][watermark]overlay=W-w-10:H-h-10:enable='between(t,0,30)'"
+    ])
+    .output(outputFileName)
+    .on("start", function (commandLine: string) {
+      console.log("Video watermarking has started: " + commandLine);
+    })
+    .on("progress", function (progress: any) {
+      console.log("Processing: " + progress.percent + "% done");
+    }
+    )
+    .on("end", function () {
+      console.log("Finished WaterMarkepd sucessfully");
+      addQueueItem(QUEUE_EVENTS.VIDEO_WATERMARKED, {
+        ...jobData,
+        completed: true,
+        path: outputFileName,
+      });
+    })
+    .on("error", function (err: Error) {
+      console.log("An error occurred: " + err.message);
+    }
+    )
+    .run();
+  
+  return;
+      
+}
 
 const processMp4ToHls = async (
   filePath: string,
@@ -91,4 +147,5 @@ const processMp4ToHls = async (
   return;
 };
 
-export { processRawFileToMp4, processMp4ToHls };
+export { processMp4ToHls, processMp4ToWatermark, processRawFileToMp4 };
+
