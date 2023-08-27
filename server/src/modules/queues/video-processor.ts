@@ -130,7 +130,7 @@ const processMp4ToHls = async (
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
     .on("progress", function (progress: any) {
-      console.log("Processing: " + progress.percent + "% done");
+      // console.log("Processing: " + progress.percent + "% done");
     })
     .on("end", function () {
       console.log("Finished processing hls", outputFileName);

@@ -26,9 +26,13 @@ const setup = async (db: Db) => {
 
   listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
   evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
-    console.log("data i snot recievidn", data);
     io.emit("hello", data);
   });
+
+  evenEmitter.on(NOTIFY_EVENTS.NOTIFY_UPLOAD_PROGRESS, (data) => {
+    io.emit("upload", data);
+  }
+  );
 };
 
 io.on("connection", (socket) => {

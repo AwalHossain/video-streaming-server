@@ -12,6 +12,8 @@ export const QUEUE_EVENTS = VIDEO_QUEUE_EVENTS;
 
 export const NOTIFY_EVENTS = {
   NOTIFY_VIDEO_HLS_CONVERTED: "notify.video.hls.converted",
+  NOTIFY_VIDEO_WATERMARKED: "notify.video.watermarked",
+  NOTIFY_UPLOAD_PROGRESS: "notify.upload.progress",
 };
 
 export const ALL_EVENTS = {

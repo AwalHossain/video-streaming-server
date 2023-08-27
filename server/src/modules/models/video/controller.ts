@@ -5,11 +5,11 @@
 import { Express, NextFunction, Request, Response } from "express";
 import multer from "multer";
 
-import { QUEUE_EVENTS } from "../../queues/constants";
+import { NOTIFY_EVENTS } from "../../queues/constants";
 import { name } from "./model";
 // import { deleteById, getById, insert, search, update } from "./service";
 
-import { addQueueItem } from "../../queues/queue";
+import eventEmitter from "../../../event-manager";
 
 const BASE_URL = `/api/${name}`;
 
@@ -114,6 +114,13 @@ const setupRoutes = (app: Express): void => {
   }).single("video");
 
   const uploadProcessor = (req: Request, res: Response, next: NextFunction) => {
+    let progress = 0;
+    let fileSize = req.headers["content-length"] ? parseInt(req.headers["content-length"] as string) : 0;
+    req.on('data', (chunk) => {
+      progress += chunk.length;
+      eventEmitter.emit(`${NOTIFY_EVENTS.NOTIFY_UPLOAD_PROGRESS}`, `${Math.floor((progress * 100) / fileSize)} `);
+
+    });
     upload(req, res, (err: any) => {
       if (err) {
         console.error(err);
@@ -134,10 +141,10 @@ const setupRoutes = (app: Express): void => {
         console.log("POST upload", JSON.stringify(req.body));
         const payload: any = { ...req.body };
         console.log("user given metadata", "title", payload.title);
-        await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
-          ...payload,
-          ...req.file,
-        });
+        // await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
+        //   ...payload,
+        //   ...req.file,
+        // });
         res
           .status(200)
           .json({ status: "success", message: "Upload success", ...req.file });
@@ -151,3 +158,4 @@ const setupRoutes = (app: Express): void => {
 };
 
 export { setupRoutes };
+

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Helmet } from "react-helmet-async";
 // @mui
 import { LoadingButton } from "@mui/lab";
 import {
-  Alert, Button, Container, FormControl, Snackbar, Stack,
+  Alert, Button, Container, FormControl, LinearProgress, Snackbar, Stack,
   TextField, Typography
 } from "@mui/material";
 import InputLabel from "@mui/material/InputLabel";
@@ -15,10 +15,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
+import axios from "axios";
 import { useFormik } from "formik";
 import * as yup from "yup";
-
-import axios from "axios";
+import { useSocket } from '../contexts/SocketContext';
 
 const StyledContent = styled("div")(({ theme }) => ({
   maxWidth: 600,
@@ -65,7 +65,15 @@ const validationSchema = yup.object({
 export default function VideoUploadPage() {
   const [uploadResponse, setUploadResponse] = useState(null);
   const [alertType, setAlertType] = useState("success");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const { socket } = useSocket();
 
+  useEffect(() => {
+
+    socket.on('upload', (data) => {
+      setUploadProgress(data);
+    });
+  }, [socket]);
   // axios post the values to the backend
   const postToServer = async (values) => {
     const { title } = values;
@@ -83,6 +91,7 @@ export default function VideoUploadPage() {
             Accept: "*/*",
           },
         }
+
       );
       setAlertType("success");
       setUploadResponse(response.data.message);
@@ -134,6 +143,7 @@ export default function VideoUploadPage() {
       return errors;
     },
   });
+  console.log(uploadProgress, 'data uploading io');
 
   return (
     <>
@@ -287,7 +297,13 @@ export default function VideoUploadPage() {
                   Upload
                 </LoadingButton>
               </Stack>
+
             </form>
+            <div>
+      <LinearProgress
+      style={{marginTop: '20px'}}
+      variant="determinate" value={uploadProgress} />
+    </div>
             <Stack>
               <Snackbar
                 open={uploadResponse}
