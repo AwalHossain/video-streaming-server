@@ -9,7 +9,6 @@ import { connect } from "./modules/db/mongo";
 import { setupRoutes } from "./modules/models/video/controller";
 import { updateSchema } from "./modules/models/video/schema";
 import { NOTIFY_EVENTS } from "./modules/queues/constants";
-import { listenQueueEvent } from "./modules/queues/worker";
 
 const PORT: number = 4000;
 const server = http.createServer(app);
@@ -24,7 +23,7 @@ const setup = async (db: Db) => {
   await updateSchema(db);
   setupRoutes(app);
 
-  listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
+  // listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
   evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
     io.emit("hello", data);
   });

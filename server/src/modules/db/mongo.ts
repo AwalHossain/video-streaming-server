@@ -3,7 +3,8 @@ import { MongoClient } from "mongodb";
 let db = null;
 
 const connect = async () => {
-  const client = new MongoClient("mongodb://localhost:27017");
+  const client = new MongoClient(process.env.MONGO_URL);
+  
   await client.connect();
   const db = client.db("videodb");
   /**
@@ -26,3 +27,4 @@ const getDb = async () => {
 // getDb();
 
 export { connect, getDb };
+
