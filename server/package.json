@@ -9,7 +9,7 @@
     "video-processor": "nodemon ./src/queue.ts",
     "video-server": "nodemon ./src/video-server.ts",
     "db": "docker-compose up -d",
-    "server": "concurrently \"npm run web-server\" \"npm run video-server\"",
+    "server": "concurrently \"npm run web-server\" \"npm run video-processor\" \"npm run video-server\"",
     "start": "npm run server"
   },
   "keywords": [],
