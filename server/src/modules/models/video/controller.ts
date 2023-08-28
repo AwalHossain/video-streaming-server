@@ -5,12 +5,13 @@
 import { Express, NextFunction, Request, Response } from "express";
 import multer from "multer";
 import multerS3 from "multer-s3";
-import { NOTIFY_EVENTS } from "../../queues/constants";
+import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
 import { name } from "./model";
 // import { deleteById, getById, insert, search, update } from "./service";
 
 import { S3Client } from "@aws-sdk/client-s3";
 import eventEmitter from "../../../event-manager";
+import { addQueueItem } from "../../queues/queue";
 
 // Set S3 endpoint to DigitalOcean Spaces
 // const spacesEndpoint = new aws.Endpoint('https://mern-video-bucket.sgp1.digitaloceanspaces.com');
@@ -166,10 +167,10 @@ const setupRoutes = (app: Express): void => {
         console.log("POST upload", JSON.stringify(req.body));
         const payload: any = { ...req.body };
         console.log("user given metadata", "title", payload.title);
-        // await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
-        //   ...payload,
-        //   ...req.file,
-        // });
+        await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
+          ...payload,
+          ...req.file,
+        });
         res
           .status(200)
           .json({ status: "success", message: "Upload success", ...req.file });

@@ -1,7 +1,14 @@
 import { Queue } from "bullmq";
 import { ALL_EVENTS as QUEUE_EVENTS } from "./constants";
 
-const redisConnection = { host: "localhost", port: 6379 };
+
+
+const redisConnection = {
+  username: 'default',
+  password: 'T7GZf5gZnx8gCkrGBKlR',
+  host: 'containers-us-west-126.railway.app',
+  port: 5589,
+};
 
 export type QueueItem = {
   completed: boolean;
@@ -32,3 +39,4 @@ const addQueueItem = async (queueName: string, item: QueueItem) => {
 };
 
 export { addQueueItem };
+

@@ -2,31 +2,24 @@ import { QueueEvents, Worker } from "bullmq";
 import { QUEUE_EVENTS } from "./constants";
 import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
-const redisConnection = { host: "localhost", port: 6379 };
+const redisConnection = {
+  username: 'default',
+  password: 'T7GZf5gZnx8gCkrGBKlR',
+  host: 'containers-us-west-126.railway.app',
+  port: 5589,
+};
 
 export const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {
     connection: redisConnection,
   });
 
+  // Uncomment and modify event listeners as needed
   // queueEvents.on("waiting", ({ jobId }) => {
   //   console.log(`A job with ID ${jobId} is waiting`);
   // });
 
-  // queueEvents.on("active", ({ jobId, prev, ...others }) => {
-  //   console.log(
-  //     `Job ${jobId} is now active; previous status was ${prev}`,
-  //     others
-  //   );
-  // });
-
-  // queueEvents.on("completed", ({ jobId, returnvalue }: any) => {
-  //   console.log(`${jobId} has completed and returned.next`, returnvalue.next);
-  // });
-
-  queueEvents.on("failed", ({ jobId, failedReason }) => {
-    console.log(`${jobId} has failed with reason ${failedReason}`);
-  });
+  // ...
 
   const worker = new Worker(
     queueName,
@@ -40,6 +33,7 @@ export const listenQueueEvent = (queueName: string) => {
     { connection: redisConnection }
   );
 
+  // Worker event listeners
   worker.on("completed", (job) => {
     console.log(`${job.id} has completed!`);
   });
@@ -48,7 +42,7 @@ export const listenQueueEvent = (queueName: string) => {
     console.log(`${job.id} has failed with ${err.message}`);
   });
 
-  console.log(queueName, " worker started", new Date().toTimeString());
+  console.log(`${queueName} worker started at ${new Date().toTimeString()}`);
 };
 
 export const setupAllQueueEvent = () => {
