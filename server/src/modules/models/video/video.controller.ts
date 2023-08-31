@@ -4,17 +4,13 @@
 
 import { Express, NextFunction, Request, Response } from "express";
 import multer from "multer";
-import multerS3 from "multer-s3";
-import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
-import { name } from "./model";
+import { QUEUE_EVENTS } from "../../queues/constants";
 // import { deleteById, getById, insert, search, update } from "./service";
 
 import { S3Client } from "@aws-sdk/client-s3";
-import eventEmitter from "../../../event-manager";
 import { addQueueItem } from "../../queues/queue";
 
 // Set S3 endpoint to DigitalOcean Spaces
-// const spacesEndpoint = new aws.Endpoint('https://mern-video-bucket.sgp1.digitaloceanspaces.com');
 // Set S3 endpoint to DigitalOcean Spaces
 
 const s3 = new S3Client({
@@ -27,10 +23,10 @@ const s3 = new S3Client({
   },
 }) as any;
 
-const BASE_URL = `/api/${name}`;
+const BASE_URL = `/api/videos`;
 
 const setupRoutes = (app: Express): void => {
-  console.log(`Setting up routes for ${name}`);
+  console.log(`Setting up routes for videos`);
 
   // return empty response with success message for the base route
   // app.get(`${BASE_URL}/`, async (req: Request, res: Response) => {
@@ -98,15 +94,15 @@ const setupRoutes = (app: Express): void => {
 
   // upload videos handler using multer package routes below.
 
-  // const storage = multer.diskStorage({
-  //   destination: (req: Request, file: Express.Multer.File, cb: Function) => {
-  //     cb(null, "uploads/videos");
-  //   },
-  //   filename: (req: Request, file: Express.Multer.File, cb: Function) => {
-  //     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-  //     cb(null, file.fieldname + "-" + uniqueSuffix);
-  //   },
-  // });
+  const storage = multer.diskStorage({
+    destination: (req: Request, file: Express.Multer.File, cb: Function) => {
+      cb(null, "uploads/videos");
+    },
+    filename: (req: Request, file: Express.Multer.File, cb: Function) => {
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      cb(null, file.fieldname + "-" + uniqueSuffix);
+    },
+  });
 
   const fileFilter = (
     req: Request,
@@ -122,31 +118,14 @@ const setupRoutes = (app: Express): void => {
     }
   };
 
-  
-
   const upload = multer({
-    storage: multerS3({
-      s3: s3,
-      bucket: 'uploads', // Replace with your actual Space name or S3 bucket name
-      acl: 'public-read',
-      key: function (request, file, cb) {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, 'videos/' + uniqueSuffix); // You can adjust the key as needed
-      }
-    }),
-    fileFilter: fileFilter, // Use the fileFilter function here
-    limits: { fileSize: 50000000 } // Specify the limits here
-  }).single('video'); // Change to 'array' or 'fields' depending on your needs
-  
+    dest: "uploads/videos",
+    fileFilter,
+    limits: { fileSize: 50000000 },
+    storage,
+  }).single("video");
 
   const uploadProcessor = (req: Request, res: Response, next: NextFunction) => {
-    let progress = 0;
-    let fileSize = req.headers["content-length"] ? parseInt(req.headers["content-length"] as string) : 0;
-    req.on('data', (chunk) => {
-      progress += chunk.length;
-      eventEmitter.emit(`${NOTIFY_EVENTS.NOTIFY_UPLOAD_PROGRESS}`, `${Math.floor((progress * 100) / fileSize)} `);
-
-    });
     upload(req, res, (err: any) => {
       if (err) {
         console.error(err);

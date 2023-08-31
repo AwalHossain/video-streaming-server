@@ -1,6 +1,6 @@
 import { Db } from "mongodb";
 
-import { name } from "./model";
+import { name } from "./video.model";
 
 const VIDEO_VISIBILITIES = ["Public", "Private", "Unlisted"];
 
@@ -127,3 +127,4 @@ const updateSchema = async (db: Db): Promise<void> => {
 };
 
 export { updateSchema };
+
