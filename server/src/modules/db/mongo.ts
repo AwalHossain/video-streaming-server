@@ -1,32 +1,41 @@
-import { MongoClient } from "mongodb";
+import { log } from "console";
+import { Db, MongoClient } from "mongodb";
 
-let db = null;
+class MongoManager {
+  private static _instance: Db;
 
-const connect = async () => {
-  console.log("connecting to db", process.env.MONGO_URL);
-  
-  const client = new MongoClient(process.env.MONGO_URL);
-  
-  await client.connect();
-  const db = client.db("videodb");
-  /**
-   * insert one document
-   */
-
-  // console.log("connected to db", db.collection("videos2").insertOne("hello"));
-  return db;
-};
-
-// Create a getDb
-
-const getDb = async () => {
-  if (!db) {
-    db = await connect();
+  public static setInstance(instance: Db) {
+    if (!MongoManager._instance) {
+      log('setting instance');
+      MongoManager._instance = instance;
+    }
   }
-  return db;
-};
 
-// getDb();
+  public static get Instance(): Db {
+    return MongoManager._instance;
+  }
 
-export { connect, getDb };
+  public static connect = async (): Promise<Db> => {
+    if (MongoManager._instance) {
+      return MongoManager._instance;
+    }
 
+    const mongoUrl = process.env.MONGO_URL;
+    const client = new MongoClient(mongoUrl);
+
+    try {
+      log('connecting to db');
+      await client.connect();
+      const db = client.db("videodb");
+      log('connected to db');
+      MongoManager.setInstance(db);
+      return db;
+    } catch (error) {
+      console.error('Error connecting to database:', error);
+      throw error;
+    }
+  }
+}
+
+
+export default MongoManager;

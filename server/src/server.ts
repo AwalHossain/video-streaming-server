@@ -1,13 +1,11 @@
 // always suggest for typescript
 import { Request, Response } from "express";
 import http from "http";
-import { Db } from "mongodb";
 import { Server } from "socket.io";
 import app from "./app";
 import evenEmitter from "./event-manager";
-import { connect } from "./modules/db/mongo";
-import { setupRoutes } from "./modules/models/video/controller";
-import { updateSchema } from "./modules/models/video/schema";
+import MongoManager from "./modules/db/mongo";
+import { setupRoutes } from "./modules/models/video/video.controller";
 import { NOTIFY_EVENTS } from "./modules/queues/constants";
 
 const PORT: number = 4000;
@@ -19,8 +17,8 @@ const io = new Server(server, {
   },
 });
 
-const setup = async (db: Db) => {
-  await updateSchema(db);
+const setup = async () => {
+  // await updateSchema(db);
   setupRoutes(app);
 
   // listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
@@ -55,8 +53,8 @@ io.on("connection", (socket) => {
 
 server.listen(PORT, async () => {
   console.log(`listening on port ${PORT}`);
-  const db = await connect();
-  await setup(db);
+  await MongoManager.connect();
+  await setup();
   console.log("application setup completed");
 
   app.use("/", (req: Request, res: Response) => {
