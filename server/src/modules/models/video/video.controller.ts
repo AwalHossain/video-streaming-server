@@ -23,7 +23,7 @@ const s3 = new S3Client({
   },
 }) as any;
 
-const BASE_URL = `/api/videos`;
+const BASE_URL = `/api/videos2`;
 
 const setupRoutes = (app: Express): void => {
   console.log(`Setting up routes for videos`);

@@ -26,7 +26,6 @@ const processRawFileToMp4 = async (
   outputFolder: string,
   jobData: JobData,
 ): Promise<ProcessedFile> => {
-  const fileName = path.basename(filePath);
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
 
@@ -41,9 +40,10 @@ const processRawFileToMp4 = async (
     .on("progress", function (progress: any) {
       console.log("Processing: " + progress.percent + "% done");
     })
-    .on("end", function () {
+    .on("end", async function () {
       console.log("Finished processing");
-      addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSED, {
+      
+    await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSED, {
         ...jobData,
         completed: true,
         path: outputFileName,
@@ -54,8 +54,43 @@ const processRawFileToMp4 = async (
     })
     .run();
 
+    generateThumbnail(filePath, `./uploads/thumbnails`, {
+      ...jobData,
+      completed: true,
+    });
+
   return;
 };
+
+const generateThumbnail = async (
+  filePath: string,
+  outputFolder: string,
+  jobData: JobData
+): Promise<ProcessedFile> => {
+  const fileExt = path.extname(filePath);
+  const fileNameWithoutExt = path.basename(filePath, fileExt);
+  const thumbnailFileName =  `${fileNameWithoutExt}.png`;
+  const outputFileName = `${outputFolder}/${thumbnailFileName}`;
+  console.log(thumbnailFileName, 'thumbnailFileName');
+    ffmpeg(filePath)
+    .screenshots({
+      timestamps: ['00:01'],
+      filename:thumbnailFileName,
+      folder: `${outputFolder}`,
+      // size: "320x240",
+    })
+    .on('end', async function () {
+      console.log("hthumnail generated!",jobData.path);
+    //   await addQueueItem(QUEUE_EVENTS.VIDEO_THUMBNAIL_GENERATED, {
+    //     ...jobData,
+    //     completed: true,
+    //     path: thumbnailFileName
+    //   });
+    })
+  return;   
+
+};
+
 
 const processMp4ToWatermark = async (
   filePath: string,
@@ -146,6 +181,8 @@ const processMp4ToHls = async (
 
   return;
 };
+
+
 
 export { processMp4ToHls, processMp4ToWatermark, processRawFileToMp4 };
 
