@@ -1,15 +1,17 @@
 // always suggest for typescript
-import { Request, Response } from "express";
 import http from "http";
 import { Server } from "socket.io";
 import app from "./app";
 import evenEmitter from "./event-manager";
 import MongoManager from "./modules/db/mongo";
-import { setupRoutes } from "./modules/models/video/video.controller";
-import { NOTIFY_EVENTS } from "./modules/queues/constants";
 
-const PORT: number = 4000;
+import { NOTIFY_EVENTS } from "./modules/queues/constants";
+import { listenQueueEvent } from "./modules/queues/worker";
+
+const PORT: number = 5000;
 const server = http.createServer(app);
+
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -19,9 +21,9 @@ const io = new Server(server, {
 
 const setup = async () => {
   // await updateSchema(db);
-  setupRoutes(app);
+  // setupRoutes(app);
 
-  // listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
+  listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
   evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
     io.emit("hello", data);
   });
@@ -57,11 +59,11 @@ server.listen(PORT, async () => {
   await setup();
   console.log("application setup completed");
 
-  app.use("/", (req: Request, res: Response) => {
-    console.log(`request received at ${new Date()}`);
-    console.log("req", req.body);
-    res.send(`request received at ${new Date()}`);
-  });
+  // app.use("/", (req: Request, res: Response) => {
+  //   console.log(`request received at ${new Date()}`);
+  //   console.log("req", req.body);
+  //   res.send(`request received at ${new Date()}`);
+  // });
 
   console.log("application started", new Date().toTimeString());
 });
