@@ -1,12 +1,13 @@
 /** execute function will take a filePath and run  ffmpeg command to convert it to mp4 */
 import ffmpeg from "fluent-ffmpeg";
+import fs from "fs";
 import path from "path";
 import { QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
-
 interface JobData {
   completed: boolean;
   path: string;
+  destination: string;
   // other properties
 }
 
@@ -71,7 +72,11 @@ const processRawFileToMp4WithWatermark = async (
     })
     .run();
 
-  generateThumbnail(filePath, `./uploads/thumbnails`, {
+    const folderName = jobData.destination.split("/")[1];
+  const uploadPath = `uploads/${folderName}/thumbnails`;
+  fs.mkdirSync(uploadPath, { recursive: true });
+
+  generateThumbnail(filePath, uploadPath, {
     ...jobData,
     completed: true,
   });
@@ -147,11 +152,11 @@ const generateThumbnail = async (
     })
     .on('end', async function () {
       console.log("hthumnail generated!",jobData.path);
-    //   await addQueueItem(QUEUE_EVENTS.VIDEO_THUMBNAIL_GENERATED, {
-    //     ...jobData,
-    //     completed: true,
-    //     path: thumbnailFileName
-    //   });
+      await addQueueItem(QUEUE_EVENTS.VIDEO_THUMBNAIL_GENERATED, {
+        ...jobData,
+        completed: true,
+        path: thumbnailFileName
+      });
     })
   return;   
 
@@ -182,7 +187,7 @@ const processMp4ToHls = async (
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
     .on("progress", function (progress: any) {
-      // console.log("Processing: " + progress.percent + "% done");
+      console.log("hls Processing: " + progress.percent + "% done");
     })
     .on("end", function () {
       console.log("Finished processing hls", outputFileName);

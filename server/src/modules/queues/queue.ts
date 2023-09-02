@@ -32,6 +32,11 @@ const addQueueItem = async (queueName: string, item: QueueItem) => {
   if (!queue) {
     throw new Error(`queue ${queueName} not found from queues file`);
   }
+
+  if(QUEUE_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED === queueName) {
+    console.log('video notify',);
+  }
+
   await queue.queueObj.add(queueName, item, {
     removeOnComplete: true,
     removeOnFail: false,
