@@ -8,6 +8,7 @@ import { QUEUE_EVENTS } from "../../queues/constants";
 // import { deleteById, getById, insert, search, update } from "./service";
 
 import { S3Client } from "@aws-sdk/client-s3";
+import fs from "fs";
 import { addQueueItem } from "../../queues/queue";
 
 // Set S3 endpoint to DigitalOcean Spaces
@@ -96,7 +97,10 @@ const setupRoutes = (app: Express): void => {
 
   const storage = multer.diskStorage({
     destination: (req: Request, file: Express.Multer.File, cb: Function) => {
-      cb(null, "uploads/videos");
+      const folderName = file.originalname.split(".")[0] + "_" + Date.now();
+      const uploadPath = `uploads/${folderName}/videos`;
+      fs.mkdirSync(uploadPath, { recursive: true });
+      cb(null, uploadPath);
     },
     filename: (req: Request, file: Express.Multer.File, cb: Function) => {
       const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
@@ -145,7 +149,7 @@ const setupRoutes = (app: Express): void => {
       try {
         console.log("POST upload", JSON.stringify(req.body));
         const payload: any = { ...req.body };
-        console.log("user given metadata", "title", payload.title);
+        console.log("user given metadata",req.file, "title", payload);
         await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
           ...payload,
           ...req.file,
