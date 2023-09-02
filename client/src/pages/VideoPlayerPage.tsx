@@ -60,7 +60,7 @@ export default function VideoUploadPage() {
             </Typography>
             <Stack>
               <ReactPlayer
-                url="https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/video-1693269946903-962122928.m3u8"
+                url="http://localhost:9000/video-1693476194401-185214718_720p.m3u8"
                 controls
                 playing
                 width="100%"

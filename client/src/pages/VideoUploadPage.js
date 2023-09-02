@@ -83,7 +83,7 @@ export default function VideoUploadPage() {
     formData.append("video", videoFile);
     try {
       const response = await axios.post(
-        "http://127.0.0.1:4000/api/videos2/upload",
+        "http://127.0.0.1:5000/api/v1/videos/upload",
         formData,
         {
           headers: {
