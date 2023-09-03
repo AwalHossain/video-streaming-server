@@ -1,37 +1,21 @@
 // const { ObjectId } = require("mongodb");
 // const { Video, name } = require("./model");
 
+import { Video } from "./video.model";
+
 // // TODO: add logging
 
-// const insert = async (document) => {
-//   try {
-//     const result = await Video.insertOne(document);
-//     return result;
-//   } catch (error) {
-//     if (error.code === 121) {
-//       console.log(
-//         JSON.stringify(
-//           error.errInfo.details.schemaRulesNotSatisfied.find(
-//             (x) => x.operatorName == "properties"
-//           ).propertiesNotSatisfied
-//         )
-//       );
-//       const errors = error.errInfo.details.schemaRulesNotSatisfied.find(
-//         (x) => x.operatorName == "properties"
-//       ).propertiesNotSatisfied;
-//       const reasons = errors.map((e) => {
-//         return {
-//           property: e.propertyName,
-//           description: e.description,
-//           errors: e.details.map((d) => d.reason),
-//           rawErrors: e.details,
-//         };
-//       });
-//       return new Error(JSON.stringify(reasons));
-//     }
-//     return error;
-//   }
-// };
+const insert = async (document:any ) => {
+    console.log("inserting document",);
+    
+  try {
+    const result = await Video.create(document);
+    return result;
+  } catch (error) {
+ 
+    return error;
+  }
+};
 
 // // TODO: use regex or like search
 // const search = async (searchObject) => {
@@ -83,3 +67,11 @@
 //   update,
 //   deleteById,
 // };
+
+
+
+export const VideoService = {
+    insert,
+    // search,
+    // getById,
+}
