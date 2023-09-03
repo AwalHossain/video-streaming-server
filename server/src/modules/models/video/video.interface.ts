@@ -1,6 +1,6 @@
-export type IVideoInfo = {
+export type IPayload = {
   [key: string]: any;
-  originalname: string;
+  originalName: string;
   fileName: string;
   recordingData: number;
   videoLink: string;

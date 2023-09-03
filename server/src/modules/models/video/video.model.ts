@@ -1,4 +1,5 @@
 import mongoose, { model } from "mongoose";
+import { VIDEO_STATUS, VIDEO_VISIBILITIES } from "./video.constant";
 
 const VideoSchema = new mongoose.Schema({
   title: {
@@ -12,11 +13,6 @@ const VideoSchema = new mongoose.Schema({
     type: Number,
     min: 0,
     default: 0,
-  },
-  visibility: {
-    type: String,
-    enum: ["public", "private", "unlisted"],
-    required: true,
   },
   playlistId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -57,7 +53,27 @@ const VideoSchema = new mongoose.Schema({
   thumbnailUrl: {
     type: String,
   },
-});
+  history: {
+    type: Array,
+    default: [],
+  },
+  status: {
+    type: String,
+    enum: Object.values(VIDEO_STATUS),
+    default: VIDEO_STATUS.PENDING,
+  },
+  visibility: {
+    type: String,
+    enum: Object.values(VIDEO_VISIBILITIES),
+    default: VIDEO_VISIBILITIES.PUBLIC,
+    },
+
+},
+{
+    timestamps: true,
+}
+
+);
 
 export const Video = model("Video", VideoSchema);
 
