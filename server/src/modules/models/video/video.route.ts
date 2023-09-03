@@ -11,6 +11,10 @@ uploadProcessor,
 VideoController.uploadVideo
 )
 
+router.patch('/updateHistory/:id',
+VideoController.updateHistory
+)
+
 
 
 export const VideoRoutes = router;
