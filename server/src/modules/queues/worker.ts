@@ -1,4 +1,5 @@
 import { QueueEvents, Worker } from "bullmq";
+import setupVideoHandler from "../models/video/video.handler";
 import { QUEUE_EVENTS } from "./constants";
 import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
@@ -34,9 +35,9 @@ export const listenQueueEvent = (queueName: string) => {
   );
 
   // Worker event listeners
-  worker.on("completed", (job) => {
-    console.log(`${job.id} has completed!`);
-  });
+  // worker.on("completed", (job) => {
+  //   console.log(`${job.id} has completed!`);
+  // });
 
   worker.on("failed", (job, err) => {
     console.log(`${job.id} has failed with ${err.message}`);
@@ -49,4 +50,7 @@ export const setupAllQueueEvent = () => {
   Object.values(QUEUE_EVENTS).map((queueName) => {
     listenQueueEvent(queueName);
   });
+
+  setupVideoHandler();
+  return true;
 };

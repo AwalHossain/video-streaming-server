@@ -1,7 +1,7 @@
 import { Queue } from "bullmq";
 import { ALL_EVENTS as QUEUE_EVENTS } from "./constants";
 
-
+import eventEmitter from "../../event-manager";
 
 const redisConnection = {
   username: 'default',
@@ -33,9 +33,11 @@ const addQueueItem = async (queueName: string, item: QueueItem) => {
     throw new Error(`queue ${queueName} not found from queues file`);
   }
 
-  if(QUEUE_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED === queueName) {
-    console.log('video notify',);
-  }
+  // if(QUEUE_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED === queueName) {
+  //   console.log('AddQuueeue ',queueName, item);
+  // }
+
+  eventEmitter.emit(queueName, item);
 
   await queue.queueObj.add(queueName, item, {
     removeOnComplete: true,
