@@ -3,8 +3,9 @@ import http from "http";
 import { Server } from "socket.io";
 import app from "./app";
 import evenEmitter from "./event-manager";
-import MongoManager from "./modules/db/mongo";
+import { MongoManager } from "./modules/db/mongo";
 
+import mongoose from "mongoose";
 import { NOTIFY_EVENTS } from "./modules/queues/constants";
 import { listenQueueEvent } from "./modules/queues/worker";
 
@@ -53,9 +54,31 @@ io.on("connection", (socket) => {
 //   console.log("listening on *:4000");    P
 // });
 
+
+// Import necessary modules and other code as needed
+
+// Initialize the MongoDB connection in your application entry point.
+const initializeMongoDB = async () => {
+  try {
+    await MongoManager.connect();
+    console.log('MongoDB connection initialized');
+
+  } catch (error) {
+    console.error('Error initializing MongoDB connection:', error);
+  }
+};
+
+// Call the initialization function when your application starts.
+
+// ... rest of your code
+
+
+
 server.listen(PORT, async () => {
   console.log(`listening on port ${PORT}`);
-  await MongoManager.connect();
+  // initializeMongoDB();
+
+  await mongoose.connect(process.env.MONGO_URL)
   await setup();
   console.log("application setup completed");
 
