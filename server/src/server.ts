@@ -1,17 +1,18 @@
 // always suggest for typescript
-import { Request, Response } from "express";
 import http from "http";
-import { Db } from "mongodb";
 import { Server } from "socket.io";
 import app from "./app";
 import evenEmitter from "./event-manager";
-import { connect } from "./modules/db/mongo";
-import { setupRoutes } from "./modules/models/video/controller";
-import { updateSchema } from "./modules/models/video/schema";
-import { NOTIFY_EVENTS } from "./modules/queues/constants";
+import { MongoManager } from "./modules/db/mongo";
 
-const PORT: number = 4000;
+import mongoose from "mongoose";
+import { NOTIFY_EVENTS } from "./modules/queues/constants";
+import { listenQueueEvent } from "./modules/queues/worker";
+
+const PORT: number = 5000;
 const server = http.createServer(app);
+
+
 const io = new Server(server, {
   cors: {
     origin: "*",
@@ -19,11 +20,11 @@ const io = new Server(server, {
   },
 });
 
-const setup = async (db: Db) => {
-  await updateSchema(db);
-  setupRoutes(app);
+const setup = async () => {
+  // await updateSchema(db);
+  // setupRoutes(app);
 
-  // listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
+  listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
   evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, (data) => {
     io.emit("hello", data);
   });
@@ -53,17 +54,39 @@ io.on("connection", (socket) => {
 //   console.log("listening on *:4000");    P
 // });
 
+
+// Import necessary modules and other code as needed
+
+// Initialize the MongoDB connection in your application entry point.
+const initializeMongoDB = async () => {
+  try {
+    await MongoManager.connect();
+    console.log('MongoDB connection initialized');
+
+  } catch (error) {
+    console.error('Error initializing MongoDB connection:', error);
+  }
+};
+
+// Call the initialization function when your application starts.
+
+// ... rest of your code
+
+
+
 server.listen(PORT, async () => {
   console.log(`listening on port ${PORT}`);
-  const db = await connect();
-  await setup(db);
+  // initializeMongoDB();
+
+  await mongoose.connect(process.env.MONGO_URL)
+  await setup();
   console.log("application setup completed");
 
-  app.use("/", (req: Request, res: Response) => {
-    console.log(`request received at ${new Date()}`);
-    console.log("req", req.body);
-    res.send(`request received at ${new Date()}`);
-  });
+  // app.use("/", (req: Request, res: Response) => {
+  //   console.log(`request received at ${new Date()}`);
+  //   console.log("req", req.body);
+  //   res.send(`request received at ${new Date()}`);
+  // });
 
   console.log("application started", new Date().toTimeString());
 });

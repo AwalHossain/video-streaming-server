@@ -1,30 +1,47 @@
-import { MongoClient } from "mongodb";
+import * as fs from 'fs';
+import { Db, MongoClient } from 'mongodb';
+import * as path from 'path';
 
-let db = null;
+// Singleton design pattern
+class MongoManager {
+  private static instance: Db | null = null;
 
-const connect = async () => {
-  const client = new MongoClient(process.env.MONGO_URL);
-  
-  await client.connect();
-  const db = client.db("videodb");
-  /**
-   * insert one document
-   */
-
-  // console.log("connected to db", db.collection("videos2").insertOne("hello"));
-  return db;
-};
-
-// Create a getDb
-
-const getDb = async () => {
-  if (!db) {
-    db = await connect();
+  public static async setInstance(instance: Db) {
+    if (!MongoManager.instance) {
+      console.log('setting instance');
+      MongoManager.instance = instance;
+    }
   }
-  return db;
-};
 
-// getDb();
+  public static get Instance() {
+    return MongoManager.instance;
+  }
 
-export { connect, getDb };
+  public static updateSchemas = async () => {
+    const directoryPath = path.join(__dirname, 'schemas');
+    const files = fs.readdirSync(directoryPath);
+    for (const file of files) {
+      const filePath = path.join(directoryPath, file);
+      const { updateSchema } = require(filePath) as { updateSchema: (db: Db) => Promise<void> };
+      if (updateSchema) await updateSchema(MongoManager.instance!);
+    }
+  };
+
+  public static connect = async () => {
+    if (MongoManager.instance) return MongoManager.instance;
+
+    const mongoUrl = process.env.MONGO_URL ?? 'mongodb://localhost:27017';
+    const client = new MongoClient(mongoUrl);
+    console.log('connecting to MongoDB');
+    await client.connect();
+    const db = client.db('videodb');
+    console.log('connected to MongoDB');
+    await MongoManager.setInstance(db);
+    await MongoManager.updateSchemas();
+    return db;
+  };
+}
+
+// Export the TypeScript version
+export { MongoManager };
 

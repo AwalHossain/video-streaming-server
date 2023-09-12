@@ -57,10 +57,11 @@ export default function VideoUploadPage() {
           <StyledContent>
             <Typography variant="h4" sx={{ mb: 5 }}>
               Upload video
-            </Typography>
+            </Typography> 
+            <img src="https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/writing-letters-to-my-wife-from-now-shorts-lifestyle-compassion-lovestory-1280-ytshorts_1693759622594/video-1693759622608-479858865.png" />
             <Stack>
               <ReactPlayer
-                url="http://127.0.0.1:4001/video-1692893985223-430808604.m3u8"
+                url="https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/writing-letters-to-my-wife-from-now-shorts-lifestyle-compassion-lovestory-1280-ytshorts_1693759622594/video-1693759622608-479858865.m3u8"
                 controls
                 playing
                 width="100%"

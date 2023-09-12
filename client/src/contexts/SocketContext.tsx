@@ -16,7 +16,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useMemo(() => {
-    const newSocket = io('http://127.0.0.1:4000');
+    const newSocket = io('http://127.0.0.1:5000');
 
     newSocket.on('connect', () => {
       setSocket(newSocket);
