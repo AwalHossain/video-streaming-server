@@ -31,7 +31,6 @@ const processingHandler = async (job: Job) => {
       completed: true,
       next: QUEUE_EVENTS.VIDEO_PROCESSED,
     },
-    './uploads/img/player.png'
   );
 
   return;

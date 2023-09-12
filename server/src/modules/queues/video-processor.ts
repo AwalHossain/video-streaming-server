@@ -35,6 +35,9 @@ const processRawFileToMp4WithWatermark = async (
 
   const ffmpegCommand = ffmpeg(filePath).output(outputFileName);
 
+  console.log(watermarkImageFilePath, "watermarkImageFilePath");
+  
+
   if (watermarkImageFilePath) {
     ffmpegCommand.input(watermarkImageFilePath).complexFilter([
       "[0:v]scale=640:-1[bg];" +
