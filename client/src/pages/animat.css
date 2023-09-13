@@ -1,0 +1,71 @@
+/* Rocket container styles */
+.rocket-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    /* Adjust the height as needed */
+}
+
+/* Rocket animation styles */
+.rocket {
+    width: 50px;
+    height: 100px;
+    position: relative;
+    animation: moveRocket 2s linear infinite;
+    /* Adjust animation duration and type */
+}
+
+/* Rocket body styles */
+.body {
+    width: 20px;
+    height: 60px;
+    background-color: #777;
+    /* Rocket body color */
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 5px;
+}
+
+/* Rocket fire styles (animated) */
+.fire {
+    width: 10px;
+    height: 20px;
+    background-color: #f00;
+    /* Fire color */
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 50% 50% 0 0;
+    animation: rocketFire 0.5s linear infinite alternate;
+    /* Adjust animation duration and type */
+}
+
+/* Keyframes for rocket movement */
+@keyframes moveRocket {
+    0% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+/* Keyframes for rocket fire */
+@keyframes rocketFire {
+    0% {
+        transform: scaleY(1);
+    }
+
+    100% {
+        transform: scaleY(1.2);
+    }
+}
