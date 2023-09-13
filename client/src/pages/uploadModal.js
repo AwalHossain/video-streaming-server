@@ -6,10 +6,12 @@ import {
     Paper,
     Typography,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 import axios from 'axios';
-import { useFormik } from 'formik';
 import React, { useState } from 'react';
+import RocketAnimation from './RocketAnimation';
+
 
 const UploadModalContainer = styled(Paper)(({ theme }) => ({
     display: 'flex',
@@ -51,57 +53,52 @@ const UploadButton = styled(Button)(({ theme }) => ({
 }));
 
 export const UploadModal = ({ open, onClose }) => {
+    const [uploading, setUploading] = useState(false); // State to track if upload is in progress
+    const [showForm, setShowForm] = useState(false);
     const [alertType, setAlertType] = useState('success');
+    const theme = useTheme();
+    // Inside your component
+    const handleFileSelect = async (event) => {
+        const selectedFile = event.target.files[0];
+        console.log('selectedFile', selectedFile);
+        if (selectedFile) {
+            try {
+                const formData = new FormData();
+                formData.append('title', 'My video title');
+                formData.append('video', selectedFile);
+                setUploading(true); // Start the rocket animation
 
-    const postToServer = async (values) => {
-        const { title } = values;
-        const videoFile = values.videoFile;
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('video', videoFile);
-        try {
-            const response = await axios.post(
-                'http://127.0.0.1:5000/api/v1/videos/upload',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Accept: '*/*',
-                    },
+                const response = await axios.post(
+                    "http://127.0.0.1:5000/api/v1/videos/upload",
+                    formData,
+                    {
+                        headers: {
+                            "Content-Type": "multipart/form-data",
+                            Accept: "*/*",
+                        },
+                    }
+
+                );
+                setAlertType("success");
+                console.log(response);
+                if (response.status === 200) {
+                    // Handle successful upload
+                    console.log('Upload successful');
+                    setUploading(false); // Stop the rocket animation
+                    // Show the form after a delay (1 second)
+                    setTimeout(() => {
+                        setShowForm(true);
+                    }, 1000);
+                } else {
+                    // Handle upload error
+                    console.error('Upload failed');
                 }
-            );
-            setAlertType('success');
-            console.log(response);
-        } catch (error) {
-            console.log(error);
-            setAlertType('error');
+            } catch (error) {
+                console.error('Upload error:', error);
+            }
         }
     };
 
-    const formik = useFormik({
-        initialValues: {
-            title: '',
-            videoFile: null,
-        },
-        onSubmit: async (values) => {
-            await postToServer(values);
-        },
-        validate: (values) => {
-            const errors = {};
-            if (!values.videoFile) {
-                errors.videoFile = 'Video file is required';
-            }
-            // check videoFile type, must be video/mp4 or video/x-matroska
-            if (
-                values.videoFile?.type !== 'video/mp4' &&
-                values.videoFile?.type !== 'video/webm'
-            ) {
-                errors.videoFile = 'Video file type should be .mp4 or .webm';
-            }
-
-            return errors;
-        },
-    });
 
     return (
         <Modal open={open} onClose={onClose}>
@@ -125,41 +122,46 @@ export const UploadModal = ({ open, onClose }) => {
                         marginTop: '20px',
                     }}
                 >
-                    <UploadButton variant="contained" color="primary">
-                        <form onSubmit={formik.handleSubmit}>
-                            <label htmlFor="videoFile">
-                                <input
-                                    id="videoFile"
-                                    name="videoFile"
-                                    type="file"
-                                    onChange={(event) => {
-                                        formik.setFieldValue(
-                                            'videoFile',
-                                            event.currentTarget.files[0]
-                                        );
-                                    }}
-                                    style={{ display: 'none' }}
-                                />
-                                <Button
-                                    variant="contained"
-                                    color="secondary"
-                                    component="span"
-                                >
-                                    Upload video
-                                </Button>
-                            </label>
+                    {uploading ? (
+                        <div>
+                            {/* Display rocket animation or loading indicator here */}
                             <Typography variant="body2" component="p">
-                                {formik.values.videoFile?.name}
+                                Uploading... <RocketAnimation /> {/* Replace with your animation component */}
                             </Typography>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={!formik.isValid || formik.isSubmitting}
-                            >
-                                Upload
-                            </Button>
-                        </form>
-                    </UploadButton>
+                        </div>
+                    ) : showForm ? (
+                        // Show the form after the upload is complete
+                        <p >form</p>
+                    ) : (
+                        <div>
+                            <input
+                                type="file"
+                                id="fileInput"
+                                style={{ display: 'none' }}
+                                onChange={handleFileSelect}
+                                accept="video/*"
+                            />
+
+                            <label htmlFor="fileInput">
+                                <div
+                                    style={{
+                                        marginTop: theme.spacing(2),
+                                        marginBottom: theme.spacing(2),
+                                        width: '100%',
+                                        // Add any other custom styles you want here
+                                        backgroundColor: 'blue',
+                                        color: 'white',
+                                        padding: '10px',
+                                        textAlign: 'center',
+                                        cursor: 'pointer',
+                                    }}
+                                >
+                                    Select File
+                                </div>
+                            </label>
+                        </div>
+                    )}
+
                 </div>
                 <Typography variant="body2" component="p">
                     By submitting your videos to YouTube, you acknowledge that you agree
