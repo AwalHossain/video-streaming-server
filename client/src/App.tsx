@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import {
   Alert,
@@ -15,21 +15,21 @@ import ThemeProvider from "./theme";
 import { StyledChart } from "./components/chart";
 import ScrollToTop from "./components/scroll-to-top";
 
-import { useSocket } from "./contexts/SocketContext";
 
 export default function App(): JSX.Element {
-  const { socket } = useSocket();
+  // const { socket } = useSocket();
   const [wsResponse, setWsResponse] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log("socket connect tolen d", socket.id);
-    socket.on("hello", (msg: { title: string; originalname: string }) => {
-      console.log("hello", msg);
-      setWsResponse(
-        `Video ${msg.title} HLS conversion completed as ${msg.originalname}`
-      );
-    });
-  }, [socket]);
+  // useEffect(() => {
+  //   if (socket) {
+  //     socket.on("hello", (msg: { title: string; originalname: string }) => {
+  //       console.log("hello", msg);
+  //       setWsResponse(
+  //         `Video ${msg.title} HLS conversion completed as ${msg.originalname}`
+  //       );
+  //     });
+  //   }
+  // }, [socket]);
 
   return (
     <ThemeProvider>
