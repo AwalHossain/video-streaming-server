@@ -9,8 +9,10 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { styled } from '@mui/system';
 import axios from 'axios';
+import Lottie from "lottie-react";
 import React, { useState } from 'react';
-import RocketAnimation from './RocketAnimation';
+import VideoForm from './VideoForm';
+import rocket from './rocket.json';
 
 
 const UploadModalContainer = styled(Paper)(({ theme }) => ({
@@ -86,9 +88,6 @@ export const UploadModal = ({ open, onClose }) => {
                     console.log('Upload successful');
                     setUploading(false); // Stop the rocket animation
                     // Show the form after a delay (1 second)
-                    setTimeout(() => {
-                        setShowForm(true);
-                    }, 1000);
                 } else {
                     // Handle upload error
                     console.error('Upload failed');
@@ -99,101 +98,124 @@ export const UploadModal = ({ open, onClose }) => {
         }
     };
 
+    const defaultOptions = {
+        loop: false,
+        autoplay: true,
+
+    };
+
+    const handleAnimationComplete = () => {
+        onClose();
+        setShowForm(true);
+        console.log('Animation completed');
+    }
 
     return (
-        <Modal open={open} onClose={onClose}>
-            <UploadModalContainer elevation={3}>
-                <CloseIconButton onClick={onClose}>
-                    <CloseIcon />
-                </CloseIconButton>
-                <Typography variant="h6">Upload Video</Typography>
-                <Typography variant="body1" component="p">
-                    Drag and drop video files to upload
-                </Typography>
-                <Typography variant="body2" component="p">
-                    Your videos will be private until you publish them.
-                </Typography>
-                <div
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginTop: '20px',
-                    }}
-                >
-                    {uploading ? (
-                        <div>
-                            {/* Display rocket animation or loading indicator here */}
-                            <Typography variant="body2" component="p">
-                                Uploading... <RocketAnimation /> {/* Replace with your animation component */}
-                            </Typography>
-                        </div>
-                    ) : showForm ? (
-                        // Show the form after the upload is complete
-                        <p >form</p>
-                    ) : (
-                        <div>
-                            <input
-                                type="file"
-                                id="fileInput"
-                                style={{ display: 'none' }}
-                                onChange={handleFileSelect}
-                                accept="video/*"
-                            />
+        <>
+            <Modal open={open} onClose={onClose}>
+                <UploadModalContainer elevation={3}>
+                    <CloseIconButton onClick={onClose}>
+                        <CloseIcon />
+                    </CloseIconButton>
+                    <Typography variant="h6">Upload Video</Typography>
+                    <Typography variant="body1" component="p">
+                        Drag and drop video files to upload
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        Your videos will be private until you publish them.
+                    </Typography>
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            marginTop: '20px',
+                        }}
+                    >
+                        {uploading ? (
+                            <div>
+                                {/* Display rocket animation or loading indicator here */}
+                                <Typography variant="body2" component="div">
+                                    <div style={{ height: 300, width: 300 }}>
+                                        Uploading...
+                                        <Lottie
+                                            animationData={rocket}
+                                            onAnimationEnd={() => console.log('Animation End!')}
+                                            onComplete={handleAnimationComplete}
+                                            loop={false} // Set to true for the animation to repeat
+                                            speed={2.5} // Set the speed of the animation
+                                            segments={[0, 20]} // Set the start and end frames of the animation
+                                        />
+                                    </div> {/* Replace with your animation component */}
+                                </Typography>
+                            </div>
+                        ) : (
+                            <div>
+                                <input
+                                    type="file"
+                                    id="fileInput"
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileSelect}
+                                    accept="video/*"
+                                />
 
-                            <label htmlFor="fileInput">
-                                <div
-                                    style={{
-                                        marginTop: theme.spacing(2),
-                                        marginBottom: theme.spacing(2),
-                                        width: '100%',
-                                        // Add any other custom styles you want here
-                                        backgroundColor: 'blue',
-                                        color: 'white',
-                                        padding: '10px',
-                                        textAlign: 'center',
-                                        cursor: 'pointer',
-                                    }}
-                                >
-                                    Select File
-                                </div>
-                            </label>
-                        </div>
-                    )}
+                                <label htmlFor="fileInput">
+                                    <div
+                                        style={{
+                                            marginTop: theme.spacing(2),
+                                            marginBottom: theme.spacing(2),
+                                            width: '100%',
+                                            // Add any other custom styles you want here
+                                            backgroundColor: 'blue',
+                                            color: 'white',
+                                            padding: '10px',
+                                            textAlign: 'center',
+                                            cursor: 'pointer',
+                                        }}
+                                    >
+                                        Select File
+                                    </div>
+                                </label>
+                            </div>
+                        )}
 
-                </div>
-                <Typography variant="body2" component="p">
-                    By submitting your videos to YouTube, you acknowledge that you agree
-                    to YouTube's{' '}
-                    <a
-                        href="https://www.youtube.com/t/terms"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Terms of Service
-                    </a>{' '}
-                    and{' '}
-                    <a
-                        href="https://www.youtube.com/yt/about/policies/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Community Guidelines
-                    </a>
-                    .
-                </Typography>
-                <Typography variant="body2" component="p">
-                    Please be sure not to violate others' copyright or privacy rights.{' '}
-                    <a
-                        href="https://www.youtube.com/yt/copyright"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        Learn more
-                    </a>
-                </Typography>
-            </UploadModalContainer>
-        </Modal>
+                    </div>
+                    <Typography variant="body2" component="p">
+                        By submitting your videos to YouTube, you acknowledge that you agree
+                        to YouTube's{' '}
+                        <a
+                            href="https://www.youtube.com/t/terms"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Terms of Service
+                        </a>{' '}
+                        and{' '}
+                        <a
+                            href="https://www.youtube.com/yt/about/policies/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Community Guidelines
+                        </a>
+                        .
+                    </Typography>
+                    <Typography variant="body2" component="p">
+                        Please be sure not to violate others' copyright or privacy rights.{' '}
+                        <a
+                            href="https://www.youtube.com/yt/copyright"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            Learn more
+                        </a>
+                    </Typography>
+                </UploadModalContainer>
+            </Modal>
+            {
+                showForm && <VideoForm />
+            }
+        </>
     );
 };
