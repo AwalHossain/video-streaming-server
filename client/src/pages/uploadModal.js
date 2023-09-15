@@ -112,7 +112,7 @@ export const UploadModal = ({ open, onClose }) => {
 
     return (
         <>
-            <Modal open={open} onClose={onClose}>
+            <Modal open={open}>
                 <UploadModalContainer elevation={3}>
                     <CloseIconButton onClick={onClose}>
                         <CloseIcon />
