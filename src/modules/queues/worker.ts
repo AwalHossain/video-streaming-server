@@ -1,14 +1,21 @@
 import { QueueEvents, Worker } from "bullmq";
+import config from "../../config";
 import setupVideoHandler from "../models/video/video.handler";
 import { QUEUE_EVENTS } from "./constants";
 import { QUEUE_EVENT_HANDLERS } from "./handlers";
 
 const redisConnection = {
-  username: 'default',
-  password: 'T7GZf5gZnx8gCkrGBKlR',
-  host: 'containers-us-west-126.railway.app',
-  port: 5589,
+  username: config.redis.username,
+  password: config.redis.password,
+  host: config.redis.host,
+  port: parseInt(config.redis.port),
 };
+
+// const redisConnection = {
+//   host: 'localhost',
+//   port: 6379,
+// };
+
 
 export const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {

@@ -1,14 +1,20 @@
 import { Queue } from "bullmq";
 import { ALL_EVENTS as QUEUE_EVENTS } from "./constants";
 
+import config from "../../config";
 import eventEmitter from "../../event-manager";
 
+
 const redisConnection = {
-  username: 'default',
-  password: 'T7GZf5gZnx8gCkrGBKlR',
-  host: 'containers-us-west-126.railway.app',
-  port: 5589,
+  username: config.redis.username,
+  password: config.redis.password,
+  host: config.redis.host,
+  port: parseInt(config.redis.port),
 };
+// const redisConnection = {
+//   host: 'localhost',
+//   port: 6379,
+// };
 
 export type QueueItem = {
   completed: boolean;
