@@ -1,57 +1,57 @@
-import { NextFunction, Request, Response } from "express";
+import { Request } from 'express';
 import fs from "fs";
 import multer from "multer";
 
 
 
 let globalName = "";
-const storage = multer.diskStorage({
-  destination: (req: Request, file: Express.Multer.File, cb: Function) => {
-    globalName = file.originalname.split(".")[0] + "_" + Date.now();
-    const uploadPath = `uploads/${globalName}/videos`;
-    fs.mkdirSync(uploadPath, { recursive: true });
-    cb(null, uploadPath);
-  },
-  filename: (req: Request, file: Express.Multer.File, cb: Function) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, globalName);
-  },
-});
+let uploadFolder = "";
 
-const fileFilter = (
+const storageEngine = multer.diskStorage({
+  destination: (req, file, cb) => {
+
+    globalName = file.originalname.split(".")[0] + "_" + Date.now();
+
+    if (!uploadFolder) {
+      uploadFolder = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
+    }
+    const uploadPath = `uploads/${uploadFolder}/videos`;
+    fs.mkdirSync(uploadPath, { recursive: true });
+
+    cb(null, uploadPath)
+
+  },
+  filename: (req, file, cb) => {
+
+    const isImage = file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg';
+
+    if (isImage) {
+      cb(null, globalName + ".png")
+    } else {
+      cb(null, globalName);
+    }
+
+  },
+})
+
+const fileFilter = async (
   req: Request,
   file: Express.Multer.File,
   cb: (error: Error | null, acceptFile: boolean) => void
 ) => {
-  if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska") {
-    console.log("file type supported", file);
+  console.log("file", file);
+  if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/webm"
+    || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
+  ) {
+    console.log("Video file type supported", file);
     cb(null, true);
-  } else {
-    console.log("file type not supported", file);
-    cb(new Error("File type not supported"), false);
   }
 };
 
-const upload = multer({
-  dest: "uploads/videos",
-  fileFilter,
-  limits: { fileSize: 50000000 },
-  storage,
-}).single("video");
-
-const uploadProcessor = (req: Request, res: Response, next: NextFunction) => {
-  upload(req, res, (err: any) => {
-    if (err) {
-      console.error(err);
-      res.status(400).json({ status: "error", error: err });
-      return;
-    } else {
-      console.log("upload success", req.file);
-      next();
-    }
-  });
-};
-
-
-
-export default uploadProcessor;
+export const uploadHandler = multer({
+  storage: storageEngine,
+  fileFilter: fileFilter,
+  limits: {
+    fileSize: 1024 * 1024 * 50,
+  },
+});
