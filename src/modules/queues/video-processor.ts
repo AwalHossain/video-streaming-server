@@ -38,16 +38,34 @@ const processRawFileToMp4WithWatermark = async (
 
   const ffmpegCommand = ffmpeg(filePath).output(outputFileName);
 
-  console.log(watermarkImageFilePath, "watermarkImageFilePath");
+  const videoMetadata = await getVideoDurationAndResolution(filePath) as any;
 
 
-  // if (watermarkImageFilePath) {
-  //   ffmpegCommand.input(watermarkImageFilePath).complexFilter([
-  //     "[0:v]scale=640:-1[bg];" +
-  //     "[1:v]scale=iw/6:ih/6[watermark];" +
-  //     "[bg][watermark]overlay=W-w-10:10:enable='between(t,0,inf)'",
-  //   ]);
-  // // }
+  // Calculate the dimensions for the watermark image based on the video's aspect ratio.
+  const videoWidth = videoMetadata.videoResolution.width;
+  const videoHeight = videoMetadata.videoResolution.height;
+
+
+  if (watermarkImageFilePath) {
+    const watermarkAspectRatio = await getImageAspectRatio(watermarkImageFilePath) as any;
+    const [widthRatio, heightRatio] = watermarkAspectRatio.split(':').map(Number);
+    const aspectRatioDecimal = widthRatio / heightRatio;
+
+    console.log(aspectRatioDecimal, 'watermarkAspectRatio', videoMetadata, 'videoMetadata');
+
+    const watermarkWidth = videoWidth / 9; // Adjust the scaling factor as needed.
+    const watermarkHeight = watermarkWidth / aspectRatioDecimal;
+
+    if (!aspectRatioDecimal || isNaN(aspectRatioDecimal)) {
+      console.error('Invalid watermark aspect ratio');
+      return;
+    }
+    ffmpegCommand.input(watermarkImageFilePath).complexFilter([
+      `[0:v]scale=${videoWidth}:${videoHeight}[bg];` +
+      `[1:v]scale=${watermarkWidth}:${watermarkHeight}[watermark];` +
+      `[bg][watermark]overlay=W-w-10:10:enable='between(t,0,inf)'`,
+    ]);
+  }
 
   ffmpegCommand
     .on("start", function (commandLine: string) {
@@ -189,6 +207,47 @@ ${renditions.map(
   return;
 };
 
+
+// get video duration & resolution
+
+const getVideoDurationAndResolution = async (filePath: string) => {
+
+  return new Promise((resolve, reject) => {
+
+    let videoDuration = 0;
+    let videoResolution = {
+      width: 0,
+      height: 0
+    };
+
+    ffmpeg.ffprobe(filePath, (err: any, metadata: any) => {
+      if (err) {
+        reject(err);
+      }
+      videoDuration = parseInt(metadata.format.duration);
+
+
+      videoResolution.width = metadata.streams[0].width;
+      videoResolution.height = metadata.streams[0].height;
+      resolve({ videoDuration, videoResolution });
+      return;
+    });
+  });
+}
+
+
+const getImageAspectRatio = async (filePath) => {
+  return new Promise((resolve, reject) => {
+    ffmpeg.ffprobe(filePath, (err: any, metadata: any) => {
+      if (err) {
+        reject(err);
+      }
+      const imageAspectRatio = metadata.streams[0].display_aspect_ratio;
+      resolve(imageAspectRatio);
+      return;
+    });
+  });
+}
 
 
 export { processMp4ToHls, processRawFileToMp4WithWatermark };
