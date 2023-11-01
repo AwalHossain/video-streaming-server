@@ -24,10 +24,10 @@ const processingHandler = async (job: Job) => {
   const uploadPath = `uploads/${folderName}/processed`;
   fs.mkdirSync(uploadPath, { recursive: true });
 
-  let watermarkPath = job.data.watermarkPath;
+  let watermarkPath = job.data?.watermarkPath;
   console.log("watermarkPath checkkkkk.....", watermarkPath);
 
-  if (!fs.existsSync(path.resolve(watermarkPath))) {
+  if (watermarkPath && !fs.existsSync(path.resolve(watermarkPath))) {
     watermarkPath = null;
   }
   const processed = await processRawFileToMp4WithWatermark(
