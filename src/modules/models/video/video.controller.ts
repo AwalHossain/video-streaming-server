@@ -28,13 +28,20 @@ console.log(`Setting up routes for videos`);
 
 const uploadVideo = async (req: Request, res: Response) => {
   try {
-    console.log("POST upload", req.files['image']);
-    // const payload: any = { ...req.body };
-    // Access the video and image files
+    if (!req.files['video']) {
+      res.status(400).json({ status: "failed", message: "Video file is required" });
+      return;
+    }
+
 
     const video = req.files['video'][0];
-    const image = req.files['image'][0];
+
+    let image = null;
+    if (req.files['image']) {
+      image = req.files['image'][0];
+    }
     console.log("user given metadata", "title");
+
     let payload = {
       ...req.body,
       originalName: video.originalname,
@@ -44,7 +51,7 @@ const uploadVideo = async (req: Request, res: Response) => {
       viewCount: 0,
       duration: 0,
       visibility: "Public",
-      watermarkPath: image.path,
+      watermarkPath: image?.path ?? null,
     }
 
     const result = await VideoService.insert(payload);
