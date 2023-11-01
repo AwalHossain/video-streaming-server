@@ -50,6 +50,9 @@ const VideoSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  watermarkPath: {
+    type: String,
+  },
   thumbnailUrl: {
     type: String,
   },
@@ -66,12 +69,12 @@ const VideoSchema = new mongoose.Schema({
     type: String,
     enum: Object.values(VIDEO_VISIBILITIES),
     default: VIDEO_VISIBILITIES.PUBLIC,
-    },
+  },
 
 },
-{
+  {
     timestamps: true,
-}
+  }
 
 );
 
