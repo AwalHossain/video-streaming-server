@@ -16,73 +16,69 @@ import { VideoService } from "./video.service";
 
 const s3 = new S3Client({
   forcePathStyle: true,
-  endpoint: process.env.ENDPOINT,  
+  endpoint: process.env.ENDPOINT,
   region: "sgp1",
   credentials: {
     accessKeyId: process.env.ACCESS_KEY,
     secretAccessKey: process.env.SECRET_KEY,
   },
 }) as any;
-
-const BASE_URL = `/api/v1/videos2`;
-
 // const setupRoutes = (app: Express): void => {
-  console.log(`Setting up routes for videos`);
+console.log(`Setting up routes for videos`);
 
+const uploadVideo = async (req: Request, res: Response) => {
+  try {
+    console.log("POST upload", req.files['image']);
+    // const payload: any = { ...req.body };
+    // Access the video and image files
 
-
- 
-
-
-  const uploadVideo = async (req: Request, res: Response) => {
-    try {
-      console.log("POST upload", JSON.stringify(req.body));
-      // const payload: any = { ...req.body };
-      console.log("user given metadata",req.file, "title");
-
-      let payload = {
-        ...req.body,
-        originalName: req.file.originalname,
-        fileName: req.file.filename,
-        recordingDate: Date.now(),
-        videoLink: req.file.path,
-        viewCount: 0,
-        duration: 0,
-        visibility: "Public",
-
-      }
-      console.log(payload, "payload");
-      
-
-   const result = await VideoService.insert(payload);
-
-      console.log("result", result);
-      
-      await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
-        id : result._id,
-        ...payload,
-        ...req.file,
-      });
-      res
-        .status(200)
-        .json({ status: "success", message: "Upload success",data:{
-          'vidoe info added to db': result,
-          ...req.file,
-        } });
-      return;
-    } catch (error) {
-      console.error(error);
-      res.send(error);
+    const video = req.files['video'][0];
+    const image = req.files['image'][0];
+    console.log("user given metadata", "title");
+    let payload = {
+      ...req.body,
+      originalName: video.originalname,
+      fileName: video.filename,
+      recordingDate: Date.now(),
+      videoLink: video.path,
+      viewCount: 0,
+      duration: 0,
+      visibility: "Public",
+      watermarkPath: image.path,
     }
+
+    const result = await VideoService.insert(payload);
+
+    console.log("result", result);
+
+    await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
+      id: result._id,
+      ...payload,
+      ...video,
+    });
+    res
+      .status(200)
+      .json({
+        status: "success", message: "Upload success",
+        data: {
+          // result,
+          ...req.file,
+        }
+      });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.send(error);
   }
+}
 
 
-  const updateHistory = async (req: Request, res: Response) => {
-    const id = new Types.ObjectId(req.params.id);
-    const result = await VideoService.updateHistory(id , req.body);
+const updateHistory = async (req: Request, res: Response) => {
+  const id = new Types.ObjectId(req.params.id);
+  const result = await VideoService.updateHistory(id, req.body);
 
-    res.send(result);
-  }
+  res.send(result);
+}
 
 
 
