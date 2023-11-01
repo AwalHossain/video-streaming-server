@@ -1,9 +1,12 @@
 /** execute function will take a filePath and run  ffmpeg command to convert it to mp4 */
+import ffmpegPath from "ffmpeg-static";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
 import { QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
+
+ffmpeg.setFfmpegPath(ffmpegPath);
 interface JobData {
   completed: boolean;
   path: string;
@@ -38,13 +41,13 @@ const processRawFileToMp4WithWatermark = async (
   console.log(watermarkImageFilePath, "watermarkImageFilePath");
 
 
-  if (watermarkImageFilePath) {
-    ffmpegCommand.input(watermarkImageFilePath).complexFilter([
-      "[0:v]scale=640:-1[bg];" +
-      "[1:v]scale=iw/6:ih/6[watermark];" +
-      "[bg][watermark]overlay=W-w-10:10:enable='between(t,0,inf)'",
-    ]);
-  }
+  // if (watermarkImageFilePath) {
+  //   ffmpegCommand.input(watermarkImageFilePath).complexFilter([
+  //     "[0:v]scale=640:-1[bg];" +
+  //     "[1:v]scale=iw/6:ih/6[watermark];" +
+  //     "[bg][watermark]overlay=W-w-10:10:enable='between(t,0,inf)'",
+  //   ]);
+  // // }
 
   ffmpegCommand
     .on("start", function (commandLine: string) {
@@ -62,13 +65,6 @@ const processRawFileToMp4WithWatermark = async (
         path: outputFileName,
       });
 
-      // if (watermarkImageFilePath) {
-      //   await addQueueItem(QUEUE_EVENTS.VIDEO_WATERMARKED, {
-      //     ...jobData,
-      //     completed: true,
-      //     path: outputFileName,
-      //   });
-      // }
     })
     .on("error", function (err: Error) {
       console.log("An error occurred: " + err.message);
@@ -143,13 +139,13 @@ const processMp4ToHls = async (
       ffmpeg(filePath)
         .output(`${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`)
         .outputOptions([
-          `-vf "scale=${rendition.resolution}"`,
+          `-s ${rendition.resolution}`,
+          `-c:v libx264`,
           `-b:v ${rendition.bitrate}`,
-          '-c:v h264',
-          '-g 48',
-          '-hls_time 10',
-          '-hls_list_size 0',
-          '-hls_segment_filename',
+          `-g 48`,
+          `-hls_time 10`,
+          `-hls_list_size 0`,
+          `-hls_segment_filename`,
           `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
         ])
         .on('start', function (commandLine: string) {
