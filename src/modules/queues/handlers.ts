@@ -1,10 +1,10 @@
 import { Job } from "bullmq";
 import fs from "fs";
+import path from "path";
 import eventEmitter from "../../event-manager";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
 import { processMp4ToHls, processRawFileToMp4WithWatermark, } from "./video-processor";
-
 
 const uploadedHandler = async (job: Job) => {
   console.log("i am the uploaded handler!", job.data.title);
@@ -23,6 +23,13 @@ const processingHandler = async (job: Job) => {
   const folderName = job.data.destination.split("/")[1];
   const uploadPath = `uploads/${folderName}/processed`;
   fs.mkdirSync(uploadPath, { recursive: true });
+
+  let watermarkPath = job.data.watermarkPath;
+  console.log("watermarkPath checkkkkk.....", watermarkPath);
+
+  if (!fs.existsSync(path.resolve(watermarkPath))) {
+    watermarkPath = null;
+  }
   const processed = await processRawFileToMp4WithWatermark(
     `./${job.data.path}`,
     uploadPath,
@@ -31,6 +38,7 @@ const processingHandler = async (job: Job) => {
       completed: true,
       next: QUEUE_EVENTS.VIDEO_PROCESSED,
     },
+    watermarkPath ? `./${watermarkPath}` : null,
   );
 
   return;
@@ -47,20 +55,12 @@ const processedHandler = async (job: Job) => {
 
 
 
-// const watermarkedHandler = async (job: Job) => {
-//   console.log("i am the watermarked handler!", job.data);
-//   await addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTING, {
-//     ...job.data,
-//     completed: true,
-//   });
-//   return;
-// };
-
-
 const hlsConvertingHandler = async (job: Job) => {
   console.log("i am the hls converting handler!", job.data);
   const folderName = job.data.destination.split("/")[1];
   const uploadPath = `uploads/${folderName}/hls`;
+  console.log(uploadPath, 'checing upload hls upload pathe');
+
   fs.mkdirSync(uploadPath, { recursive: true });
   const hlsConverted = await processMp4ToHls(
     `./${job.data.path}`,
