@@ -4,11 +4,11 @@ import multer from "multer";
 
 
 
-let globalName = "";
-let uploadFolder = "";
 
+let globalName = "";
 const storageEngine = multer.diskStorage({
   destination: (req, file, cb) => {
+    let uploadFolder = "";
 
     globalName = file.originalname.split(".")[0].replace(/\s+/g, '_') + "_" + Date.now();
     if (!uploadFolder) {
