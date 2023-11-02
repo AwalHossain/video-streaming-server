@@ -148,7 +148,7 @@ const processMp4ToHls = async (
 
   const renditions = [
     { resolution: '854x480', bitrate: '800k', name: '480p' },
-    { resolution: '1280x720', bitrate: '2000k', name: '720p' },
+    { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
   ];
 
   // Create renditions
@@ -159,6 +159,8 @@ const processMp4ToHls = async (
         .outputOptions([
           `-s ${rendition.resolution}`,
           `-c:v libx264`,
+          `-crf 23`,
+          `-preset slow`,
           `-b:v ${rendition.bitrate}`,
           `-g 48`,
           `-hls_time 10`,
