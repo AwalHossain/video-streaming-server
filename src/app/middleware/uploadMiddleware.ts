@@ -39,7 +39,7 @@ const fileFilter = async (
   cb: (error: Error | null, acceptFile: boolean) => void
 ) => {
   console.log("file", file);
-  if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/webm"
+  if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/avi" || file.mimetype === "video/webm"
     || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
   ) {
     console.log("Video file type supported", file);
