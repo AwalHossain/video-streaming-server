@@ -3,8 +3,10 @@ import ffmpegPath from "ffmpeg-static";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
-import { QUEUE_EVENTS } from "./constants";
+import eventEmitter from './../../event-manager';
+import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
+
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 interface JobData {
@@ -73,10 +75,18 @@ const processRawFileToMp4WithWatermark = async (
     })
     .on("progress", function (progress: any) {
       console.log("Processing: " + progress.percent + "% done");
+      eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+        status: "success",
+        message: "Video processing",
+        data: progress.percent
+      })
     })
     .on("end", async function () {
       console.log("Finished processing");
-
+      eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSED, {
+        status: "success",
+        message: "Video Processed",
+      })
       await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSED, {
         ...jobData,
         completed: true,
@@ -85,6 +95,10 @@ const processRawFileToMp4WithWatermark = async (
 
     })
     .on("error", function (err: Error) {
+      eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_FAILED, {
+        status: "failed",
+        message: "Video Processed failed",
+      })
       console.log("An error occurred: " + err.message);
     })
     .run();
@@ -117,15 +131,15 @@ const generateThumbnail = async (
       timestamps: ['00:01'],
       filename: thumbnailFileName,
       folder: `${outputFolder}`,
-      // size: "320x240",
+      size: "320x240",
     })
     .on('end', async function () {
       console.log("hthumnail generated!", jobData.path);
-      await addQueueItem(QUEUE_EVENTS.VIDEO_THUMBNAIL_GENERATED, {
-        ...jobData,
-        completed: true,
-        path: thumbnailFileName
-      });
+      // await addQueueItem(QUEUE_EVENTS.VIDEO_THUMBNAIL_GENERATED, {
+      //   ...jobData,
+      //   completed: true,
+      //   path: thumbnailFileName
+      // });
     })
   return;
 
@@ -173,13 +187,26 @@ const processMp4ToHls = async (
         })
         .on('progress', function (progress: any) {
           console.log(`Processing: ${progress.percent}% done for ${rendition.name}`);
+          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+            status: "success",
+            message: "Video processing",
+            data: `Processing: ${progress.percent}% done for ${rendition.name}`
+          })
         })
         .on('end', function () {
           console.log(`Finished processing ${rendition.name}`);
+          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
+            status: "success",
+            message: "Video Processed",
+          })
           resolve();
         })
         .on('error', function (err: Error) {
           console.log('An error occurred: ' + err.message);
+          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_FAILED, {
+            status: "failed",
+            message: "Video convering Processed failed",
+          })
           reject(err);
         })
         .run();

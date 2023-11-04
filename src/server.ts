@@ -3,7 +3,6 @@ import http from "http";
 import { Server } from "socket.io";
 import app from "./app";
 import evenEmitter from "./event-manager";
-import { MongoManager } from "./modules/db/mongo";
 
 import mongoose from "mongoose";
 import { NOTIFY_EVENTS } from "./modules/queues/constants";
@@ -31,8 +30,20 @@ const setup = async () => {
 
   evenEmitter.on(NOTIFY_EVENTS.NOTIFY_UPLOAD_PROGRESS, (data) => {
     io.emit("upload", data);
-  }
-  );
+  });
+
+  evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, (data) => {
+    io.emit("upload", data);
+  });
+
+  evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, (data) => {
+    io.emit("upload", data);
+  });
+
+  evenEmitter.on(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, (data) => {
+    io.emit("upload", data);
+  });
+
 };
 
 io.on("connection", (socket) => {
@@ -41,13 +52,6 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
   });
 
-  // setInterval(() => {
-  io.emit("msg", Date.now().toString());
-  // socket.on("mn", (data) => {
-  //   console.log("data", data);
-  // });
-  // }, 5000);
-  // io.emit("message", "hello world");
 });
 
 // server.listen(4000, () => {
@@ -56,21 +60,6 @@ io.on("connection", (socket) => {
 
 
 // Import necessary modules and other code as needed
-
-// Initialize the MongoDB connection in your application entry point.
-const initializeMongoDB = async () => {
-  try {
-    await MongoManager.connect();
-    console.log('MongoDB connection initialized');
-
-  } catch (error) {
-    console.error('Error initializing MongoDB connection:', error);
-  }
-};
-
-// Call the initialization function when your application starts.
-
-// ... rest of your code
 
 
 

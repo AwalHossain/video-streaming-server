@@ -5,32 +5,21 @@
 import { Request, Response } from "express";
 // import { deleteById, getById, insert, search, update } from "./service";
 
-import { S3Client } from "@aws-sdk/client-s3";
-import { Types } from "mongoose";
-import { QUEUE_EVENTS } from "../../queues/constants";
+import { ObjectId } from "mongodb";
+import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
 import { addQueueItem } from "../../queues/queue";
+import EventEmitter from './../../../event-manager';
 import { VideoService } from "./video.service";
 
-// Set S3 endpoint to DigitalOcean Spaces
-// Set S3 endpoint to DigitalOcean Spaces
-
-const s3 = new S3Client({
-  forcePathStyle: true,
-  endpoint: process.env.ENDPOINT,
-  region: "sgp1",
-  credentials: {
-    accessKeyId: process.env.ACCESS_KEY,
-    secretAccessKey: process.env.SECRET_KEY,
-  },
-}) as any;
-// const setupRoutes = (app: Express): void => {
-console.log(`Setting up routes for videos`);
 
 const uploadVideo = async (req: Request, res: Response) => {
   try {
-    if (!req.files['video']) {
+    if (!(req.files['video'])) {
+      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
       res.status(400).json({ status: "failed", message: "Video file is required" });
       return;
+    } else {
+      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
     }
 
 
@@ -55,6 +44,13 @@ const uploadVideo = async (req: Request, res: Response) => {
     }
 
     const result = await VideoService.insert(payload);
+
+    if (!result) {
+      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, { status: "failed", message: "Failed to save video metadata" });
+      throw new Error("Video save to db failed");
+    } else {
+      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, { status: "success", message: "Video metadata saved" });
+    }
 
     console.log("result", result);
 
@@ -81,7 +77,7 @@ const uploadVideo = async (req: Request, res: Response) => {
 
 
 const updateHistory = async (req: Request, res: Response) => {
-  const id = new Types.ObjectId(req.params.id);
+  const id = new ObjectId(req.params.id);
   const result = await VideoService.updateHistory(id, req.body);
 
   res.send(result);
