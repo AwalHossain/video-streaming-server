@@ -2,6 +2,7 @@ import compression from "compression";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express, NextFunction, Request, Response } from "express";
+import globalErrorHandler from "./app/middleware/globalErrorhandler";
 import router from "./routes";
 const app: Express = express();
 
@@ -14,6 +15,9 @@ app.use(compression());
 app.use(cors());
 
 app.use(`/api/v1`, router)
+
+
+app.use(globalErrorHandler)
 
 //handle not found
 app.use((req: Request, res: Response, next: NextFunction) => {
