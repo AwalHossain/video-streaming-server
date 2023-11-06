@@ -26,6 +26,7 @@ export const NOTIFY_EVENTS = {
   NOTIFY_AWS_S3_UPLOAD_FAILED: "notify.aws.s3.upload.failed",
   NOTIFY_AWS_S3_UPLOAD_PROGRESS: "notify.aws.s3.upload.progress",
   NOTIFY_AWS_S3_UPLOAD_COMPLETED: "notify.aws.s3.upload.completed",
+  NOTIFY_VIDEO_PUBLISHED: "notify.video.published",
 };
 
 export const ALL_EVENTS = {
