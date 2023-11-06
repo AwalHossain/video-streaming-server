@@ -3,36 +3,38 @@ import { promises as fsPromises } from "fs";
 import path from "path";
 /// here i am going to update the vidoe history and add the path after each processing
 
-import { S3 } from "aws-sdk";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import dotenv from 'dotenv';
 import fsextra from 'fs-extra';
 import mongoose from "mongoose";
-import eventEmitter from "../../../event-manager";
+import ApiError from "../../../error/apiError";
+import EventEmitter from "../../../event-manager";
+import { io } from "../../../server";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
 import { VIDEO_STATUS } from "./video.constant";
 import { VideoService } from "./video.service";
-
 dotenv.config();
 
 
 const setupVideoHandler = async () => {
   await mongoose.connect(process.env.MONGO_URL)
-  const s3 = new S3({
-    // s3ForcePathStyle: true,
+  const s3 = new S3Client({
+    forcePathStyle: true,
     endpoint: process.env.ENDPOINT,
-    region: process.env.REGION, // 'us-east-1'
+    region: process.env.REGION, // 'us-east-1',
     credentials: {
       accessKeyId: process.env.ACCESS_KEY,
       secretAccessKey: process.env.SECRET_KEY,
     },
   }) as any;
 
-  console.log(process.env.ENDPOINT, 'endpoint', process.env.ACCESS_KEY);
-
-
   Object.values(QUEUE_EVENTS).forEach((queueName) => {
+    console.log(queueName, 'queueName...from video handler');
+    EventEmitter.on(queueName, async (data) => {
 
-    eventEmitter.on(queueName, async (data) => {
+      if (queueName === QUEUE_EVENTS.VIDEO_UPLOADED) {
+        console.log(data, 'upload data........');
+      }
 
       if (queueName === QUEUE_EVENTS.VIDEO_PROCESSED) {
         await VideoService.updateHistory(data.id, {
@@ -50,7 +52,6 @@ const setupVideoHandler = async () => {
       const uploadProcessedFile = async (folderPath: string, bucketName: string) => {
         const files = await fsPromises.readdir(folderPath);
         console.log(files, 'file checking');
-        let uploadCount = 0;
         try {
 
           for (const file of files) {
@@ -58,42 +59,21 @@ const setupVideoHandler = async () => {
             const key = file;
 
             const fileData = await fsPromises.readFile(filePath);
-            const params = {
+            const command = new PutObjectCommand({ // Create a PutObjectCommand instance
               Bucket: bucketName,
               Key: key,
               Body: fileData,
               ACL: "public-read",
-            }
-            const command = new S3.ManagedUpload({
-              params,
-              partSize: 5 * 1024 * 1024, // 5 MB
-              queueSize: 4, // 4 concurrent uploads
-            })
+            });
+            await s3.send(command);
 
-            command.on('httpUploadProgress', (progress) => {
-              console.log(`Uploaded ${progress.loaded} out of ${progress.total} bytes`);
-              const percent = Math.round((progress.loaded / progress.total) * 100);
-              eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
-                status: "success",
-                message: "Video processing",
-                data: percent
-              })
-            })
-
-            await command.promise()
             console.log(`Uploaded: ${key}`);
-            uploadCount++;
-            if (uploadCount === files.length) {
-              eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_COMPLETED, {
-                status: "success",
-                message: "All files have been uploaded",
-              })
-            }
+
           }
 
         } catch (error) {
           console.error("Error uploading folder:", error);
-          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
+          io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
             status: "failed",
             message: "Video uploading failed",
           })
@@ -121,13 +101,17 @@ const setupVideoHandler = async () => {
           await Promise.all([
             uploadProcessedFile(folderPath1, `${file}`),
             uploadProcessedFile(folderPath2, `${file}`)
-          ])
-
-
+          ]);
 
           await VideoService.updateHistory(data.id, {
             history: { status: "Successfully uploaded to the S3 bucket.", createdAt: Date.now() },
           });
+
+          io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PUBLISHED, {
+            status: "success",
+            name: "Video published",
+            message: "Video published"
+          })
 
           await VideoService.update(data.id, {
             status: VIDEO_STATUS.PUBLISHED
@@ -138,14 +122,16 @@ const setupVideoHandler = async () => {
           console.log(`Deleted folder: ${deletedFolder}`);
         } catch (error) {
           console.log(error, 'error');
+          io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
+            status: "failed",
+            message: "Video uploading failed",
+          })
+          throw new ApiError(500, "Video uploading to Space failed");
         }
 
 
       }
 
-
-
-      // if(queueName === QUEUE_EVENTS.VIDEO_UPLOAD_PROGRESS) {
     })
   })
 }
