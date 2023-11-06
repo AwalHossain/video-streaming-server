@@ -3,7 +3,7 @@ import ffmpegPath from "ffmpeg-static";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
-import eventEmitter from './../../event-manager';
+import { io } from "../../server";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
 
@@ -68,23 +68,34 @@ const processRawFileToMp4WithWatermark = async (
       `[bg][watermark]overlay=W-w-10:10:enable='between(t,0,inf)'`,
     ]);
   }
+  let lastReportedProgress = 0;
 
   ffmpegCommand
     .on("start", function (commandLine: string) {
       console.log("Spawned Ffmpeg with command: " + commandLine);
     })
     .on("progress", function (progress: any) {
-      console.log("Processing: " + progress.percent + "% done");
-      eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
-        status: "success",
-        message: "Video processing",
-        data: progress.percent
-      })
+      if (progress.percent - lastReportedProgress >= 10) {
+        lastReportedProgress = progress.percent;
+        console.log("Processing: " + progress.percent + "% done");
+        io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+          status: "success",
+          name: "Video mp4 processing",
+          progress: lastReportedProgress,
+          message: "Video conveting to mp4 Processing",
+        });
+      }
     })
     .on("end", async function () {
-      console.log("Finished processing");
-      eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSED, {
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
         status: "success",
+        name: "Video mp4 processing",
+        progress: 100,
+        message: "Video converting to mp4 Processing",
+      });
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSED, {
+        status: "success",
+        name: "Video mp4 Processing",
         message: "Video Processed",
       })
       await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSED, {
@@ -95,8 +106,10 @@ const processRawFileToMp4WithWatermark = async (
 
     })
     .on("error", function (err: Error) {
-      eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_FAILED, {
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
         status: "failed",
+        name: "Video Mp4 Processing",
+        progress: 0,
         message: "Video Processed failed",
       })
       console.log("An error occurred: " + err.message);
@@ -165,6 +178,13 @@ const processMp4ToHls = async (
     { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
   ];
 
+  const renditionProgress: { [key: string]: number } = {};
+
+  renditions.forEach((rendition) => {
+    renditionProgress[rendition.name] = 0;
+  });
+
+  let lastReportedProgress = 0;
   // Create renditions
   const promises = renditions.map((rendition) => {
     return new Promise<void>((resolve, reject) => {
@@ -187,26 +207,40 @@ const processMp4ToHls = async (
         })
         .on('progress', function (progress: any) {
           console.log(`Processing: ${progress.percent}% done for ${rendition.name}`);
-          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
-            status: "success",
-            message: "Video processing",
-            data: `Processing: ${progress.percent}% done for ${rendition.name}`
-          })
+
+
+
+          renditionProgress[rendition.name] = progress.percent;
+
+          // calculate the overall progress
+          const totalProgress = Object.values(renditionProgress).reduce((a, b) => a + b, 0);
+          const overallProgress = Math.round(totalProgress / renditions.length);
+          console.log(`Overall progress: ${overallProgress}%`);
+
+          if (overallProgress - lastReportedProgress >= 10) {
+            lastReportedProgress = overallProgress;
+
+            io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+              status: "success",
+              name: "Video Processing",
+              progress: lastReportedProgress,
+              message: "Adaptive bit rate Processing",
+
+            })
+          }
         })
         .on('end', function () {
-          console.log(`Finished processing ${rendition.name}`);
-          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
-            status: "success",
-            message: "Video Processed",
-          })
           resolve();
         })
         .on('error', function (err: Error) {
           console.log('An error occurred: ' + err.message);
-          eventEmitter.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_FAILED, {
+          io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
             status: "failed",
-            message: "Video convering Processed failed",
+            name: "Video hls Processing",
+            progress: 0,
+            message: "Video hls convering Processed failed",
           })
+
           reject(err);
         })
         .run();
@@ -216,6 +250,18 @@ const processMp4ToHls = async (
   // Wait for all renditions to complete
   await Promise.all(promises);
 
+  // Notify that all renditions are complete
+  io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+    status: "success",
+    name: "Video hls Processing",
+    progress: 100,
+    message: "Video hls convering Processed successfully",
+  })
+  io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
+    status: "success",
+    name: "Video hls Processing",
+    message: "Video Processed successfully",
+  })
 
   // Create master playlist file
   const masterPlaylistContent = `#EXTM3U
@@ -277,6 +323,8 @@ const getImageAspectRatio = async (filePath) => {
     });
   });
 }
+
+
 
 
 export { processMp4ToHls, processRawFileToMp4WithWatermark };
