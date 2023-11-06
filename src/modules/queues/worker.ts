@@ -41,10 +41,6 @@ export const listenQueueEvent = (queueName: string) => {
     { connection: redisConnection }
   );
 
-  // Worker event listeners
-  // worker.on("completed", (job) => {
-  //   console.log(`${job.id} has completed!`);
-  // });
 
   worker.on("failed", (job, err) => {
     console.log(`${job.id} has failed with ${err.message}`);
@@ -57,7 +53,7 @@ export const setupAllQueueEvent = () => {
   Object.values(QUEUE_EVENTS).map((queueName) => {
     listenQueueEvent(queueName);
   });
-
   setupVideoHandler();
+
   return true;
 };
