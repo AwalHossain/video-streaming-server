@@ -2,21 +2,24 @@
 // const { Video, name } = require("./model");
 
 import { ObjectId } from "mongodb";
+import ApiError from "../../../error/apiError";
 import { IPayload } from "./video.interface";
 import { Video } from "./video.model";
 
 // // TODO: add logging
 
-const insert = async (document:IPayload ) => {
+const insert = async (document: IPayload) => {
     console.log("inserting document",);
-    
-  try {
-    const result = await Video.create(document);
-    return result;
-  } catch (error) {
- 
-    return error;
-  }
+
+    try {
+        const result = await Video.create(document);
+        return result;
+    } catch (error) {
+        console.log("error", error);
+
+        throw new ApiError(500, error.message);
+
+    }
 };
 
 // // TODO: use regex or like search
@@ -37,29 +40,29 @@ const insert = async (document:IPayload ) => {
 //   }
 // };
 
-const update = async (id:ObjectId, document:Partial<IPayload>) => {
-  try {
-    const updatedDoc = await Video.updateOne(
-        {
-            _id: new ObjectId(id),
-        }
-        ,{
-            $set: {
-                ...document,
-                updatedAt: new Date(),
+const update = async (id: ObjectId, document: Partial<IPayload>) => {
+    try {
+        const updatedDoc = await Video.updateOne(
+            {
+                _id: new ObjectId(id),
             }
-        }
-    )
-    return updatedDoc;
-  } catch (error) {
-    console.error(error);
-    return error;
-  }
+            , {
+                $set: {
+                    ...document,
+                    updatedAt: new Date(),
+                }
+            }
+        )
+        return updatedDoc;
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
 };
 
-const updateHistory = async (id:ObjectId, {history, ...rest}) => {
-    console.log("updating history",history);
-    
+const updateHistory = async (id: ObjectId, { history, ...rest }) => {
+    console.log("updating history", history);
+
     try {
         const updatedDoc = await Video.updateOne(
             {
@@ -73,7 +76,7 @@ const updateHistory = async (id:ObjectId, {history, ...rest}) => {
                     ...rest,
                 }
             },
-            { 
+            {
                 // Increase the timeout to a higher value (e.g., 30000 for 30 seconds)
                 maxTimeMS: 30000
             }
@@ -81,30 +84,9 @@ const updateHistory = async (id:ObjectId, {history, ...rest}) => {
         return updatedDoc;
     } catch (error) {
         console.error(error);
-        return error;
+        throw new ApiError(500, error.message);
     }
 }
-
-// const deleteById = async (id) => {
-//   try {
-//     const deleted = await Video.deleteOne({
-//       _id: new ObjectId(id),
-//     });
-//     return deleted;
-//   } catch (error) {
-//     console.error(error);
-//     return error;
-//   }
-// };
-
-// module.exports = {
-//   insert,
-//   search,
-//   getById,
-//   update,
-//   deleteById,
-// };
-
 
 
 export const VideoService = {
