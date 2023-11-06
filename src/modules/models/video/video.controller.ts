@@ -6,20 +6,23 @@ import { Request, Response } from "express";
 // import { deleteById, getById, insert, search, update } from "./service";
 
 import { ObjectId } from "mongodb";
+
+import { io } from "../../../server";
+import catchAsync from "../../../shared/catchAsyncError";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
 import { addQueueItem } from "../../queues/queue";
-import EventEmitter from './../../../event-manager';
 import { VideoService } from "./video.service";
 
 
-const uploadVideo = async (req: Request, res: Response) => {
-  try {
+const uploadVideo = catchAsync(async (req: Request, res: Response) => {
+  {
+
     if (!(req.files['video'])) {
-      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
       res.status(400).json({ status: "failed", message: "Video file is required" });
       return;
     } else {
-      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
     }
 
 
@@ -45,14 +48,19 @@ const uploadVideo = async (req: Request, res: Response) => {
 
     const result = await VideoService.insert(payload);
 
-    if (!result) {
-      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, { status: "failed", message: "Failed to save video metadata" });
-      throw new Error("Video save to db failed");
+    if (result) {
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
+        status: "success",
+        name: "Video metadata saving",
+        message: "Video metadata saved"
+      });
     } else {
-      EventEmitter.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, { status: "success", message: "Video metadata saved" });
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
+        status: "failed",
+        name: "Video metadata saving",
+        message: "Failed to save video metadata"
+      });
     }
-
-    console.log("result", result);
 
     await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
       id: result._id,
@@ -64,24 +72,23 @@ const uploadVideo = async (req: Request, res: Response) => {
       .json({
         status: "success", message: "Upload success",
         data: {
-          // result,
+          result,
           ...req.file,
         }
       });
     return;
-  } catch (error) {
-    console.error(error);
-    res.send(error);
+
   }
-}
+});
 
+const updateHistory = catchAsync(async (req: Request, res: Response) => {
+  async (req: Request, res: Response) => {
+    const id = new ObjectId(req.params.id);
+    const result = await VideoService.updateHistory(id, req.body);
 
-const updateHistory = async (req: Request, res: Response) => {
-  const id = new ObjectId(req.params.id);
-  const result = await VideoService.updateHistory(id, req.body);
-
-  res.send(result);
-}
+    res.send(result);
+  }
+})
 
 
 
