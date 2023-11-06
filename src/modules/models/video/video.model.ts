@@ -4,7 +4,7 @@ import { VIDEO_STATUS, VIDEO_VISIBILITIES } from "./video.constant";
 const VideoSchema = new mongoose.Schema({
   title: {
     type: String,
-    required: true,
+    // required: true,
   },
   description: {
     type: String,
