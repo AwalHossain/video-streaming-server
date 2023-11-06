@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
 import fs from "fs";
 import path from "path";
-import eventEmitter from "../../event-manager";
+import EventEmitter from "../../event-manager";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
 import { processMp4ToHls, processRawFileToMp4WithWatermark, } from "./video-processor";
@@ -87,7 +87,7 @@ const hlsConvertedHandler = async (job: Job) => {
 
 const notifyVideoHlsConvertedHandler = async (job) => {
   console.log('notifyVideoHlsConvertedHandler handler!', job.data);
-  eventEmitter.emit(`${NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED}`, job.data);
+  EventEmitter.emit(`${NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED}`, job.data);
   return { ...job.data, completed: true, next: null };
 };
 export const QUEUE_EVENT_HANDLERS = {
