@@ -21,9 +21,12 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
       res.status(400).json({ status: "failed", message: "Video file is required" });
       return;
-    } else {
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
     }
+
+    const videoMetadata = req.body.videoMetadata;
+
+    io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
+
 
 
     const video = req.files['video'][0];
@@ -32,21 +35,19 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
     if (req.files['image']) {
       image = req.files['image'][0];
     }
-    console.log("user given metadata", "title");
 
     let payload = {
-      ...req.body,
-      originalName: video.originalname,
       fileName: video.filename,
-      recordingDate: Date.now(),
       videoLink: video.path,
-      viewCount: 0,
-      duration: 0,
-      visibility: "Public",
       watermarkPath: image?.path ?? null,
     }
 
-    const result = await VideoService.insert(payload);
+    const result = await VideoService.update(videoMetadata._id, {
+      history: { status: QUEUE_EVENTS.VIDEO_UPLOADED, createdAt: Date.now() },
+      payload
+    });
+
+    console.log("user updated metadata", result);
 
     if (result) {
       io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
@@ -72,7 +73,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       .json({
         status: "success", message: "Upload success",
         data: {
-          result,
+          ...result,
           ...req.file,
         }
       });
@@ -80,6 +81,21 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
 
   }
 });
+
+
+const updateVideo = catchAsync(async (req: Request, res: Response) => {
+  const id = new ObjectId(req.params.id);
+  const result = await VideoService.update(id, req.body);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Video updated",
+    data: result,
+  })
+
+})
+
 
 const updateHistory = catchAsync(async (req: Request, res: Response) => {
   async (req: Request, res: Response) => {
@@ -99,5 +115,6 @@ const updateHistory = catchAsync(async (req: Request, res: Response) => {
 
 export const VideoController = {
   uploadVideo,
+  updateVideo,
   updateHistory,
 }
