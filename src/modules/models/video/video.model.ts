@@ -9,6 +9,14 @@ const VideoSchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  author: {
+    type: String,
+    // required: true,
+
+  },
+  duration: {
+    type: Number,
+  },
   viewsCount: {
     type: Number,
     min: 0,
@@ -40,11 +48,10 @@ const VideoSchema = new mongoose.Schema({
   },
   videoLink: {
     type: String,
-    required: true,
   },
   fileName: {
     type: String,
-    required: true,
+
   },
   originalName: {
     type: String,
@@ -69,6 +76,13 @@ const VideoSchema = new mongoose.Schema({
     type: String,
     enum: Object.values(VIDEO_VISIBILITIES),
     default: VIDEO_VISIBILITIES.PUBLIC,
+  },
+  tags: {
+    type: [String],
+    default: [],
+  },
+  size: {
+    type: Number,
   },
 
 },
