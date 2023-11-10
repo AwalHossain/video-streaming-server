@@ -3,6 +3,7 @@ import ffmpegPath from "ffmpeg-static";
 import ffmpeg from "fluent-ffmpeg";
 import fs from "fs";
 import path from "path";
+import ApiError from "../../error/apiError";
 import { io } from "../../server";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "./constants";
 import { addQueueItem } from "./queue";
@@ -73,14 +74,22 @@ const processRawFileToMp4WithWatermark = async (
   ffmpegCommand
     .on("start", function (commandLine: string) {
       console.log("Spawned Ffmpeg with command: " + commandLine);
+      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+        status: "processing",
+        name: "Video mp4",
+        fileName: fileNameWithoutExt,
+        progress: 1,
+        message: "Video conveting to mp4 Processing",
+      });
     })
     .on("progress", function (progress: any) {
       if (progress.percent - lastReportedProgress >= 10) {
         lastReportedProgress = progress.percent;
         console.log("Processing: " + progress.percent + "% done");
         io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
-          status: "success",
-          name: "Video mp4 processing",
+          status: "processing",
+          name: "Video mp4",
+          fileName: fileNameWithoutExt,
           progress: lastReportedProgress,
           message: "Video conveting to mp4 Processing",
         });
@@ -88,14 +97,16 @@ const processRawFileToMp4WithWatermark = async (
     })
     .on("end", async function () {
       io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
-        status: "success",
-        name: "Video mp4 processing",
+        status: "completed",
+        name: "Video mp4",
         progress: 100,
+        fileName: fileNameWithoutExt,
         message: "Video converting to mp4 Processing",
       });
       io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSED, {
         status: "success",
-        name: "Video mp4 Processing",
+        name: "Video mp4",
+        fileName: fileNameWithoutExt,
         message: "Video Processed",
       })
       await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSED, {
@@ -110,6 +121,7 @@ const processRawFileToMp4WithWatermark = async (
         status: "failed",
         name: "Video Mp4 Processing",
         progress: 0,
+        fileName: fileNameWithoutExt,
         message: "Video Processed failed",
       })
       console.log("An error occurred: " + err.message);
@@ -185,101 +197,126 @@ const processMp4ToHls = async (
   });
 
   let lastReportedProgress = 0;
-  // Create renditions
-  const promises = renditions.map((rendition) => {
-    return new Promise<void>((resolve, reject) => {
-      ffmpeg(filePath)
-        .output(`${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`)
-        .outputOptions([
-          `-s ${rendition.resolution}`,
-          `-c:v libx264`,
-          `-crf 23`,
-          `-preset slow`,
-          `-b:v ${rendition.bitrate}`,
-          `-g 48`,
-          `-hls_time 10`,
-          `-hls_list_size 0`,
-          `-hls_segment_filename`,
-          `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
-        ])
-        .on('start', function (commandLine: string) {
-          console.log('Spawned Ffmpeg with command: ' + commandLine);
-        })
-        .on('progress', function (progress: any) {
-          console.log(`Processing: ${progress.percent}% done for ${rendition.name}`);
-
-
-
-          renditionProgress[rendition.name] = progress.percent;
-
-          // calculate the overall progress
-          const totalProgress = Object.values(renditionProgress).reduce((a, b) => a + b, 0);
-          const overallProgress = Math.round(totalProgress / renditions.length);
-          console.log(`Overall progress: ${overallProgress}%`);
-
-          if (overallProgress - lastReportedProgress >= 10) {
-            lastReportedProgress = overallProgress;
-
+  try {
+    // Create renditions
+    const promises = renditions.map((rendition) => {
+      return new Promise<void>((resolve, reject) => {
+        ffmpeg(filePath)
+          .output(`${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`)
+          .outputOptions([
+            `-s ${rendition.resolution}`,
+            `-c:v libx264`,
+            `-crf 23`,
+            `-preset fast`,
+            `-b:v ${rendition.bitrate}`,
+            `-g 48`,
+            `-hls_time 10`,
+            `-hls_list_size 0`,
+            `-hls_segment_filename`,
+            `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
+          ])
+          .on('start', function (commandLine: string) {
+            console.log('Spawned Ffmpeg with command: ' + commandLine);
             io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
-              status: "success",
-              name: "Video Processing",
-              progress: lastReportedProgress,
-              message: "Adaptive bit rate Processing",
+              status: "processing",
+              name: "Adaptive bit rate",
+              fileName: fileNameWithoutExt,
+              progress: 1,
+              message: "Adaptive bit rate",
 
             })
-          }
-        })
-        .on('end', function () {
-          resolve();
-        })
-        .on('error', function (err: Error) {
-          console.log('An error occurred: ' + err.message);
-          io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
-            status: "failed",
-            name: "Video hls Processing",
-            progress: 0,
-            message: "Video hls convering Processed failed",
           })
+          .on('progress', function (progress: any) {
+            console.log(`Processing: ${progress.percent}% done for ${rendition.name}`);
 
-          reject(err);
-        })
-        .run();
+
+
+            renditionProgress[rendition.name] = progress.percent;
+
+            // calculate the overall progress
+            const totalProgress = Object.values(renditionProgress).reduce((a, b) => a + b, 0);
+            const overallProgress = Math.round(totalProgress / renditions.length);
+            console.log(`Overall progress: ${overallProgress}%`);
+
+            if (overallProgress - lastReportedProgress >= 10) {
+              lastReportedProgress = overallProgress;
+
+              io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+                status: "processing",
+                name: "Adaptive bit rate",
+                progress: lastReportedProgress,
+                fileName: fileNameWithoutExt,
+                message: "Adaptive bit rate Processing",
+
+              })
+            }
+          })
+          .on('end', function () {
+            resolve();
+          })
+          .on('error', function (err: Error) {
+            console.log('An error occurred: ' + err.message);
+            io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+              status: "failed",
+              name: "Adaptive bit rate",
+              progress: 0,
+              fileName: fileNameWithoutExt,
+              message: "Video hls convering Processed failed",
+            })
+
+            reject(err);
+          })
+          .run();
+      });
     });
-  });
 
-  // Wait for all renditions to complete
-  await Promise.all(promises);
+    // Wait for all renditions to complete
+    await Promise.all(promises);
 
-  // Notify that all renditions are complete
-  io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
-    status: "success",
-    name: "Video hls Processing",
-    progress: 100,
-    message: "Video hls convering Processed successfully",
-  })
-  io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
-    status: "success",
-    name: "Video hls Processing",
-    message: "Video Processed successfully",
-  })
+    // Notify that all renditions are complete
+    io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+      status: "completed",
+      name: "Adaptive bit rate",
+      fileName: fileNameWithoutExt,
+      progress: 100,
+      message: "Video hls convering Processed successfully",
+    })
+    io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
+      status: "success",
+      name: "Adaptive bit rate",
+      fileName: fileNameWithoutExt,
+      message: "Video Processed successfully",
+    })
 
-  // Create master playlist file
-  const masterPlaylistContent = `#EXTM3U
+    // Create master playlist file
+    const masterPlaylistContent = `#EXTM3U
 #EXT-X-VERSION:3
 ${renditions.map(
-    (rendition) => `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate)}000,RESOLUTION=${rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`
-  ).join('\n')}
+      (rendition) => `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate)}000,RESOLUTION=${rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`
+    ).join('\n')}
 `;
-  const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
-  fs.writeFileSync(outputFileName, masterPlaylistContent);
+    const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
+    fs.writeFileSync(outputFileName, masterPlaylistContent);
 
-  addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTED, {
-    ...jobData,
-    path: outputFileName,
-  });
+    addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTED, {
+      ...jobData,
+      path: outputFileName,
+    });
 
 
-  return;
+    return;
+  } catch (err) {
+    io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+      status: "failed",
+      name: "Video hls",
+      progress: 0,
+      fileName: fileNameWithoutExt,
+      message: "Video hls convering Processed failed",
+    })
+
+    throw new ApiError(500, "Video hls converting failed")
+  }
+
 };
 
 
