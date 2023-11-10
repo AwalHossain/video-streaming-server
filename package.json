@@ -59,6 +59,7 @@
     "@types/multer-s3": "^3.0.0",
     "@types/node": "^18.14.2",
     "@types/passport": "^1.0.15",
+    "@types/passport-google-oauth20": "^2.0.14",
     "@types/passport-local": "^1.0.38",
     "concurrently": "^8.2.1",
     "ts-node": "^10.9.1",
