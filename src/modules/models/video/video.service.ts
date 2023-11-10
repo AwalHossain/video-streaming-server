@@ -77,9 +77,10 @@ const updateHistory = async (id: ObjectId, { history, ...rest }) => {
                 }
             },
             {
-                // Increase the timeout to a higher value (e.g., 30000 for 30 seconds)
-                maxTimeMS: 30000
+                new: true,
+                maxTimeMS: 2000,
             }
+
         )
         return updatedDoc;
     } catch (error) {
