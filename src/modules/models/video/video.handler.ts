@@ -3,7 +3,8 @@ import { promises as fsPromises } from "fs";
 import path from "path";
 /// here i am going to update the vidoe history and add the path after each processing
 
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import dotenv from 'dotenv';
 import fsextra from 'fs-extra';
 import mongoose from "mongoose";
@@ -59,15 +60,38 @@ const setupVideoHandler = async () => {
             const key = file;
 
             const fileData = await fsPromises.readFile(filePath);
-            const command = new PutObjectCommand({ // Create a PutObjectCommand instance
-              Bucket: bucketName,
-              Key: key,
-              Body: fileData,
-              ACL: "public-read",
-            });
-            await s3.send(command);
 
-            console.log(`Uploaded: ${key}`);
+            const upload = new Upload({
+              client: s3,
+              params: {
+                Bucket: bucketName,
+                Key: key,
+                Body: fileData,
+                ACL: "public-read",
+              },
+            });
+
+            // const command = new PutObjectCommand({ // Create a PutObjectCommand instance
+            //   Bucket: bucketName,
+            //   Key: key,
+            //   Body: fileData,
+            //   ACL: "public-read",
+            // });
+            // await s3.send(command);
+
+            upload.on("httpUploadProgress", (progress) => {
+              const percentage = Math.round((progress.loaded / progress.total) * 100);
+              io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
+                status: "processing",
+                name: "AWS Bucket uploading",
+                message: "Video upload progressing",
+                fileName: data.fileName,
+                // progress: 'Uploading',
+              })
+            })
+
+            const result = await upload.done();
+            console.log(`Uploaded: ${key}, result`);
 
           }
 
@@ -107,6 +131,13 @@ const setupVideoHandler = async () => {
             history: { status: "Successfully uploaded to the S3 bucket.", createdAt: Date.now() },
           });
 
+          io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
+            status: "completed",
+            name: "AWS Bucket uploading",
+            message: "Video upload completed",
+            fileName: data.fileName,
+            // progress: 100,
+          })
           io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PUBLISHED, {
             status: "success",
             name: "Video published",
