@@ -23,17 +23,18 @@ const registrationUser = catchAsync(async (req: Request, res: Response, next: Ne
 
 const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
-    const result = await UserService.register(req.body);
+    const result = await UserService.login(req.body);
 
     req.login(result, (err) => {
         if (err) return next(err);
+        sendResponse(res, {
+            statusCode: 201,
+            success: true,
+            message: 'User Login successfully !',
+            data: result,
+        });
     })
-    sendResponse(res, {
-        statusCode: 201,
-        success: true,
-        message: 'User Login successfully !',
-        data: result,
-    });
+
 });
 
 
