@@ -11,13 +11,14 @@ const registrationUser = catchAsync(async (req: Request, res: Response, next: Ne
 
     req.login(result, (err) => {
         if (err) return next(err);
+        sendResponse(res, {
+            statusCode: 201,
+            success: true,
+            message: 'User registered successfully !',
+            data: result,
+        });
     })
-    sendResponse(res, {
-        statusCode: 201,
-        success: true,
-        message: 'User registered successfully !',
-        data: result,
-    });
+
 });
 
 
