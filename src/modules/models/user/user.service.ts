@@ -38,5 +38,6 @@ const login = async (data: IUser) => {
 
 
 export const UserService = {
-    register
+    register,
+    login
 }

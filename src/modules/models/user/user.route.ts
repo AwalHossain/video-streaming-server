@@ -1,16 +1,24 @@
 import express from "express";
+import passport from "passport";
 import { UserController } from "./user.controller";
 
 const router = express.Router();
 
 
-router.get("/signup",
+router.post("/signup",
     UserController.registrationUser
 )
 
-router.get("/login",
+router.post("/login",
     UserController.loginUser
 )
+
+// router for initial google login
+router.get("/google", passport.authenticate('google', { scope: ['profile', 'email'] }))
+
+// Route for handling the callback from Google
+
+router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login", successRedirect: "/" }))
 
 router.get("/logout",
     UserController.logoutUser
