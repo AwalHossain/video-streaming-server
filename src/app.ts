@@ -7,6 +7,7 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import session from "express-session";
 import passport from "passport";
 import globalErrorHandler from "./app/middleware/globalErrorhandler";
+import { passportConfig } from "./config/passport-config";
 import router from "./routes";
 
 const app: Express = express();
@@ -42,6 +43,9 @@ app.use(express.json());
 app.use(cookieParser())
 app.use(compression());
 app.use(cors());
+
+passportConfig();
+
 
 app.use(`/api/v1`, router)
 
