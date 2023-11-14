@@ -1,5 +1,7 @@
 import express from "express";
 import passport from "passport";
+import isAuthenticated from "../../../app/middleware/isAuthenticated";
+import { sendResponse } from "../../../shared/sendResponse";
 import { UserController } from "./user.controller";
 
 const router = express.Router();
@@ -24,6 +26,15 @@ router.get("/logout",
     UserController.logoutUser
 )
 
+
+router.get("/check-session", isAuthenticated, (req, res) => {
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'User Session is active !',
+        data: req.user,
+    })
+})
 
 export const UserRoutes = router;
 
