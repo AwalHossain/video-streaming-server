@@ -20,7 +20,6 @@ const userSchema = new Schema({
     },
     password: {
         type: String,
-        required: true,
         trim: true,
         minlength: 3,
         maxlength: 100
@@ -37,7 +36,10 @@ const userSchema = new Schema({
     avatar: {
         type: String,
         default: ''
-    }
+    },
+    googleId: {
+        type: String,
+    },
 
 }, {
     timestamps: true
