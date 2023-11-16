@@ -8,11 +8,12 @@ export const passportConfig = () => {
     passport.use(new GoogleStrategy({
         clientID: config.googleClientId,
         clientSecret: config.googleClientSecret,
-        callbackURL: config.googleCallbackUrl,
+        callbackURL: '/api/v1/auth/google/callback',
     },
         async (accessToken, refreshToken, profile, done) => {
             let user = await User.findOne({ googleId: profile.id });
-
+            console.log(profile, 'profile');
+            console.log(user, 'user');
             if (!user) {
                 user = await User.create({
                     googleId: profile.id,
@@ -20,6 +21,9 @@ export const passportConfig = () => {
                     email: profile.emails[0].value,
                     avatar: profile.photos[0].value,
                 })
+
+                console.log(user, 'user');
+
             }
         }
     ))
