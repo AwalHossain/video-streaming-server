@@ -1,6 +1,7 @@
 import express from "express";
 import passport from "passport";
 import isAuthenticated from "../../../app/middleware/isAuthenticated";
+import config from "../../../config";
 import { sendResponse } from "../../../shared/sendResponse";
 import { UserController } from "./user.controller";
 
@@ -20,7 +21,18 @@ router.get("/google", passport.authenticate('google', { scope: ['profile', 'emai
 
 // Route for handling the callback from Google
 
-router.get("/google/callback", passport.authenticate("google", { failureRedirect: "/login", successRedirect: "/" }))
+router.get("/google/callback", passport.authenticate("google", {
+    successRedirect: `${config.clientUrl}`
+}), (req, res) => {
+    console.log(req.user, 'req.user');
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Google Logged In Successfully!',
+        data: req.user,
+    })
+})
 
 router.get("/logout",
     UserController.logoutUser
