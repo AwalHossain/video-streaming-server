@@ -40,24 +40,22 @@ const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunct
 
 
 const logoutUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+    req.logout(function (err) {
+        if (err) {
+            return next(err);
+        }
 
-    req.logout((err) => {
-        if (err) return next(err);
-    });
+        // delete cookie
+        res.clearCookie('connect.sid', { path: '/' });
 
-    // destroy session
-    req.session.destroy((err) => {
-        if (err) return next(err);
-    });
-
-    sendResponse(res, {
-        statusCode: 201,
-        success: true,
-        message: 'User Logout successfully !',
-        data: {},
+        sendResponse(res, {
+            statusCode: 201,
+            success: true,
+            message: 'User Logout successfully !',
+            data: {},
+        });
     });
 });
-
 
 export const UserController = {
     registrationUser,
