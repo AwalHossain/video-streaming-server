@@ -2,10 +2,13 @@
 // const { Video, name } = require("./model");
 
 import { ObjectId } from "mongodb";
+import { SortOrder } from "mongoose";
 import ApiError from "../../../error/apiError";
-import { IPayload } from "./video.interface";
+import { PaginationHelper } from "../../../helpers/paginationHelper";
+import { IpaginationOptions } from "../../../interface/pagination";
+import { videoSearchableFields } from "./video.constant";
+import { IPayload, IVdieosFilterableFields } from "./video.interface";
 import { Video } from "./video.model";
-
 // // TODO: add logging
 
 const insert = async (document: IPayload) => {
@@ -23,22 +26,70 @@ const insert = async (document: IPayload) => {
 };
 
 // // TODO: use regex or like search
-// const search = async (searchObject) => {
-//   const result = await Video.find(searchObject).toArray();
-//   return result;
-// };
 
-// const getById = async (id) => {
-//   try {
-//     const Video = await Video.findOne({
-//       _id: new ObjectId(id),
-//     });
-//     return Video;
-//   } catch (error) {
-//     console.error(error);
-//     return error;
-//   }
-// };
+const getAllVideos = async (filters: IVdieosFilterableFields
+    , paginationOptions: IpaginationOptions
+) => {
+    const { searchTerm, ...filtersData } = filters;
+
+    const { limit, page, skip, sortBy, sortOrder } = PaginationHelper.calculatePagination(paginationOptions);
+
+    const andConditions = [];
+
+    if (searchTerm) {
+        andConditions.push({
+            $or: videoSearchableFields.map((field) => ({
+                [field]: {
+                    $regex: searchTerm,
+                    $options: "i"
+                }
+            }))
+        })
+    }
+
+    if (Object.keys(filtersData).length) {
+        andConditions.push({
+            $and: Object.entries(filtersData).map(([key, value]) => ({
+                [key]: value
+            }))
+        })
+    }
+
+
+    // add condition for status
+    andConditions.push({
+        status: "published"
+    });
+
+    const sortCondition: { [key: string]: SortOrder } = {};
+
+    if (sortBy && sortOrder) {
+        sortCondition[sortBy] = sortOrder;
+    }
+
+    const whereCondition = andConditions.length > 0 ? {
+        $and: andConditions
+    } : {};
+
+    const result = await Video.find(whereCondition)
+        .sort(sortCondition)
+        .skip(skip)
+        .limit(limit);
+
+    const totalRecords = await Video.countDocuments();
+
+    return {
+        meta: {
+            page,
+            limit,
+            totalRecords
+        },
+        data: result
+    }
+};
+
+
+
 
 const update = async (id: ObjectId, document: Partial<IPayload>) => {
     try {
@@ -51,6 +102,9 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
                     ...document,
                     updatedAt: new Date(),
                 }
+            },
+            {
+                new: true,
             }
         )
         return updatedDoc;
@@ -61,20 +115,16 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
 };
 
 const updateHistory = async (id: ObjectId, { history, ...rest }) => {
-    console.log("updating history", history);
-
     try {
-        const updatedDoc = await Video.updateOne(
+        const updatedDoc = await Video.findOneAndUpdate(
             {
-                _id: new ObjectId(id),
+                _id: id,
             },
             {
                 $push: {
                     history
                 },
-                $set: {
-                    ...rest,
-                }
+                $set: rest
             },
             {
                 new: true,
@@ -82,6 +132,8 @@ const updateHistory = async (id: ObjectId, { history, ...rest }) => {
             }
 
         )
+        console.log("updatedDoc", updatedDoc);
+
         return updatedDoc;
     } catch (error) {
         console.error(error);
@@ -90,9 +142,21 @@ const updateHistory = async (id: ObjectId, { history, ...rest }) => {
 }
 
 
+const getById = async (id: string) => {
+    try {
+        const result = await Video.findById(id);
+        return result;
+    } catch (error) {
+        console.error(error);
+        return error;
+    }
+};
+
+
 export const VideoService = {
     insert,
     update,
     updateHistory,
-    // getById,
+    getById,
+    getAllVideos,
 }
