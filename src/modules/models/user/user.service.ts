@@ -22,13 +22,13 @@ const login = async (data: IUser) => {
     const result = await User.findOne({ email: data.email });
 
     if (!result) {
-        throw new ApiError(httpStatus.EXPECTATION_FAILED, 'User not found');
+        throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
     }
 
     const isPasswordMatch = (data.password === result.password);
 
     if (!isPasswordMatch) {
-        throw new ApiError(httpStatus.EXPECTATION_FAILED, 'Invalid password');
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Invalid password');
     }
 
     return result;
