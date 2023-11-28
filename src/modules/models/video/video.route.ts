@@ -13,10 +13,19 @@ router.post('/upload',
     VideoController.uploadVideo
 )
 
+router.get('/', VideoController.getAllVideos)
+
+router.put('/update/:id',
+    VideoController.updateVideo
+)
+
 router.patch('/updateHistory/:id',
     VideoController.updateHistory
 )
 
+router.get('/:id',
+    VideoController.getById
+)
 
 
 export const VideoRoutes = router;
