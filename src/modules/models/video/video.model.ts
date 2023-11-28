@@ -5,9 +5,11 @@ const VideoSchema = new mongoose.Schema({
   title: {
     type: String,
     // required: true,
+    default: "Video Title",
   },
   description: {
     type: String,
+    default: "",
   },
   author: {
     type: String,
@@ -28,6 +30,7 @@ const VideoSchema = new mongoose.Schema({
   },
   language: {
     type: String,
+    default: "English",
   },
   recordingDate: {
     type: Date,
@@ -35,6 +38,7 @@ const VideoSchema = new mongoose.Schema({
   },
   category: {
     type: String,
+    default: "Entertainment",
   },
   likesCount: {
     type: Number,
