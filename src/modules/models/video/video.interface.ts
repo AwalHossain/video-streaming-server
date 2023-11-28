@@ -7,3 +7,12 @@ export type IPayload = {
   viewCount?: number;
   duration?: number;
 };
+
+
+
+export type IVdieosFilterableFields = {
+  searchTerm?: string;
+  title?: string;
+  category?: string;
+  recordingDate?: string;
+}
