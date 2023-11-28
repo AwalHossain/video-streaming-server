@@ -45,10 +45,12 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       watermarkPath: image?.path ?? null,
     }
 
-    const result = await VideoService.update(videoMetadata._id, {
+    const result = await VideoService.updateHistory(videoMetadata._id, {
       history: { status: QUEUE_EVENTS.VIDEO_UPLOADED, createdAt: Date.now() },
-      payload
-    });
+      ...payload,
+    },
+
+    );
 
     console.log("user updated metadata", result);
 
@@ -76,7 +78,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       .json({
         status: "success", message: "Upload success",
         data: {
-          ...result,
+          ...result.toObject(),
           ...req.file,
         }
       });
@@ -151,4 +153,5 @@ export const VideoController = {
   updateVideo,
   updateHistory,
   getById,
+  getAllVideos,
 }
