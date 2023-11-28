@@ -56,6 +56,7 @@ const fileFilter = async (
     const videoMetadata = await VideoService.insert(payload);
     console.log("videoMetadata", videoMetadata);
     io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, {
+      name: "notify_video_metadata_saved",
       status: "success",
       message: "Video metadata saved",
       data: videoMetadata
