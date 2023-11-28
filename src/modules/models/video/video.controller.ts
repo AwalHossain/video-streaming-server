@@ -7,10 +7,13 @@ import { Request, Response } from "express";
 
 import { ObjectId } from "mongodb";
 
+import { paginationFields } from "../../../constants/pagination";
 import { io } from "../../../server";
 import catchAsync from "../../../shared/catchAsyncError";
+import pick from "../../../shared/pick";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
 import { addQueueItem } from "../../queues/queue";
+import { videoFilterableFields } from "./video.constant";
 import { VideoService } from "./video.service";
 
 
@@ -83,6 +86,23 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
 });
 
 
+const getAllVideos = catchAsync(async (req: Request, res: Response) => {
+
+  const filters = pick(req.query, videoFilterableFields);
+  const paginationOptions = pick(req.query, paginationFields);
+
+  const result = await VideoService.getAllVideos(filters, paginationOptions);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Videos fetched",
+    data: result,
+  })
+
+})
+
+
 const updateVideo = catchAsync(async (req: Request, res: Response) => {
   const id = new ObjectId(req.params.id);
   const result = await VideoService.update(id, req.body);
@@ -98,14 +118,27 @@ const updateVideo = catchAsync(async (req: Request, res: Response) => {
 
 
 const updateHistory = catchAsync(async (req: Request, res: Response) => {
-  async (req: Request, res: Response) => {
-    const id = new ObjectId(req.params.id);
-    const result = await VideoService.updateHistory(id, req.body);
+  const id = new ObjectId(req.params.id);
+  const result = await VideoService.updateHistory(id, req.body);
 
-    res.send(result);
-  }
+  res.send(result);
 })
 
+
+const getById = catchAsync(async (req: Request, res: Response) => {
+
+  console.log(" req.params.id", req.params.id);
+
+  const result = await VideoService.getById(req.params.id);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Video fetched",
+    data: result,
+  })
+
+})
 
 
 
@@ -117,4 +150,5 @@ export const VideoController = {
   uploadVideo,
   updateVideo,
   updateHistory,
+  getById,
 }
