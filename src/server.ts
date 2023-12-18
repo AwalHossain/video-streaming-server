@@ -17,18 +17,23 @@ export const io = new Server(server, {
   },
 });
 
-// export const setup = async () => {
-//   // await updateSchema(db);
-//   // setupRoutes(app);
-//   console.log("setup completed.....");
-//   listenQueueEvent(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED);
-
-// };
 
 io.on("connection", (socket) => {
-  console.log("a user connected", socket.id);
+  // get the user's id
+
+
+  const userId = socket.handshake.query.userId;
+
+  // Join the user to the room
+  socket.join(userId);
+
+  console.log(`User ${userId} connected`, socket.id);
+
+  // Send the message after the user has joined the room
+  io.to(userId).emit("message", "This is such a bullishit, cause i am sendign the meesage to different user!");
+
   socket.on("disconnect", () => {
-    console.log("user disconnected");
+    console.log(`User ${userId} disconnected`);
   });
 
 });
