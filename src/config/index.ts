@@ -36,9 +36,9 @@ export default {
         username: process.env.REDIS_USERNAME,
     },
     sessionSecret: process.env.SESSION_SECRET,
-    googleClientId: process.env.GOOGLE_CLIENT_ID,
-    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL,
-    clientUrl: process.env.CLIENT_URL,
+    googleClientId: "735132503131-5h15u2dbk94n2kog2916gdce3pr27qbc.apps.googleusercontent.com",
+    googleClientSecret: "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",
+    googleCallbackUrl: "http://localhost:5000/api/v1/auth/google/callback",
+    clientUrl: "http://localhost:3000",
 
 }
