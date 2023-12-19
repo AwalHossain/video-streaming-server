@@ -9,7 +9,7 @@ const register = async (data: IUser) => {
     const result = await User.findOne({ email: data.email });
 
     if (result) {
-        throw new ApiError(httpStatus.EXPECTATION_FAILED, 'Email already exists');
+        throw new ApiError(httpStatus.BAD_REQUEST, 'Email already exists');
     }
 
     const user = await User.create(data);
