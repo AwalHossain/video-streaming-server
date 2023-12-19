@@ -14,7 +14,7 @@ interface JobData {
   completed: boolean;
   path: string;
   destination: string;
-  // other properties
+  userId: string;
 }
 
 interface ProcessedFile {
@@ -74,7 +74,7 @@ const processRawFileToMp4WithWatermark = async (
   ffmpegCommand
     .on("start", function (commandLine: string) {
       console.log("Spawned Ffmpeg with command: " + commandLine);
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+      io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
         status: "processing",
         name: "Video mp4",
         fileName: fileNameWithoutExt,
@@ -86,7 +86,7 @@ const processRawFileToMp4WithWatermark = async (
       if (progress.percent - lastReportedProgress >= 10) {
         lastReportedProgress = progress.percent;
         console.log("Processing: " + progress.percent + "% done");
-        io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+        io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
           status: "processing",
           name: "Video mp4",
           fileName: fileNameWithoutExt,
@@ -96,14 +96,14 @@ const processRawFileToMp4WithWatermark = async (
       }
     })
     .on("end", async function () {
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+      io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
         status: "completed",
         name: "Video mp4",
         progress: 100,
         fileName: fileNameWithoutExt,
         message: "Video converting to mp4 Processing",
       });
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSED, {
+      io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSED, {
         status: "success",
         name: "Video mp4",
         fileName: fileNameWithoutExt,
@@ -117,7 +117,7 @@ const processRawFileToMp4WithWatermark = async (
 
     })
     .on("error", function (err: Error) {
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
+      io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PROCESSING, {
         status: "failed",
         name: "Video Mp4 Processing",
         progress: 0,
@@ -217,7 +217,7 @@ const processMp4ToHls = async (
           ])
           .on('start', function (commandLine: string) {
             console.log('Spawned Ffmpeg with command: ' + commandLine);
-            io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+            io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
               status: "processing",
               name: "Adaptive bit rate",
               fileName: fileNameWithoutExt,
@@ -241,7 +241,7 @@ const processMp4ToHls = async (
             if (overallProgress - lastReportedProgress >= 10) {
               lastReportedProgress = overallProgress;
 
-              io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+              io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
                 status: "processing",
                 name: "Adaptive bit rate",
                 progress: lastReportedProgress,
@@ -256,7 +256,7 @@ const processMp4ToHls = async (
           })
           .on('error', function (err: Error) {
             console.log('An error occurred: ' + err.message);
-            io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+            io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
               status: "failed",
               name: "Adaptive bit rate",
               progress: 0,
@@ -274,14 +274,14 @@ const processMp4ToHls = async (
     await Promise.all(promises);
 
     // Notify that all renditions are complete
-    io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+    io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
       status: "completed",
       name: "Adaptive bit rate",
       fileName: fileNameWithoutExt,
       progress: 100,
       message: "Video hls convering Processed successfully",
     })
-    io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
+    io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED, {
       status: "success",
       name: "Adaptive bit rate",
       fileName: fileNameWithoutExt,
@@ -306,7 +306,7 @@ ${renditions.map(
 
     return;
   } catch (err) {
-    io.emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
+    io.to(jobData.userId).emit(NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING, {
       status: "failed",
       name: "Video hls",
       progress: 0,
