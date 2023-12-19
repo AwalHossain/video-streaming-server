@@ -18,17 +18,19 @@ import { VideoService } from "./video.service";
 
 
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
+  const userId = (req.user as any)._id;
+
   {
 
     if (!(req.files['video'])) {
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
+      io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
       res.status(400).json({ status: "failed", message: "Video file is required" });
       return;
     }
 
     const videoMetadata = req.body.videoMetadata;
 
-    io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
+    io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
 
 
 
@@ -41,7 +43,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
 
     let payload = {
       fileName: video.filename,
-      videoLink: video.path,
+      videoPath: video.path,
       watermarkPath: image?.path ?? null,
     }
 
@@ -55,20 +57,22 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
     console.log("user updated metadata", result);
 
     if (result) {
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
+      io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
         status: "success",
         name: "Video metadata saving",
         message: "Video metadata saved"
       });
     } else {
-      io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
+      io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
         status: "failed",
         name: "Video metadata saving",
         message: "Failed to save video metadata"
       });
     }
+    console.log(userId, "userId");
 
     await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
+      userId,
       id: result._id,
       ...payload,
       ...video,
@@ -99,13 +103,16 @@ const getAllVideos = catchAsync(async (req: Request, res: Response) => {
     status: "success",
     statusCode: 200,
     message: "Videos fetched",
-    data: result,
+    data: result.data,
+    meta: result.meta,
   })
 
 })
 
 
 const updateVideo = catchAsync(async (req: Request, res: Response) => {
+  console.log("req.params.id", req.body, req.params.id);
+
   const id = new ObjectId(req.params.id);
   const result = await VideoService.update(id, req.body);
 

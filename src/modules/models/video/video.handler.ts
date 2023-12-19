@@ -20,7 +20,7 @@ dotenv.config();
 const setupVideoHandler = async () => {
   await mongoose.connect(process.env.MONGO_URL)
   const s3 = new S3Client({
-    forcePathStyle: true,
+    forcePathStyle: false,
     endpoint: process.env.ENDPOINT,
     region: process.env.REGION, // 'us-east-1',
     credentials: {
@@ -71,17 +71,10 @@ const setupVideoHandler = async () => {
               },
             });
 
-            // const command = new PutObjectCommand({ // Create a PutObjectCommand instance
-            //   Bucket: bucketName,
-            //   Key: key,
-            //   Body: fileData,
-            //   ACL: "public-read",
-            // });
-            // await s3.send(command);
 
             upload.on("httpUploadProgress", (progress) => {
               const percentage = Math.round((progress.loaded / progress.total) * 100);
-              io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
+              io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
                 status: "processing",
                 name: "AWS Bucket uploading",
                 message: "Video upload progressing",
@@ -97,7 +90,7 @@ const setupVideoHandler = async () => {
 
         } catch (error) {
           console.error("Error uploading folder:", error);
-          io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
+          io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
             status: "failed",
             message: "Video uploading failed",
           })
@@ -110,7 +103,10 @@ const setupVideoHandler = async () => {
 
         await VideoService.updateHistory(data.id, {
           history: { status: queueName, createdAt: Date.now() },
-        });
+        },
+
+
+        );
 
 
         const rootFolder = path.resolve('./');
@@ -131,21 +127,23 @@ const setupVideoHandler = async () => {
             history: { status: "Successfully uploaded to the S3 bucket.", createdAt: Date.now() },
           });
 
-          io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
+          io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS, {
             status: "completed",
             name: "AWS Bucket uploading",
             message: "Video upload completed",
             fileName: data.fileName,
             // progress: 100,
           })
-          io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PUBLISHED, {
+          io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PUBLISHED, {
             status: "success",
             name: "Video published",
             message: "Video published"
           })
 
           await VideoService.update(data.id, {
-            status: VIDEO_STATUS.PUBLISHED
+            status: VIDEO_STATUS.PUBLISHED,
+            videoLink: `https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/${file}/${data.fileName}_master.m3u8`,
+            thumbnailUrl: `https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/${file}/${data.fileName}.png`,
           })
 
           // Delete the folder after uploading all files
@@ -153,7 +151,7 @@ const setupVideoHandler = async () => {
           console.log(`Deleted folder: ${deletedFolder}`);
         } catch (error) {
           console.log(error, 'error');
-          io.emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
+          io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
             status: "failed",
             message: "Video uploading failed",
           })
