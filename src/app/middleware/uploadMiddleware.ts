@@ -41,6 +41,9 @@ const fileFilter = async (
   file: Express.Multer.File,
   cb: (error: Error | null, acceptFile: boolean) => void
 ) => {
+
+  const userId = (req.user as any)._id;
+
   if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/avi" || file.mimetype === "video/webm"
     || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
   ) {
@@ -54,7 +57,7 @@ const fileFilter = async (
 
     const videoMetadata = await VideoService.insert(payload);
     console.log("videoMetadata", videoMetadata);
-    io.emit(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, {
+    io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, {
       name: "notify_video_metadata_saved",
       status: "success",
       message: "Video metadata saved",
