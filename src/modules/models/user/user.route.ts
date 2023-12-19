@@ -21,17 +21,23 @@ router.get("/google", passport.authenticate('google', { scope: ['profile', 'emai
 
 // Route for handling the callback from Google
 
-router.get("/google/callback", passport.authenticate("google", {
-    successRedirect: `${config.clientUrl}`
-}), (req, res) => {
+router.get("/google/callback", passport.authenticate("google"), (req, res) => {
     console.log(req.user, 'req.user');
 
-    sendResponse(res, {
+    const user = {
         statusCode: 200,
         success: true,
         message: 'Google Logged In Successfully!',
         data: req.user,
-    })
+    };
+
+    // Send a script that posts a message to the opener window
+    res.send(`
+        <script>
+            window.opener.postMessage(${JSON.stringify(user)}, "${config.clientUrl}");
+            window.close();
+        </script>
+    `);
 })
 
 router.get("/logout",
