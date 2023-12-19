@@ -76,7 +76,11 @@ const getAllVideos = async (filters: IVdieosFilterableFields
         .skip(skip)
         .limit(limit);
 
-    const totalRecords = await Video.countDocuments();
+    const totalRecords = await Video.countDocuments(
+        {
+            status: "published"
+        }
+    );
 
     return {
         meta: {
@@ -92,6 +96,9 @@ const getAllVideos = async (filters: IVdieosFilterableFields
 
 
 const update = async (id: ObjectId, document: Partial<IPayload>) => {
+
+    console.log("updating document", document);
+
     try {
         const updatedDoc = await Video.updateOne(
             {
@@ -107,6 +114,7 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
                 new: true,
             }
         )
+        console.log("updating document", updatedDoc);
         return updatedDoc;
     } catch (error) {
         console.error(error);
