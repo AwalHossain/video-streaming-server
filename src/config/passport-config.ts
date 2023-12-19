@@ -25,6 +25,8 @@ export const passportConfig = () => {
                 console.log(user, 'user');
 
             }
+
+            done(null, user);
         }
     ))
 
