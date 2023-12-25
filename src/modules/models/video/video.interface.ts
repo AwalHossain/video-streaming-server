@@ -15,4 +15,5 @@ export type IVdieosFilterableFields = {
   title?: string;
   category?: string;
   recordingDate?: string;
+  tags?: string;
 }
