@@ -17,7 +17,8 @@ export const videoFilterableFields = [
     "searchTerm",
     "title",
     "category",
-    "recordingDate"
+    "recordingDate",
+    "tags",
 ];
 
 export const videoSearchableFields = [
