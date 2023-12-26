@@ -30,7 +30,7 @@ const insert = async (document: IPayload) => {
 const getAllVideos = async (filters: IVdieosFilterableFields
     , paginationOptions: IpaginationOptions
 ) => {
-    const { searchTerm, ...filtersData } = filters;
+    const { searchTerm, tags, ...filtersData } = filters;
 
     const { limit, page, skip, sortBy, sortOrder } = PaginationHelper.calculatePagination(paginationOptions);
 
@@ -45,6 +45,16 @@ const getAllVideos = async (filters: IVdieosFilterableFields
                 }
             }))
         })
+    }
+
+    if (tags && tags.length > 0) {
+
+        const tagsAll = Array.isArray(tags) ? tags : [tags];
+        console.log("filtersData.tags", tagsAll);
+
+        andConditions.push({
+            tags: { $in: tagsAll }
+        });
     }
 
     if (Object.keys(filtersData).length) {
@@ -71,8 +81,9 @@ const getAllVideos = async (filters: IVdieosFilterableFields
         $and: andConditions
     } : {};
 
+
     const result = await Video.find(whereCondition)
-        .sort(sortCondition)
+        // .sort(sortCondition)
         .skip(skip)
         .limit(limit);
 
