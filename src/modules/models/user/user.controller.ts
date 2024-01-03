@@ -57,8 +57,37 @@ const logoutUser = catchAsync(async (req: Request, res: Response, next: NextFunc
     });
 });
 
+const getUserById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const result = await UserService.getUserById(req.params.id);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: 'User get successfully !',
+        data: result,
+    });
+
+});
+
+const updateUserById = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+
+    const result = await UserService.updateUserById(req.params.id, req.body);
+
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: 'User update successfully !',
+        data: result,
+    });
+
+});
+
+
 export const UserController = {
     registrationUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    getUserById,
+    updateUserById,
 }
