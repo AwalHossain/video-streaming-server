@@ -86,7 +86,6 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
           ...req.file,
         }
       });
-    return;
 
   }
 });
