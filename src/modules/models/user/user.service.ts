@@ -35,9 +35,33 @@ const login = async (data: IUser) => {
 }
 
 
+const getUserById = async (id: string) => {
+
+    const userData = User.findById(id);
+
+    if (!userData) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+    }
+
+    return userData;
+}
+
+
+const updateUserById = async (id: string, data: IUser) => {
+
+    const user = User.findByIdAndUpdate(id, data);
+
+    if (!user) {
+        throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');
+    }
+}
+
+
 
 
 export const UserService = {
     register,
-    login
+    login,
+    getUserById,
+    updateUserById,
 }
