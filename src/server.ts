@@ -27,11 +27,6 @@ io.on("connection", (socket) => {
   // Join the user to the room
   socket.join(userId);
 
-  console.log(`User ${userId} connected`, socket.id);
-
-  // Send the message after the user has joined the room
-  io.to(userId).emit("message", "This is such a bullishit, cause i am sendign the meesage to different user!");
-
   socket.on("disconnect", () => {
     console.log(`User ${userId} disconnected`);
   });
