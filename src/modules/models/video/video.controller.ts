@@ -45,6 +45,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       fileName: video.filename,
       videoPath: video.path,
       watermarkPath: image?.path ?? null,
+      title: videoMetadata.originalName,
     }
 
     const result = await VideoService.updateHistory(videoMetadata._id, {
