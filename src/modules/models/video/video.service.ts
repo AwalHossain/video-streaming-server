@@ -2,7 +2,7 @@
 // const { Video, name } = require("./model");
 
 import { ObjectId } from "mongodb";
-import { SortOrder } from "mongoose";
+import mongoose, { SortOrder } from "mongoose";
 import ApiError from "../../../error/apiError";
 import { PaginationHelper } from "../../../helpers/paginationHelper";
 import { IpaginationOptions } from "../../../interface/pagination";
@@ -12,16 +12,17 @@ import { Video } from "./video.model";
 // // TODO: add logging
 
 const insert = async (document: IPayload) => {
-    console.log("inserting document",);
-
     try {
         const result = await Video.create(document);
         return result;
     } catch (error) {
-        console.log("error", error);
-
-        throw new ApiError(500, error.message);
-
+        if (error instanceof mongoose.Error.ValidationError) {
+            console.error(error.message);
+            // Handle the error appropriately here, e.g., by returning a meaningful value or throwing a custom error.
+        } else {
+            // Handle other types of errors here.
+            throw error;
+        }
     }
 };
 
@@ -83,9 +84,10 @@ const getAllVideos = async (filters: IVdieosFilterableFields
 
 
     const result = await Video.find(whereCondition)
-        // .sort(sortCondition)
+        .sort(sortCondition)
         .skip(skip)
-        .limit(limit);
+        .limit(limit)
+        .populate("author", "name  email avatar")
 
     const totalRecords = await Video.countDocuments(
         {
@@ -110,27 +112,23 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
 
     console.log("updating document", document);
 
-    try {
-        const updatedDoc = await Video.updateOne(
-            {
-                _id: new ObjectId(id),
+
+    const updatedDoc = await Video.updateOne(
+        {
+            _id: new ObjectId(id),
+        }
+        , {
+            $set: {
+                ...document,
+                updatedAt: new Date(),
             }
-            , {
-                $set: {
-                    ...document,
-                    updatedAt: new Date(),
-                }
-            },
-            {
-                new: true,
-            }
-        )
-        console.log("updating document", updatedDoc);
-        return updatedDoc;
-    } catch (error) {
-        console.error(error);
-        return error;
-    }
+        },
+        {
+            new: true,
+        }
+    )
+    console.log("updating document", updatedDoc);
+    return updatedDoc;
 };
 
 const updateHistory = async (id: ObjectId, { history, ...rest }) => {
