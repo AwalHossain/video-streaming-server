@@ -42,7 +42,7 @@ const fileFilter = async (
   cb: (error: Error | null, acceptFile: boolean) => void
 ) => {
 
-  const userId = (req.user as any)._id;
+  const userId = (req.user as any)._id.toHexString();
 
   if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/avi" || file.mimetype === "video/webm"
     || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
@@ -53,10 +53,13 @@ const fileFilter = async (
       viewCount: 0,
       duration: 0,
       visibility: "Public",
+      author: userId,
     }
 
     const videoMetadata = await VideoService.insert(payload);
-    console.log("videoMetadata", videoMetadata);
+    console.log("videoMetadata", videoMetadata, "userid", userId);
+    io.to(userId).emit("message", "This is such a bullishit, cause i am sendign the meesage to different user!");
+
     io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, {
       name: "notify_video_metadata_saved",
       status: "success",
