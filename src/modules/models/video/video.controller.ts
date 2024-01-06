@@ -110,6 +110,25 @@ const getAllVideos = catchAsync(async (req: Request, res: Response) => {
 })
 
 
+const getMyVideos = catchAsync(async (req: Request, res: Response) => {
+
+  const filters = pick(req.query, videoFilterableFields);
+  const paginationOptions = pick(req.query, paginationFields);
+  console.log("userId", req.user);
+  const userId = (req.user as any)._id.toHexString();
+  const result = await VideoService.getMyVideos(userId, filters, paginationOptions);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Videos fetched",
+    data: result.data,
+    meta: result.meta,
+  })
+
+})
+
+
 const updateVideo = catchAsync(async (req: Request, res: Response) => {
   console.log("req.params.id", req.body, req.params.id);
 
@@ -161,4 +180,5 @@ export const VideoController = {
   updateHistory,
   getById,
   getAllVideos,
+  getMyVideos,
 }
