@@ -106,6 +106,68 @@ const getAllVideos = async (filters: IVdieosFilterableFields
 };
 
 
+const getMyVideos = async (userId: string, filters: IVdieosFilterableFields
+    , paginationOptions: IpaginationOptions
+) => {
+    const { searchTerm, tags, ...filtersData } = filters;
+
+    const { limit, page, skip, sortBy, sortOrder } = PaginationHelper.calculatePagination(paginationOptions);
+
+    const andConditions = [];
+
+    if (searchTerm) {
+        andConditions.push({
+            $or: videoSearchableFields.map((field) => ({
+                [field]: {
+                    $regex: searchTerm,
+                    $options: "i"
+                }
+            }))
+        })
+    }
+
+    if (Object.keys(filtersData).length) {
+        andConditions.push({
+            $and: Object.entries(filtersData).map(([key, value]) => ({
+                [key]: value
+            }))
+        })
+    }
+
+
+    const sortCondition: { [key: string]: SortOrder } = {};
+
+    if (sortBy && sortOrder) {
+        sortCondition[sortBy] = sortOrder;
+    }
+
+    const whereCondition = {
+        author: userId,
+        ...(andConditions.length > 0 ? { $and: andConditions } : {}),
+    };
+
+    console.log("whereCondition", whereCondition);
+
+
+    const result = await Video.find(whereCondition)
+        .sort(sortCondition)
+        .skip(skip)
+        .limit(limit)
+        .populate("author", "name  email avatar")
+
+    const totalRecords = await Video.countDocuments();
+
+    return {
+        meta: {
+            page,
+            limit,
+            totalRecords
+        },
+        data: result
+    }
+};
+
+
 
 
 const update = async (id: ObjectId, document: Partial<IPayload>) => {
@@ -176,4 +238,5 @@ export const VideoService = {
     updateHistory,
     getById,
     getAllVideos,
+    getMyVideos
 }
