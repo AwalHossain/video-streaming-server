@@ -17,7 +17,12 @@ router.post('/upload',
 
 router.get('/', VideoController.getAllVideos)
 
-router.put('/update/:id',
+
+// get user videos
+
+router.get("/myvideos", isAuthenticated, VideoController.getMyVideos)
+
+router.put('/update/:id', isAuthenticated,
     VideoController.updateVideo
 )
 
