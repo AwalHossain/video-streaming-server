@@ -11,7 +11,12 @@
     "video-server": "nodemon ./src/video-server.ts",
     "db": "docker-compose up -d",
     "server": "concurrently \"npm run web-server\" \"npm run video-processor\" ",
-    "start": "npm run web-server"
+    "start": "npm run web-server",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:up-detached": "docker-compose up -d",
+    "docker:build-and-up": "docker-compose up --build"
   },
   "keywords": [],
   "author": "",
