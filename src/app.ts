@@ -18,12 +18,14 @@ const BASE_URL = "/api/v1";
 dotenv.config();
 
 app.use(session({
+  name: "__session",
   secret: process.env.SESSION_SECRET!,
   resave: false,
   saveUninitialized: false,
   cookie: {
+    sameSite: 'none',
+    secure: true,
     httpOnly: true,
-    secure: true, // true for production
     maxAge: 1000 * 60 * 60 * 24 * 7,
   },
   store: MongoStore.create({
