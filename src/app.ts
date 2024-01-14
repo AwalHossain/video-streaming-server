@@ -23,9 +23,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // true for production
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-    domain: ".ondigitalocean.app"
+    secure: true, // true for production
+    maxAge: 1000 * 60 * 60 * 24 * 7,
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URL!,
