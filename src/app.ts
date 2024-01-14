@@ -24,7 +24,8 @@ app.use(session({
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production", // true for production
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+    domain: process.env.CLIENT_URL
   },
   store: MongoStore.create({
     mongoUrl: process.env.MONGO_URL!,
