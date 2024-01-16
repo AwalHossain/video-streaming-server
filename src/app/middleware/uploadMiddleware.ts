@@ -42,7 +42,8 @@ const fileFilter = async (
   cb: (error: Error | null, acceptFile: boolean) => void
 ) => {
 
-  const userId = (req.user as any)._id.toHexString();
+  const userId = (req.user as any).id;
+  console.log(userId, 'checking user id');
 
   if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/avi" || file.mimetype === "video/webm"
     || file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg'
@@ -54,6 +55,7 @@ const fileFilter = async (
       duration: 0,
       visibility: "Public",
       author: userId,
+      title: file.originalname.split(".")[0]
     }
 
     const videoMetadata = await VideoService.insert(payload);
