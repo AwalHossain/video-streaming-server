@@ -320,13 +320,29 @@ ${renditions.map(
 };
 
 
+function formatDuration(durationInSeconds: number): string {
+  const hours = Math.floor(durationInSeconds / 3600);
+  const minutes = Math.floor((durationInSeconds - (hours * 3600)) / 60);
+  const seconds = Math.floor(durationInSeconds - (hours * 3600) - (minutes * 60));
+
+  let result = "";
+  if (hours > 0) {
+    result += hours.toString().padStart(2, '0') + ":";
+  }
+
+  result += minutes.toString().padStart(2, '0') + ":";
+  result += seconds.toString().padStart(2, '0');
+
+  return result;
+}
+
 // get video duration & resolution
 
-const getVideoDurationAndResolution = async (filePath: string) => {
+const getVideoDurationAndResolution = async (filePath: string): Promise<{ videoDuration: string, videoResolution: { width: number, height: number } }> => {
 
   return new Promise((resolve, reject) => {
 
-    let videoDuration = 0;
+    let videoDuration = "0";
     let videoResolution = {
       width: 0,
       height: 0
@@ -336,7 +352,7 @@ const getVideoDurationAndResolution = async (filePath: string) => {
       if (err) {
         reject(err);
       }
-      videoDuration = parseInt(metadata.format.duration);
+      videoDuration = formatDuration(parseInt(metadata.format.duration));
 
 
       videoResolution.width = metadata.streams[0].width;
@@ -364,5 +380,5 @@ const getImageAspectRatio = async (filePath) => {
 
 
 
-export { processMp4ToHls, processRawFileToMp4WithWatermark };
+export { getVideoDurationAndResolution, processMp4ToHls, processRawFileToMp4WithWatermark };
 
