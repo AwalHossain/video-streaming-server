@@ -1,15 +1,13 @@
 import compression from "compression";
-import MongoStore from "connect-mongo";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import dotenv from "dotenv";
 import express, { Express, NextFunction, Request, Response } from "express";
-import session from "express-session";
+import session from 'express-session';
 import passport from "passport";
 import globalErrorHandler from "./app/middleware/globalErrorhandler";
 import { passportConfig } from "./config/passport-config";
 import router from "./routes";
-
 const app: Express = express();
 
 
@@ -17,29 +15,17 @@ const BASE_URL = "/api/v1";
 
 dotenv.config();
 
+
+
+app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+
+app.use(express.json());
 app.use(session({
   secret: process.env.SESSION_SECRET!,
   resave: false,
   saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // true for production
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
-  },
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGO_URL!,
-    autoRemove: 'interval',
-  })
-}))
-
-app.use(express.urlencoded({ extended: true }));
-app.use(passport.initialize());
-app.use(passport.session());
-app.use(passport.authenticate(
-  'session'
-))
-
-app.use(express.json());
+}));
 app.use(cookieParser())
 app.use(compression());
 app.use(cors({
