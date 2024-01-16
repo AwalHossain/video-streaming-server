@@ -40,5 +40,6 @@ export default {
     googleClientSecret: "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",
     googleCallbackUrl: "http://localhost:5000/api/v1/auth/google/callback",
     clientUrl: "http://localhost:3000",
+    jwtSecret: "secret",
 
 }
