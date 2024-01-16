@@ -51,11 +51,10 @@ const fileFilter = async (
     let payload = {
       originalName: file.originalname,
       recordingDate: Date.now(),
-      viewCount: 0,
-      duration: 0,
+      duration: "0:00",
       visibility: "Public",
       author: userId,
-      title: file.originalname.split(".")[0]
+      title: file.originalname.split(".")[0].replace(/[_]/g, ' ')
     }
 
     const videoMetadata = await VideoService.insert(payload);
