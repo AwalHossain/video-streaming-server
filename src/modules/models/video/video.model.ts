@@ -17,7 +17,7 @@ const VideoSchema = new mongoose.Schema({
     ref: "User",
   },
   duration: {
-    type: Number,
+    type: String,
   },
   viewsCount: {
     type: Number,
