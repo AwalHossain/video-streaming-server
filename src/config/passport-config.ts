@@ -30,7 +30,9 @@ export const passportConfig = () => {
         }
     ))
 
-    // serialize user
+
+
+    // // serialize user
     passport.serializeUser((user: IUser, done) => {
         done(null, user.email);
     });
