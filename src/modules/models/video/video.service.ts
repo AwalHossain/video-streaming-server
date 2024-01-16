@@ -166,6 +166,18 @@ const getMyVideos = async (userId: string, filters: IVdieosFilterableFields
 };
 
 
+const incrementViewCount = async (id: ObjectId) => {
+
+    const updatedDoc = await Video.updateOne({
+        _id: id,
+    }, {
+        $inc: {
+            viewsCount: 1
+        }
+    })
+
+    return updatedDoc;
+}
 
 
 const update = async (id: ObjectId, document: Partial<IPayload>) => {
@@ -236,5 +248,6 @@ export const VideoService = {
     updateHistory,
     getById,
     getAllVideos,
-    getMyVideos
+    getMyVideos,
+    incrementViewCount
 }
