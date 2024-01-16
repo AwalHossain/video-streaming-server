@@ -4,8 +4,8 @@ export type IPayload = {
   fileName?: string;
   recordingData?: number;
   videoLink?: string;
-  viewCount?: number;
-  duration?: number;
+  viewsCount?: number;
+  duration?: string;
 };
 
 
