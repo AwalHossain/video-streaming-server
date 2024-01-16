@@ -6,13 +6,17 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "web-server": "node ./dist/src/server.js",
+    "web-server": "pm2 start ./dist/src/server.js --no-daemon",
     "video-processor": "nodemon ./src/queue.ts",
     "video-server": "nodemon ./src/video-server.ts",
-    "dev": "nodemon ./src/server.ts",
     "db": "docker-compose up -d",
     "server": "concurrently \"npm run web-server\" \"npm run video-processor\" ",
-    "start": "npm run web-server"
+    "start": "npm run web-server",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:up-detached": "docker-compose up -d",
+    "docker:build-and-up": "docker-compose up --build"
   },
   "keywords": [],
   "author": "",
