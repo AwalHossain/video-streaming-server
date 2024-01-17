@@ -8,7 +8,7 @@ export const passportConfig = () => {
     passport.use(new GoogleStrategy({
         clientID: config.googleClientId,
         clientSecret: config.googleClientSecret,
-        callbackURL: '/api/v1/auth/google/callback',
+        callbackURL: config.googleCallbackUrl,
     },
         async (accessToken, refreshToken, profile, done) => {
             let user = await User.findOne({ googleId: profile.id });
