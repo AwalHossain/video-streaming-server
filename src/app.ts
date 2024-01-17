@@ -22,6 +22,7 @@ app.use(passport.initialize());
 
 app.use(express.json());
 app.use(session({
+  name: "__session",
   secret: process.env.SESSION_SECRET!,
   resave: false,
   saveUninitialized: false,
