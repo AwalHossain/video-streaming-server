@@ -43,4 +43,4 @@ jobs:
       - name: Stop all PM2 processes and print PM2 logs
         run: |
           npm run start
-          sudo -u awal service restart nginx
+          systemctl restart nginx
