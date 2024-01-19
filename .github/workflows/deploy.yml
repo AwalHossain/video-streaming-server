@@ -42,5 +42,5 @@ jobs:
           npm run build
       - name: Stop all PM2 processes and print PM2 logs
         run: |
-          pm2 start npm --name "video-streaming-server" -- start
-          sudo systemctl restart nginx
+          chmod +x ./start-server.sh
+          ./start-server.sh &
