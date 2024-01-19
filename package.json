@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "web-server": "node start ./dist/src/server.js ",
+    "web-server": "node ./dist/src/server.js ",
     "video-processor": "nodemon ./src/queue.ts",
     "video-server": "nodemon ./src/video-server.ts",
     "db": "docker-compose up -d",
