@@ -20,11 +20,4 @@ jobs:
         run: |
           npm install
           npm run build
-          pm2 delete all
-          sudo service nginx
-
-      - name: Print Nginx logs
-        run: sudo cat /var/log/nginx/error.log
-
-      - name: Check Nginx configuration
-        run: sudo nginx -t
+          pm2 stop all
