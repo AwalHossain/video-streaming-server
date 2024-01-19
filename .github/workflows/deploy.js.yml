@@ -26,6 +26,5 @@ jobs:
           npm run build
       - name: Stop all PM2 processes and print PM2 logs
         run: |
-          npm run logs
           npm run stop
           npm run start
