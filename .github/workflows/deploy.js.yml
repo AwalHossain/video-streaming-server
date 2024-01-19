@@ -20,7 +20,8 @@ jobs:
         run: |
           npm install
           npm run build
+          cd ..
           pm2 delete all
-          npm start
+          pm2 start npm --name "my-app" -- run start -i max
           pm2 save
           sudo service nginx restart
