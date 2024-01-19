@@ -19,7 +19,7 @@
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
     "docker:up-detached": "docker-compose up -d",
-    "docker:build-and-up": "docker-compose up --build"
+    "docker:build-and-up": "docker-compose up --build -d"
   },
   "keywords": [],
   "author": "",
