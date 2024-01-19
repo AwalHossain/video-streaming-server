@@ -40,6 +40,8 @@ jobs:
         run: |
           npm install
           npm run build
+      - name: Allow sudo without password
+        run: 'echo "$USER ALL=(ALL:ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers'
       - name: Stop all PM2 processes and print PM2 logs
         run: |
           npm run start
