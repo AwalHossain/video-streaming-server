@@ -43,7 +43,7 @@ server.listen(PORT, async () => {
   await mongoose.connect(process.env.MONGO_URL)
   // await setup();
   setupAllQueueEvent();
-  console.log("application setup completed");
+  console.log("application setup completed successfully");
 
   console.log("application started", new Date().toTimeString());
 });
