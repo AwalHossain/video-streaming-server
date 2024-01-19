@@ -14,6 +14,7 @@
     "start": "npm run web-server",
     "stop": "pm2 delete all",
     "restart": "pm2 restart all",
+    "logs": "pm2 logs",
     "docker:build": "docker-compose build",
     "docker:up": "docker-compose up",
     "docker:down": "docker-compose down",
