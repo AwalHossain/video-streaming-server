@@ -40,9 +40,7 @@ jobs:
         run: |
           npm install
           npm run build
-      - name: Run command as different user
-        run: sudo -u awal command
       - name: Stop all PM2 processes and print PM2 logs
         run: |
           npm run start
-          sudo service restart nginx
+          sudo -u awal service restart nginx
