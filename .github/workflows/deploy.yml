@@ -9,47 +9,13 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-    env:
-      MONGO_URL: ${{ secrets.MONGO_URL }}
-      ACCESS_KEY: ${{ secrets.ACCESS_KEY }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      ENDPOINT: ${{ secrets.ENDPOINT }}
-      REGION: ${{ secrets.REGION }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
-      SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
-      REDIS_URL: ${{ secrets.REDIS_URL }}
-      CLIENT_URL: ${{ secrets.CLIENT_URL }}
-      REDIS_USERNAME: ${{ secrets.REDIS_USERNAME }}
-      REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
-      REDIS_HOST: ${{ secrets.REDIS_HOST }}
-      REDIS_PORT: ${{ secrets.REDIS_PORT }}
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
     steps:
       - uses: actions/checkout@v2
       - name: Use Node.js ${{matrix.node-version}}
         uses: actions/setup-node@v1
         with:
           node-version: ${{matrix.node-version}}
-      - name: Set up environment variables
-        run: |
-          echo MONGO_URL=${{ secrets.MONGO_URL }} >> .env
-          echo ACCESS_KEY=${{ secrets.ACCESS_KEY }} >> .env
-          echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-          echo ENDPOINT=${{ secrets.ENDPOINT }} >> .env
-          echo REGION=${{ secrets.REGION }} >> .env
-          echo GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} >> .env
-          echo GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} >> .env
-          echo GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }} >> .env
-          echo SESSION_SECRET=${{ secrets.SESSION_SECRET }} >> .env
-          echo REDIS_URL=${{ secrets.REDIS_URL }} >> .env
-          echo CLIENT_URL=${{ secrets.CLIENT_URL }} >> .env
-          echo REDIS_USERNAME=${{ secrets.REDIS_USERNAME }} >> .env
-          echo REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }} >> .env
-          echo REDIS_HOST=${{ secrets.REDIS_HOST }} >> .env
-          echo REDIS_PORT=${{ secrets.REDIS_PORT }} >> .env
-          echo JWT_SECRET=${{ secrets.JWT_SECRET }} >> .env
       - name: Print current directory and PATH
         run: |
           pwd
@@ -58,5 +24,3 @@ jobs:
         run: |
           npm install
           npm run build
-          npm start
-          sudo systemctl restart nginx
