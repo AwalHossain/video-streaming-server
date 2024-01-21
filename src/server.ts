@@ -24,8 +24,12 @@ io.on("connection", (socket) => {
 
   const userId = socket.handshake.query.userId;
 
+  // Log a message
+  console.log(`User ${userId} connected`);
+
   // Join the user to the room
   socket.join(userId);
+
 
   socket.on("disconnect", () => {
     console.log(`User ${userId} disconnected`);
