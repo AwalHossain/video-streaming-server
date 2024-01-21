@@ -76,7 +76,6 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
         message: "Failed to save video metadata"
       });
     }
-    console.log(userId, "userId", result._id);
 
     await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
       userId,
