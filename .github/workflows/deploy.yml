@@ -56,5 +56,7 @@ jobs:
           echo $PATH
       - name: Install dependencies
         run: |
-          npm run docker:build-and-up
+          npm install
+          npm run build
+          npm start
           sudo systemctl restart nginx
