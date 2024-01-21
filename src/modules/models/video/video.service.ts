@@ -153,7 +153,9 @@ const getMyVideos = async (userId: string, filters: IVdieosFilterableFields
         .limit(limit)
         .populate("author", "name  email avatar")
 
-    const totalRecords = await Video.countDocuments();
+    const totalRecords = await Video.countDocuments({
+        author: userId
+    });
 
     return {
         meta: {
