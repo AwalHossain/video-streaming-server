@@ -5,7 +5,6 @@ const VideoSchema = new mongoose.Schema({
   title: {
     type: String,
     // required: true,
-    default: "Video Title",
   },
   description: {
     type: String,
