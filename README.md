@@ -17,6 +17,8 @@ create-react-app and MUI library, along with socket.io-client and React Context.
 ## Architecture
 
 ![image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
+![image](https://github.com/AwalHossain/video_streaming_service_server/assets/80216813/9e6b1889-c9d6-45d8-806e-27865f674912)
+
 
 
 ### Backend Services
