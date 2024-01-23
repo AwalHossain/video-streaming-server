@@ -2,7 +2,6 @@
 
 ![Project Image](https://github.com/AwalHossain/video_streaming_service_server/assets/80216813/9e6b1889-c9d6-45d8-806e-27865f674912)
 
-
 ## 🌐 Overview
 
 MERN Video Streaming is a cutting-edge, open-source platform for video
@@ -17,8 +16,6 @@ communication. These include an API server, a video conversion service, and an
 HTTP server serving HLS video files. On the client side, the project uses
 create-react-app and MUI library, along with socket.io-client and React Context.
 
-
-
 ## 🌟 Features
 
 - Real-time video processing with notifications upon completion
@@ -26,13 +23,9 @@ create-react-app and MUI library, along with socket.io-client and React Context.
 - Frontend built with create-react-app and MUI library
 - Real-time communication with the API server using socket.io-client and React Context
 
-  
-
 ## 🏗️ Architecture
 
 ![Architecture Image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
-
-
 
 ## 📡 Backend Services
 
@@ -53,13 +46,11 @@ The Video Conversion Service is a Node.js process responsible for converting vid
 
 BullMQ manages the job queue, passing one job to the next upon completion, with job data stored in Redis. Please note that this service is not exposed to any HTTP port, ensuring a secure video processing pipeline.
 
-
 ### 🖥️ Frontend app
 
 The client app is based on create-react-app and MUI library. It uses
 socket.io-client and React Context to communicate with the API server and
 display the video content.
-
 
 ## 🚀 Getting Started
 
@@ -111,8 +102,6 @@ docker-compose up -d
 
 ### 4. Start the application
 
-#### 4.1 Start the server
-
 This will start all the three backend services.
 
 ```bash
@@ -121,7 +110,7 @@ npm run dev
 
 ### 5. Usage
 
-You can now access the application at http://localhost:3000.
+You can now access the application at http://localhost:5000.
 
 ## 🤝 Contributing to MERN Video Streaming
 
@@ -135,6 +124,7 @@ MERN Video Streaming is licensed under the MIT License. Please see the `LICENSE`
 file for more information.
 
 ## 📝 Note
+
 This project is still under development. The README will be updated as the project progresses. Thank you for your interest and stay tuned for more updates!.
 
 This readme file is not finished yet. I will update it as I go along with the
