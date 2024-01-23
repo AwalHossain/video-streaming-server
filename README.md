@@ -27,15 +27,8 @@ create-react-app and MUI library, along with socket.io-client and React Context.
 ## 🏗️ Architecture
 
 ![Architecture Image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
-  
-## 🛠️ Built With
 
-- [MongoDB](https://www.mongodb.com/) - Document-based database
-- [Express](https://expressjs.com/) - Node.js web application framework
-- [React](https://reactjs.org/) - JavaScript library for building user interfaces
-- [Node.js](https://nodejs.org/en/) - JavaScript runtime environment
-
-### Backend Services
+## Backend Services
 
 ### API Server
 
@@ -54,9 +47,6 @@ The Video Conversion Service is a Node.js process responsible for converting vid
 
 BullMQ manages the job queue, passing one job to the next upon completion, with job data stored in Redis. Please note that this service is not exposed to any HTTP port, ensuring a secure video processing pipeline.
 
-#### HTTP Server
-
-The HTTP server is a plain and simple server that serves HLS video files.
 
 ### Frontend app
 
@@ -73,7 +63,7 @@ software installed on your local machine:
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
-### Built with Open-Source Technologies
+### 🛠️ Built with Open-Source Technologies
 
 MERN Video Streaming has been built with the following open-source technologies:
 
