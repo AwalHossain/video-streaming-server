@@ -44,11 +44,15 @@ MongoDB driver. The server communicates with Redis to process and store data,
 and uses MongoDB as the primary database. The database and Redis are spun up via
 the docker-compose command.
 
-#### Video Conversion Service
+#### Video Processing Service
 
-The video conversion service is a node process that is responsible for
-converting videos and communicating with Redis via the BullMQ library. The
-service is not exposed to any HTTP port.
+The Video Conversion Service is a Node.js process responsible for converting videos and managing tasks with the BullMQ library. This service is composed of three parts:
+
+1. **Video Conversion:** Converts any format video into MP4 and applies a watermark if an image is provided.
+2. **Adaptive Bitrate Processing:** Transforms the video into adaptive bitrate HLS format (480p & 1080p) for optimal streaming quality.
+3. **CDN Upload:** Upon successful conversion, the video is uploaded to a CDN bucket storage. This allows users to stream videos seamlessly from anywhere in the world.
+
+BullMQ manages the job queue, passing one job to the next upon completion, with job data stored in Redis. Please note that this service is not exposed to any HTTP port, ensuring a secure video processing pipeline.
 
 #### HTTP Server
 
