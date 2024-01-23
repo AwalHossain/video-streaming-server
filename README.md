@@ -17,12 +17,14 @@ communication. These include an API server, a video conversion service, and an
 HTTP server serving HLS video files. On the client side, the project uses
 create-react-app and MUI library, along with socket.io-client and React Context.
 
+
 ## 🌟 Features
 
 - Real-time video processing with notifications upon completion
 - Three-tier backend services for API, video conversion, and HTTP serving
 - Frontend built with create-react-app and MUI library
 - Real-time communication with the API server using socket.io-client and React Context
+  
 
 ## 🏗️ Architecture
 
@@ -53,6 +55,7 @@ BullMQ manages the job queue, passing one job to the next upon completion, with 
 The client app is based on create-react-app and MUI library. It uses
 socket.io-client and React Context to communicate with the API server and
 display the video content.
+
 
 ## 🚀 Getting Started
 
@@ -93,15 +96,7 @@ git clone https://github.com/AwalHossain/Video_Streaming_With_MERN.git
 #### 2.1 Server dependencies
 
 ```bash
-cd server
 npm install
-```
-
-#### 2.2 Client dependencies
-
-```bash
-cd client
-yarn
 ```
 
 ### 3. Start the database and Redis using docker-compose
@@ -117,15 +112,7 @@ docker-compose up -d
 This will start all the three backend services.
 
 ```bash
-cd server
 npm run dev
-```
-
-#### 4.2 Start the client
-
-```bash
-cd client
-yarn start
 ```
 
 ### 5. Usage
