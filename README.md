@@ -1,9 +1,9 @@
-# MERN Video Streaming Platform 🎥 (ONGOING)
+# 🎥 MERN Video Streaming Platform 🎥 (ONGOING)
 
 ![Project Image](https://github.com/AwalHossain/video_streaming_service_server/assets/80216813/9e6b1889-c9d6-45d8-806e-27865f674912)
 
 
-## Overview
+## 🌐 Overview
 
 MERN Video Streaming is a cutting-edge, open-source platform for video
 streaming, offering a comprehensive, full-stack solution utilizing the latest
@@ -17,6 +17,8 @@ communication. These include an API server, a video conversion service, and an
 HTTP server serving HLS video files. On the client side, the project uses
 create-react-app and MUI library, along with socket.io-client and React Context.
 
+
+
 ## 🌟 Features
 
 - Real-time video processing with notifications upon completion
@@ -24,27 +26,24 @@ create-react-app and MUI library, along with socket.io-client and React Context.
 - Frontend built with create-react-app and MUI library
 - Real-time communication with the API server using socket.io-client and React Context
 
+  
+
 ## 🏗️ Architecture
 
 ![Architecture Image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
-  
-## 🛠️ Built With
 
-- [MongoDB](https://www.mongodb.com/) - Document-based database
-- [Express](https://expressjs.com/) - Node.js web application framework
-- [React](https://reactjs.org/) - JavaScript library for building user interfaces
-- [Node.js](https://nodejs.org/en/) - JavaScript runtime environment
 
-### Backend Services
 
-#### API Server
+## 📡 Backend Services
+
+### 🖥️ API Server
 
 The API server is an Expressjs app that uses Joi, Multer, BullMQ, Socket.io, and
 MongoDB driver. The server communicates with Redis to process and store data,
 and uses MongoDB as the primary database. The database and Redis are spun up via
 the docker-compose command.
 
-#### Video Processing Service
+### 🎞️ Video Processing Service
 
 The Video Conversion Service is a Node.js process responsible for converting videos and managing tasks with the BullMQ library. This service is composed of three parts:
 
@@ -54,17 +53,17 @@ The Video Conversion Service is a Node.js process responsible for converting vid
 
 BullMQ manages the job queue, passing one job to the next upon completion, with job data stored in Redis. Please note that this service is not exposed to any HTTP port, ensuring a secure video processing pipeline.
 
-#### HTTP Server
 
-The HTTP server is a plain and simple server that serves HLS video files.
-
-### Frontend app
+### 🖥️ Frontend app
 
 The client app is based on create-react-app and MUI library. It uses
 socket.io-client and React Context to communicate with the API server and
 display the video content.
 
-## Prerequisites
+
+## 🚀 Getting Started
+
+### Prerequisites
 
 To get started with MERN Video Streaming, you will need to have the following
 software installed on your local machine:
@@ -73,7 +72,7 @@ software installed on your local machine:
 - [Docker](https://www.docker.com/)
 - [Docker Compose](https://docs.docker.com/compose/)
 
-### Built with Open-Source Technologies
+### 🛠️ Built with Open-Source Technologies
 
 MERN Video Streaming has been built with the following open-source technologies:
 
@@ -86,7 +85,7 @@ MERN Video Streaming has been built with the following open-source technologies:
 - [Node.js](https://nodejs.org/en/) - A JavaScript runtime environment used to
   run the server-side code
 
-## Installation
+## 💻 Installation
 
 To run the project locally, follow these steps:
 
@@ -101,15 +100,7 @@ git clone https://github.com/AwalHossain/Video_Streaming_With_MERN.git
 #### 2.1 Server dependencies
 
 ```bash
-cd server
 npm install
-```
-
-#### 2.2 Client dependencies
-
-```bash
-cd client
-yarn
 ```
 
 ### 3. Start the database and Redis using docker-compose
@@ -125,36 +116,26 @@ docker-compose up -d
 This will start all the three backend services.
 
 ```bash
-cd server
 npm run dev
-```
-
-#### 4.2 Start the client
-
-```bash
-cd client
-yarn start
 ```
 
 ### 5. Usage
 
 You can now access the application at http://localhost:3000.
 
-## Contributing to MERN Video Streaming
+## 🤝 Contributing to MERN Video Streaming
 
 MERN Video Streaming is an open-source project and we welcome contributions from
 the community. If you would like to contribute to the project, please refer to
 the `CONTRIBUTING.md` file for guidelines.
 
-## License
+## 📜 License
 
 MERN Video Streaming is licensed under the MIT License. Please see the `LICENSE`
 file for more information.
 
-## Note
-
-Before running the above commands, make sure that you have Docker and Node.js
-installed on your machine.
+## 📝 Note
+This project is still under development. The README will be updated as the project progresses. Thank you for your interest and stay tuned for more updates!.
 
 This readme file is not finished yet. I will update it as I go along with the
 project. Thanks.
