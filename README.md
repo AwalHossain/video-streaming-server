@@ -1,4 +1,7 @@
-# MERN Video Streaming Project (ONGOING)
+# MERN Video Streaming Platform 🎥 (ONGOING)
+
+![Project Image](https://github.com/AwalHossain/video_streaming_service_server/assets/80216813/9e6b1889-c9d6-45d8-806e-27865f674912)
+
 
 ## Overview
 
