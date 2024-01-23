@@ -17,12 +17,23 @@ communication. These include an API server, a video conversion service, and an
 HTTP server serving HLS video files. On the client side, the project uses
 create-react-app and MUI library, along with socket.io-client and React Context.
 
-## Architecture
-![image](https://github.com/AwalHossain/video_streaming_service_server/assets/80216813/9e6b1889-c9d6-45d8-806e-27865f674912)
-![image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
+## 🌟 Features
 
+- Real-time video processing with notifications upon completion
+- Three-tier backend services for API, video conversion, and HTTP serving
+- Frontend built with create-react-app and MUI library
+- Real-time communication with the API server using socket.io-client and React Context
 
+## 🏗️ Architecture
 
+![Architecture Image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
+  
+## 🛠️ Built With
+
+- [MongoDB](https://www.mongodb.com/) - Document-based database
+- [Express](https://expressjs.com/) - Node.js web application framework
+- [React](https://reactjs.org/) - JavaScript library for building user interfaces
+- [Node.js](https://nodejs.org/en/) - JavaScript runtime environment
 
 ### Backend Services
 
