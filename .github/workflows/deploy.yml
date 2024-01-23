@@ -2,9 +2,8 @@ name: deploy video-streaming server CI/CD pipeline
 
 on:
   push:
-    branches: [master]
-  pull_request:
-    branches: [master]
+    tags:
+      - "stream"
 
 jobs:
   build:
