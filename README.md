@@ -37,14 +37,14 @@ create-react-app and MUI library, along with socket.io-client and React Context.
 
 ### Backend Services
 
-#### API Server
+### API Server
 
 The API server is an Expressjs app that uses Joi, Multer, BullMQ, Socket.io, and
 MongoDB driver. The server communicates with Redis to process and store data,
 and uses MongoDB as the primary database. The database and Redis are spun up via
 the docker-compose command.
 
-#### Video Processing Service
+### Video Processing Service
 
 The Video Conversion Service is a Node.js process responsible for converting videos and managing tasks with the BullMQ library. This service is composed of three parts:
 
