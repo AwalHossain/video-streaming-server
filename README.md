@@ -18,17 +18,21 @@ HTTP server serving HLS video files. On the client side, the project uses
 create-react-app and MUI library, along with socket.io-client and React Context.
 
 
+
 ## 🌟 Features
 
 - Real-time video processing with notifications upon completion
 - Three-tier backend services for API, video conversion, and HTTP serving
 - Frontend built with create-react-app and MUI library
 - Real-time communication with the API server using socket.io-client and React Context
+
   
 
 ## 🏗️ Architecture
 
 ![Architecture Image](https://user-images.githubusercontent.com/497812/220627727-04a26928-71df-4c9b-9637-92289a2beee2.png)
+
+
 
 ## 📡 Backend Services
 
