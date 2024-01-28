@@ -10,17 +10,22 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{matrix.node-version}}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{matrix.node-version}}
+          cache: "npm"
       - name: Print current directory and PATH
         run: |
           pwd
           echo $PATH
       - name: Install dependencies
         run: |
-          npm install
+          npm ci
           npm run build
+      - run: |
+          touch .env
+          echo "${{secrets.PROD_ENV_FILE}}">> .env
+      - run: |
           pm2 start npm --name "video-streaming-server" -- start
