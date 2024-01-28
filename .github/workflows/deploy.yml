@@ -2,8 +2,7 @@ name: deploy video-streaming server CI/CD pipeline
 
 on:
   push:
-    tags:
-      - "stream"
+    branches: [main]
 
 jobs:
   build:
