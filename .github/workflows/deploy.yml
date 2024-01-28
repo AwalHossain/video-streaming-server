@@ -22,7 +22,7 @@ jobs:
           echo $PATH
       - name: Install dependencies
         run: |
-          npm ci
+          npm install
           npm run build
       - run: |
           touch .env
