@@ -27,5 +27,5 @@ jobs:
           touch .env
           echo "${{secrets.PROD_ENV_FILE}}">> .env
       - run: |
-          pm2 restart video-streaming-server
+          pm2 start npm --name "video-streaming-server" -- start
           pm2 save
