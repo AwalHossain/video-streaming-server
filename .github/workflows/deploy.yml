@@ -21,10 +21,11 @@ jobs:
           echo $PATH
       - name: Install dependencies
         run: |
-          npm install
+          npm ci
           npm run build
       - run: |
           touch .env
           echo "${{secrets.PROD_ENV_FILE}}">> .env
       - run: |
-          pm2 start npm --name "video-streaming-server" -- start
+          pm2 restart video-streaming-server
+          pm2 save
