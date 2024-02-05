@@ -2,7 +2,10 @@
 
 ![Project Image](https://github.com/AwalHossain/video_streaming_service_server/assets/80216813/9e6b1889-c9d6-45d8-806e-27865f674912)
 
-## 🌐 Overview
+**Check frontend part** [GITHUB](https://github.com/AwalHossain/video_streaming_client)
+
+
+## 🌐 Overview 
 
 MERN Video Streaming is a cutting-edge, open-source platform for video
 streaming, offering a comprehensive, full-stack solution utilizing the latest
