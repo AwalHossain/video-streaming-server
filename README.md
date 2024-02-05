@@ -50,7 +50,7 @@ BullMQ manages the job queue, passing one job to the next upon completion, with 
 
 The client app is based on create-react-app and MUI library. It uses
 socket.io-client and React Context to communicate with the API server and
-display the video content.
+display the video content. check frontend part [github-client](https://github.com/AwalHossain/video_streaming_client)
 
 ## 🚀 Getting Started
 
