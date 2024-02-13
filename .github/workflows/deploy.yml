@@ -1,0 +1,26 @@
+name: deploy video-streaming server CI/CD pipeline
+
+on:
+  push:
+    tags:
+      - "stream"
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{matrix.node-version}}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{matrix.node-version}}
+      - name: Print current directory and PATH
+        run: |
+          pwd
+          echo $PATH
+      - name: Install dependencies
+        run: |
+          npm install
+          npm run build
+          pm2 start npm --name "video-streaming-server" -- start

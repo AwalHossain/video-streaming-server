@@ -13,12 +13,13 @@ import catchAsync from "../../../shared/catchAsyncError";
 import pick from "../../../shared/pick";
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../../queues/constants";
 import { addQueueItem } from "../../queues/queue";
+import { getVideoDurationAndResolution } from "../../queues/video-processor";
 import { videoFilterableFields } from "./video.constant";
 import { VideoService } from "./video.service";
 
 
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
-  const userId = (req.user as any)._id;
+  const userId = (req.user as any).id;
 
   {
 
@@ -41,11 +42,16 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       image = req.files['image'][0];
     }
 
+
+
+    const { videoDuration, videoResolution } = await getVideoDurationAndResolution(video.path);
+
     let payload = {
       fileName: video.filename,
       videoPath: video.path,
       watermarkPath: image?.path ?? null,
       title: videoMetadata.originalName,
+      duration: videoDuration,
     }
 
     const result = await VideoService.updateHistory(videoMetadata._id, {
@@ -70,7 +76,6 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
         message: "Failed to save video metadata"
       });
     }
-    console.log(userId, "userId");
 
     await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
       userId,
@@ -115,7 +120,7 @@ const getMyVideos = catchAsync(async (req: Request, res: Response) => {
   const filters = pick(req.query, videoFilterableFields);
   const paginationOptions = pick(req.query, paginationFields);
   console.log("userId", req.user);
-  const userId = (req.user as any)._id.toHexString();
+  const userId = (req.user as any).id;
   const result = await VideoService.getMyVideos(userId, filters, paginationOptions);
 
   res.status(200).json({
@@ -155,9 +160,12 @@ const updateHistory = catchAsync(async (req: Request, res: Response) => {
 
 const getById = catchAsync(async (req: Request, res: Response) => {
 
-  console.log(" req.params.id", req.params.id);
+  const id = new ObjectId(req.params.id);
 
   const result = await VideoService.getById(req.params.id);
+
+  // increment view count
+  await VideoService.incrementViewCount(id);
 
   res.status(200).json({
     status: "success",

@@ -5,7 +5,6 @@ const VideoSchema = new mongoose.Schema({
   title: {
     type: String,
     // required: true,
-    default: "Video Title",
   },
   description: {
     type: String,
@@ -17,7 +16,7 @@ const VideoSchema = new mongoose.Schema({
     ref: "User",
   },
   duration: {
-    type: Number,
+    type: String,
   },
   viewsCount: {
     type: Number,

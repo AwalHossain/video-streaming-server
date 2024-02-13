@@ -48,6 +48,14 @@ const getAllVideos = async (filters: IVdieosFilterableFields
         })
     }
 
+    if (Object.keys(filtersData).length) {
+        andConditions.push({
+            $and: Object.entries(filtersData).map(([key, value]) => ({
+                [key]: value
+            }))
+        })
+    }
+
     if (tags && tags.length > 0) {
 
         const tagsAll = Array.isArray(tags) ? tags : [tags];
@@ -56,14 +64,6 @@ const getAllVideos = async (filters: IVdieosFilterableFields
         andConditions.push({
             tags: { $in: tagsAll }
         });
-    }
-
-    if (Object.keys(filtersData).length) {
-        andConditions.push({
-            $and: Object.entries(filtersData).map(([key, value]) => ({
-                [key]: value
-            }))
-        })
     }
 
 
@@ -78,9 +78,11 @@ const getAllVideos = async (filters: IVdieosFilterableFields
         sortCondition[sortBy] = sortOrder;
     }
 
-    const whereCondition = andConditions.length > 0 ? {
-        $and: andConditions
-    } : {};
+    const whereCondition = {
+        ...(andConditions.length > 0 ? { $and: andConditions } : {}),
+    };
+
+    console.log("whereCondition", whereCondition);
 
 
     const result = await Video.find(whereCondition)
@@ -89,11 +91,7 @@ const getAllVideos = async (filters: IVdieosFilterableFields
         .limit(limit)
         .populate("author", "name  email avatar")
 
-    const totalRecords = await Video.countDocuments(
-        {
-            status: "published"
-        }
-    );
+    const totalRecords = await Video.countDocuments();
 
     return {
         meta: {
@@ -155,7 +153,9 @@ const getMyVideos = async (userId: string, filters: IVdieosFilterableFields
         .limit(limit)
         .populate("author", "name  email avatar")
 
-    const totalRecords = await Video.countDocuments();
+    const totalRecords = await Video.countDocuments({
+        author: userId
+    });
 
     return {
         meta: {
@@ -168,6 +168,18 @@ const getMyVideos = async (userId: string, filters: IVdieosFilterableFields
 };
 
 
+const incrementViewCount = async (id: ObjectId) => {
+
+    const updatedDoc = await Video.updateOne({
+        _id: id,
+    }, {
+        $inc: {
+            viewsCount: 1
+        }
+    })
+
+    return updatedDoc;
+}
 
 
 const update = async (id: ObjectId, document: Partial<IPayload>) => {
@@ -238,5 +250,6 @@ export const VideoService = {
     updateHistory,
     getById,
     getAllVideos,
-    getMyVideos
+    getMyVideos,
+    incrementViewCount
 }

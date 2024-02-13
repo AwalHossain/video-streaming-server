@@ -37,7 +37,7 @@ const login = async (data: IUser) => {
 
 const getUserById = async (id: string) => {
 
-    const userData = User.findById(id);
+    const userData = User.findById(id).select('-password');
 
     if (!userData) {
         throw new ApiError(httpStatus.BAD_REQUEST, 'User not found');

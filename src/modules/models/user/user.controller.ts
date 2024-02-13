@@ -1,23 +1,27 @@
 import { NextFunction, Request, Response } from 'express';
 import catchAsync from "../../../shared/catchAsyncError";
 import { sendResponse } from "../../../shared/sendResponse";
+import { createToken } from '../../../utils/jwt';
 import { UserService } from './user.service';
-
 
 
 const registrationUser = catchAsync(async (req: Request, res: Response, next: NextFunction) => {
 
     const result = await UserService.register(req.body);
 
-    req.login(result, (err) => {
-        if (err) return next(err);
-        sendResponse(res, {
-            statusCode: 201,
-            success: true,
-            message: 'User registered successfully !',
-            data: result,
-        });
-    })
+
+    const token = createToken(result._id);
+
+    console.log("token", token)
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: 'User registered successfully with token!',
+        data: {
+            ...result.toObject(),
+            accessToken: token,
+        },
+    });
 
 });
 
@@ -26,14 +30,17 @@ const loginUser = catchAsync(async (req: Request, res: Response, next: NextFunct
 
     const result = await UserService.login(req.body);
 
-    req.login(result, (err) => {
-        if (err) return next(err);
-        sendResponse(res, {
-            statusCode: 201,
-            success: true,
-            message: 'User Login successfully !',
-            data: result,
-        });
+
+    const token = createToken(result._id);
+    console.log("token", token)
+    sendResponse(res, {
+        statusCode: 201,
+        success: true,
+        message: 'User registered successfully with token!',
+        data: {
+            ...result.toObject(),
+            accessToken: token,
+        },
     })
 
 });

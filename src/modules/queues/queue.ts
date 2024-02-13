@@ -43,6 +43,10 @@ const addQueueItem = async (queueName: string, item: QueueItem) => {
   //   console.log('AddQuueeue ',queueName, item);
   // }
 
+
+  console.log('AddQuueeue ', queueName, item);
+
+
   eventEmitter.emit(queueName, item);
 
   await queue.queueObj.add(queueName, item, {
