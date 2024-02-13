@@ -2,19 +2,19 @@ name: deploy video-streaming server CI/CD pipeline
 
 on:
   push:
-    tags:
-      - "stream"
+    branches: [main]
 
 jobs:
   build:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Use Node.js ${{matrix.node-version}}
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: ${{matrix.node-version}}
+          cache: "npm"
       - name: Print current directory and PATH
         run: |
           pwd
@@ -23,4 +23,10 @@ jobs:
         run: |
           npm install
           npm run build
+      - run: |
+          touch .env
+          echo "${{secrets.PROD_ENV_FILE}}">> .env
+      - name: Run server
+        run: |
           pm2 start npm --name "video-streaming-server" -- start
+          pm2 save

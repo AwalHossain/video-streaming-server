@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import fs from "fs";
 import multer from "multer";
+import path from 'path';
 import { VideoService } from '../../modules/models/video/video.service';
 import { NOTIFY_EVENTS } from '../../modules/queues/constants';
 import { io } from '../../server';
@@ -48,7 +49,7 @@ const fileFilter = async (
   if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/avi" || file.mimetype === "video/webm"
   ) {
     let payload = {
-      originalName: file.originalname,
+      originalName: path.basename(file.originalname, path.extname(file.originalname)),
       recordingDate: Date.now(),
       duration: "0:00",
       visibility: "Public",
