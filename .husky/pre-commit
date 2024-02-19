@@ -1,0 +1,1 @@
+cd api-gateway && npx lint-staged
