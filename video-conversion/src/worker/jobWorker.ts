@@ -1,8 +1,8 @@
-import { QueueEvents, Worker } from "bullmq";
-import config from "../config/index";
-import setupVideoHandler from "../handler/videoLifecycleHandler";
-import { QUEUE_EVENTS } from "../constant/queueEvents";
-import { QUEUE_EVENT_HANDLERS } from "../handler/videoEventHandler";
+import { QueueEvents, Worker } from 'bullmq';
+import { QUEUE_EVENTS } from '../constant/queueEvents';
+import { QUEUE_EVENT_HANDLERS } from '../handler/videoEventHandler';
+import setupVideoHandler from '../handler/videoLifecycleHandler';
+import { RedisClient } from '../shared/redis';
 
 // const redisConnection = {
 //   username: config.redis.username,
@@ -11,23 +11,20 @@ import { QUEUE_EVENT_HANDLERS } from "../handler/videoEventHandler";
 //   port: parseInt(config.redis.port),
 // };
 
-const redisConnection = {
-  host: 'localhost',
-  port: 6379,
-};
-
+// const redisConnection = {
+//   host: 'localhost',
+//   port: 6379,
+// };
 
 export const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {
-    connection: redisConnection,
+    connection: RedisClient.redisConnection,
   });
 
   // Uncomment and modify event listeners as needed
-  // queueEvents.on("waiting", ({ jobId }) => {
-  //   console.log(`A job with ID ${jobId} is waiting`);
-  // });
-
-  // ...
+  queueEvents.on('waiting', ({ jobId }) => {
+    console.log(`A job with ID ${jobId} is waiting`);
+  });
 
   const worker = new Worker(
     queueName,
@@ -36,13 +33,12 @@ export const listenQueueEvent = (queueName: string) => {
       if (handler) {
         return await handler(job);
       }
-      throw new Error("No handler found for queue: " + queueName);
+      throw new Error('No handler found for queue: ' + queueName);
     },
-    { connection: redisConnection }
+    { connection: RedisClient.redisConnection },
   );
 
-
-  worker.on("failed", (job, err) => {
+  worker.on('failed', (job, err) => {
     console.log(`${job.id} has failed with ${err.message}`);
   });
 
