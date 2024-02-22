@@ -5,16 +5,16 @@ import config from "../config/index";
 import eventEmitter from "../shared/event-manager";
 
 
-const redisConnection = {
-  username: config.redis.username,
-  password: config.redis.password,
-  host: config.redis.host,
-  port: parseInt(config.redis.port),
-};
 // const redisConnection = {
-//   host: 'localhost',
-//   port: 6379,
+//   username: config.redis.username,
+//   password: config.redis.password,
+//   host: config.redis.host,
+//   port: parseInt(config.redis.port),
 // };
+const redisConnection = {
+  host: 'localhost',
+  port: 6379,
+};
 
 export type QueueItem = {
   completed: boolean;
@@ -50,11 +50,11 @@ const addQueueItem = async (queueName: string, item: QueueItem) => {
     removeOnFail: false,
   });
 
-  const newQueue = new Queue(queueName ,{ connection: redisConnection });
- await newQueue.add(queueName, item, {
-    removeOnComplete: true,
-    removeOnFail: false,
-  });
+//   const newQueue = new Queue(queueName ,{ connection: redisConnection });
+//  await newQueue.add(queueName, item, {
+//     removeOnComplete: true,
+//     removeOnFail: false,
+//   });
 
 };
 

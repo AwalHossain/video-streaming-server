@@ -4,17 +4,17 @@ import setupVideoHandler from "../handler/videoLifecycleHandler";
 import { QUEUE_EVENTS } from "../constant/queueEvents";
 import { QUEUE_EVENT_HANDLERS } from "../handler/videoEventHandler";
 
-const redisConnection = {
-  username: config.redis.username,
-  password: config.redis.password,
-  host: config.redis.host,
-  port: parseInt(config.redis.port),
-};
-
 // const redisConnection = {
-//   host: 'localhost',
-//   port: 6379,
+//   username: config.redis.username,
+//   password: config.redis.password,
+//   host: config.redis.host,
+//   port: parseInt(config.redis.port),
 // };
+
+const redisConnection = {
+  host: 'localhost',
+  port: 6379,
+};
 
 
 export const listenQueueEvent = (queueName: string) => {
