@@ -12,7 +12,9 @@
   "include": [
     "src/**/*.js", // Every js file inside src folder
     "src/**/*.ts", // Every ts file inside src folder
-    "*.d.ts"
+    "server.js",
+    "custom.d.ts",
+    "index.d.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,14 +1,21 @@
-import { QueueEvents, Worker } from 'bullmq';
+import { QueueEvents, Worker } from "bullmq";
+import config from "../config/index";
+import setupVideoHandler from "../handler/videoLifecycleHandler";
+import { QUEUE_EVENTS } from "../constant/queueEvents";
+import { QUEUE_EVENT_HANDLERS } from "../handler/videoEventHandler";
 
-import redisConnection from '../shared/redis';
-import { QUEUE_EVENTS } from '../constant/queueEvents';
-import { QUEUE_EVENT_HANDLERS } from '../handler/videoEventHandler';
-import videoLifecycleHandler from '../handler/videoLifecycleHandler';
+const redisConnection = {
+  username: config.redis.username,
+  password: config.redis.password,
+  host: config.redis.host,
+  port: parseInt(config.redis.port),
+};
 
 // const redisConnection = {
 //   host: 'localhost',
 //   port: 6379,
 // };
+
 
 export const listenQueueEvent = (queueName: string) => {
   const queueEvents = new QueueEvents(queueName, {
@@ -16,9 +23,9 @@ export const listenQueueEvent = (queueName: string) => {
   });
 
   // Uncomment and modify event listeners as needed
-  queueEvents.on('waiting', ({ jobId }) => {
-    console.log(`A job with ID ${jobId} is waiting`);
-  });
+  // queueEvents.on("waiting", ({ jobId }) => {
+  //   console.log(`A job with ID ${jobId} is waiting`);
+  // });
 
   // ...
 
@@ -29,12 +36,13 @@ export const listenQueueEvent = (queueName: string) => {
       if (handler) {
         return await handler(job);
       }
-      throw new Error('No handler found for queue: ' + queueName);
+      throw new Error("No handler found for queue: " + queueName);
     },
-    { connection: redisConnection },
+    { connection: redisConnection }
   );
 
-  worker.on('failed', (job, err) => {
+
+  worker.on("failed", (job, err) => {
     console.log(`${job.id} has failed with ${err.message}`);
   });
 
@@ -45,7 +53,7 @@ export const setupAllQueueEvent = () => {
   Object.values(QUEUE_EVENTS).map((queueName) => {
     listenQueueEvent(queueName);
   });
-  videoLifecycleHandler();
+  setupVideoHandler();
 
   return true;
 };

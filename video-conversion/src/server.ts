@@ -1,6 +1,7 @@
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
+import { setupAllQueueEvent } from './worker/jobWorker';
 
 const PORT: number = 5000;
 
@@ -32,6 +33,6 @@ io.on('connection', (socket) => {
 server.listen(PORT, async () => {
   console.log(`listening on port ${PORT}`);
   console.log('application setup completed successfully');
-
+  setupAllQueueEvent();
   console.log('application started', new Date().toTimeString());
 });
