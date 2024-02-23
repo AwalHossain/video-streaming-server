@@ -6,7 +6,7 @@ import { setupAllQueueEvent } from './worker/jobWorker';
 
 const PORT: number = 8000;
 
-let server = http.createServer(app);
+const server = http.createServer(app);
 
 export const io = new Server(server, {
   cors: {
@@ -35,7 +35,7 @@ async function bootstrap() {
   try {
     subscribeToEvents();
 
-    server = app.listen(PORT, async () => {
+    server.listen(PORT, async () => {
       console.log(`listening on port ${PORT}`);
       console.log('application setup completed successfully');
       setupAllQueueEvent();
