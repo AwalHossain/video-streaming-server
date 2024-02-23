@@ -15,13 +15,17 @@ const redisConfig = {
 };
 
 const redisConnection = new Redis(redisConfig);
-const redisPubClient = new Redis(redisConfig);
-const redisSubClient = new Redis(redisConfig);
+export const redisPubClient = new Redis(redisConfig);
+export const redisSubClient = new Redis(redisConfig);
 
-const connect = async () => {
-  await redisPubClient.connect();
-  await redisSubClient.connect();
-};
+redisConnection.on('error', (error) => console.log('RedisError', error))
+redisConnection.on('connect', () => console.log('Redis Connected'))
+
+redisConnection.on('message', (channel, message) => {
+  console.log(`Received the following message from ${channel}: ${message}`);
+});
+
+
 
 const set = async (key: string, value: string, ex: number): Promise<void> => {
   if (ex) {
@@ -45,14 +49,11 @@ const disconnect = async () => {
   await redisSubClient.quit();
 };
 
-
 export const RedisClient = {
-  connect,
   set,
   get,
   del,
   disconnect,
   redisConnection,
   publish: redisPubClient.publish.bind(redisPubClient),
-  subscribe: redisSubClient.subscribe.bind(redisSubClient),
 };
