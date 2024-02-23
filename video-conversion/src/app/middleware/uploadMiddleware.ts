@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-useless-escape */
 import { Request } from 'express';
 import fs from 'fs';
@@ -74,10 +75,14 @@ const fileFilter = async (
       EVENT.INSERT_VIDEO_METADATA_EVENT,
       JSON.stringify(payload),
     );
-    const videoMetadata = EventEmitter.on('videoMetadata', (data) => {
-      console.log(data, 'data from event manager');
-      return data;
+
+    const videoMetadata: any = await new Promise((resolve) => {
+      EventEmitter.once('videoMetadata', (data) => {
+        console.log(data, 'data from event manager');
+        resolve(data);
+      });
     });
+
     // redisClient.publish(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, JSON.stringify(payload));
     console.log('videoMetadata', videoMetadata, 'userid');
     io.to(userId).emit(
@@ -89,9 +94,9 @@ const fileFilter = async (
       name: 'notify_video_metadata_saved',
       status: 'success',
       message: 'Video metadata saved',
-      // data: videoMetadata
+      data: videoMetadata,
     });
-    req.body.videoMetadata = payload; // videoMetadata;
+    req.body.videoMetadata = videoMetadata; // videoMetadata;
     cb(null, true);
   } else if (
     file.mimetype === 'image/png' ||
