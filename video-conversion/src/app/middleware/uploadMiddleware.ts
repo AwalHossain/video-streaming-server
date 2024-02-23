@@ -19,11 +19,7 @@ const storageEngine = multer.diskStorage({
       file.originalname.split('.')[0].replace(/\s+/g, '_') + '_' + Date.now(),
     );
     if (!uploadFolder) {
-      uploadFolder =
-        Math.random().toString(36).substring(2, 15) +
-        Math.random().toString(36).substring(2, 15) +
-        '_' +
-        Date.now();
+      uploadFolder = `container-${new Date().getTime()}`;
     }
     const uploadPath = `uploads/${uploadFolder}/videos`;
     fs.mkdirSync(uploadPath, { recursive: true });
