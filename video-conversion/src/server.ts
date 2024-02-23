@@ -1,11 +1,12 @@
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
+import subscribeToEvents from './app/events';
 import { setupAllQueueEvent } from './worker/jobWorker';
 
-const PORT: number = 5000;
+const PORT: number = 8000;
 
-const server = http.createServer(app);
+let server = http.createServer(app);
 
 export const io = new Server(server, {
   cors: {
@@ -30,9 +31,19 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, async () => {
-  console.log(`listening on port ${PORT}`);
-  console.log('application setup completed successfully');
-  setupAllQueueEvent();
-  console.log('application started', new Date().toTimeString());
-});
+async function bootstrap() {
+  try {
+    subscribeToEvents();
+
+    server = app.listen(PORT, async () => {
+      console.log(`listening on port ${PORT}`);
+      console.log('application setup completed successfully');
+      setupAllQueueEvent();
+      console.log('application started', new Date().toTimeString());
+    });
+  } catch (error) {
+    console.error('Error connecting to Redis', error);
+  }
+}
+
+bootstrap();
