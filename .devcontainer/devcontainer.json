@@ -1,7 +1,0 @@
-{
-    "name": "Node.js & Redis",
-    "dockerFile": "Dockerfile",
-    "forwardPorts": [8080, 6379],
-    "postCreateCommand": "redis-server --daemonize yes",
-    "extensions": ["dbaeumer.vscode-eslint"]
-}
