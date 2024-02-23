@@ -17,34 +17,38 @@ import { getVideoDurationAndResolution } from "../../queues/video-processor";
 import { videoFilterableFields } from "./video.constant";
 import { VideoService } from "./video.service";
 
-
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
   const userId = (req.user as any).id;
+  console.log("checking userId", userId);
 
   {
-
-    if (!(req.files['video'])) {
-      io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "failed", message: "Video upload is failed" });
-      res.status(400).json({ status: "failed", message: "Video file is required" });
+    if (!req.files["video"]) {
+      io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, {
+        status: "failed",
+        message: "Video upload is failed",
+      });
+      res
+        .status(400)
+        .json({ status: "failed", message: "Video file is required" });
       return;
     }
 
     const videoMetadata = req.body.videoMetadata;
 
-    io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, { status: "success", message: "Video upload is success" });
+    io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, {
+      status: "success",
+      message: "Video upload is success",
+    });
 
-
-
-    const video = req.files['video'][0];
+    const video = req.files["video"][0];
 
     let image = null;
-    if (req.files['image']) {
-      image = req.files['image'][0];
+    if (req.files["image"]) {
+      image = req.files["image"][0];
     }
 
-
-
-    const { videoDuration, videoResolution } = await getVideoDurationAndResolution(video.path);
+    const { videoDuration, videoResolution } =
+      await getVideoDurationAndResolution(video.path);
 
     let payload = {
       fileName: video.filename,
@@ -52,14 +56,12 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       watermarkPath: image?.path ?? null,
       title: videoMetadata.originalName,
       duration: videoDuration,
-    }
+    };
 
     const result = await VideoService.updateHistory(videoMetadata._id, {
       history: { status: QUEUE_EVENTS.VIDEO_UPLOADED, createdAt: Date.now() },
       ...payload,
-    },
-
-    );
+    });
 
     console.log("user updated metadata", result);
 
@@ -67,13 +69,13 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
         status: "success",
         name: "Video metadata saving",
-        message: "Video metadata saved"
+        message: "Video metadata saved",
       });
     } else {
       io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
         status: "failed",
         name: "Video metadata saving",
-        message: "Failed to save video metadata"
+        message: "Failed to save video metadata",
       });
     }
 
@@ -83,22 +85,29 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       ...payload,
       ...video,
     });
-    res
-      .status(200)
-      .json({
-        status: "success", message: "Upload success",
-        data: {
-          ...result.toObject(),
-          ...req.file,
-        }
-      });
-
+    res.status(200).json({
+      status: "success",
+      message: "Upload success",
+      data: {
+        ...result.toObject(),
+        ...req.file,
+      },
+    });
   }
 });
 
+const insertVideo = catchAsync(async (req: Request, res: Response) => {
+  const result = await VideoService.insertIntoDBFromEvent(req.body);
+
+  res.status(200).json({
+    status: "success",
+    statusCode: 200,
+    message: "Video inserted",
+    data: result,
+  });
+});
 
 const getAllVideos = catchAsync(async (req: Request, res: Response) => {
-
   const filters = pick(req.query, videoFilterableFields);
   const paginationOptions = pick(req.query, paginationFields);
 
@@ -110,18 +119,19 @@ const getAllVideos = catchAsync(async (req: Request, res: Response) => {
     message: "Videos fetched",
     data: result.data,
     meta: result.meta,
-  })
-
-})
-
+  });
+});
 
 const getMyVideos = catchAsync(async (req: Request, res: Response) => {
-
   const filters = pick(req.query, videoFilterableFields);
   const paginationOptions = pick(req.query, paginationFields);
   console.log("userId", req.user);
   const userId = (req.user as any).id;
-  const result = await VideoService.getMyVideos(userId, filters, paginationOptions);
+  const result = await VideoService.getMyVideos(
+    userId,
+    filters,
+    paginationOptions
+  );
 
   res.status(200).json({
     status: "success",
@@ -129,10 +139,8 @@ const getMyVideos = catchAsync(async (req: Request, res: Response) => {
     message: "Videos fetched",
     data: result.data,
     meta: result.meta,
-  })
-
-})
-
+  });
+});
 
 const updateVideo = catchAsync(async (req: Request, res: Response) => {
   console.log("req.params.id", req.body, req.params.id);
@@ -145,21 +153,17 @@ const updateVideo = catchAsync(async (req: Request, res: Response) => {
     statusCode: 200,
     message: "Video updated",
     data: result,
-  })
-
-})
-
+  });
+});
 
 const updateHistory = catchAsync(async (req: Request, res: Response) => {
   const id = new ObjectId(req.params.id);
   const result = await VideoService.updateHistory(id, req.body);
 
   res.send(result);
-})
-
+});
 
 const getById = catchAsync(async (req: Request, res: Response) => {
-
   const id = new ObjectId(req.params.id);
 
   const result = await VideoService.getById(req.params.id);
@@ -172,15 +176,8 @@ const getById = catchAsync(async (req: Request, res: Response) => {
     statusCode: 200,
     message: "Video fetched",
     data: result,
-  })
-
-})
-
-
-
-
-
-
+  });
+});
 
 export const VideoController = {
   uploadVideo,
@@ -189,4 +186,5 @@ export const VideoController = {
   getById,
   getAllVideos,
   getMyVideos,
-}
+  insertVideo,
+};
