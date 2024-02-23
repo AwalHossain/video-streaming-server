@@ -1,79 +1,109 @@
+/* eslint-disable no-useless-escape */
 import { Request } from 'express';
-import fs from "fs";
-import multer from "multer";
+import fs from 'fs';
+import multer from 'multer';
 import path from 'path';
 
-import { io } from '../../server';
 import { NOTIFY_EVENTS } from '../../constant/queueEvents';
+import { io } from '../../server';
+import EventEmitter from '../../shared/event-manager';
+import { RedisClient } from '../../shared/redis';
+import { EVENT } from '../events/event.constant';
 
-
-
-
-let globalName = "";
+let globalName = '';
 const storageEngine = multer.diskStorage({
   destination: (req, file, cb) => {
-    let uploadFolder = "";
+    let uploadFolder = '';
 
-    globalName = file.originalname.split(".")[0].replace(/\s+/g, '_') + "_" + Date.now();
+    globalName = sanitizeFileName(
+      file.originalname.split('.')[0].replace(/\s+/g, '_') + '_' + Date.now(),
+    );
     if (!uploadFolder) {
-      uploadFolder = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "_" + Date.now();
+      uploadFolder =
+        Math.random().toString(36).substring(2, 15) +
+        Math.random().toString(36).substring(2, 15) +
+        '_' +
+        Date.now();
     }
     const uploadPath = `uploads/${uploadFolder}/videos`;
     fs.mkdirSync(uploadPath, { recursive: true });
 
-    cb(null, uploadPath)
-
+    cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-
-    const isImage = file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg';
+    const isImage =
+      file.mimetype === 'image/png' ||
+      file.mimetype === 'image/jpg' ||
+      file.mimetype === 'image/jpeg';
 
     if (isImage) {
-      cb(null, globalName + ".png")
+      cb(null, globalName + '.png');
     } else {
       cb(null, globalName);
     }
-
   },
-})
+});
+
+function sanitizeFileName(blobName: string): string {
+  return blobName.replace(/[\(\)]/g, '_');
+}
 
 const fileFilter = async (
   req: Request,
   file: Express.Multer.File,
-  cb: (error: Error | null, acceptFile: boolean) => void
+  cb: (error: Error | null, acceptFile: boolean) => void,
 ) => {
-
-  const userId = (req.user ).id;
+  const userId = req.user.id;
   console.log(userId, 'checking user id');
 
-  if (file.mimetype === "video/mp4" || file.mimetype === "video/x-matroska" || file.mimetype === "video/avi" || file.mimetype === "video/webm"
+  if (
+    file.mimetype === 'video/mp4' ||
+    file.mimetype === 'video/x-matroska' ||
+    file.mimetype === 'video/avi' ||
+    file.mimetype === 'video/webm'
   ) {
     const payload = {
-      originalName: path.basename(file.originalname, path.extname(file.originalname)),
+      originalName: path.basename(
+        file.originalname,
+        path.extname(file.originalname),
+      ),
       recordingDate: Date.now(),
-      duration: "0:00",
-      visibility: "Public",
+      duration: '0:00',
+      visibility: 'Public',
       author: userId,
-      title: file.originalname.split(".")[0].replace(/[_]/g, ' ')
-    }
-
-    // const videoMetadata = await VideoService.insert(payload);
-    // console.log("videoMetadata", videoMetadata, "userid", userId);
-    io.to(userId).emit("message", "This is such a bullishit, cause i am sendign the meesage to different user!");
+      title: file.originalname.split('.')[0].replace(/[_]/g, ' '),
+    };
+    // publishing video metadata to api-server
+    await RedisClient.publish(
+      EVENT.INSERT_VIDEO_METADATA_EVENT,
+      JSON.stringify(payload),
+    );
+    const videoMetadata = EventEmitter.on('videoMetadata', (data) => {
+      console.log(data, 'data from event manager');
+      return data;
+    });
+    // redisClient.publish(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, JSON.stringify(payload));
+    console.log('videoMetadata', videoMetadata, 'userid');
+    io.to(userId).emit(
+      'message',
+      'This is such a bullishit, cause i am sendign the meesage to different user!',
+    );
 
     io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, {
-      name: "notify_video_metadata_saved",
-      status: "success",
-      message: "Video metadata saved",
+      name: 'notify_video_metadata_saved',
+      status: 'success',
+      message: 'Video metadata saved',
       // data: videoMetadata
     });
     req.body.videoMetadata = payload; // videoMetadata;
     cb(null, true);
-  }
-  else if (file.mimetype === 'image/png' || file.mimetype === 'image/jpg' || file.mimetype === 'image/jpeg') {
+  } else if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
+  ) {
     cb(null, true);
   }
-
 };
 
 export const uploadMiddleware = multer({
