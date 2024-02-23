@@ -1,8 +1,8 @@
-import initVideoEvents from '../modules/video/video.events';
+import initVideoEvent from '../modules/video/video.events';
 
 const subscribeToEvents = () => {
   console.log('subscribing to events');
-  initVideoEvents();
+  initVideoEvent();
 };
 
 export default subscribeToEvents;
