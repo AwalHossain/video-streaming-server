@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import isAuthenticated from '../../../app/middleware/isAuthenticated';
-import { uploadHandler } from "../../../app/middleware/uploadMiddleware";
 import { VideoController } from "./video.controller";
 
 const router = Router();
@@ -8,11 +7,11 @@ const router = Router();
 
 router.post('/upload',
     isAuthenticated,
-    uploadHandler.fields([
-        { name: 'video', maxCount: 1 },
-        { name: 'image', maxCount: 1 }
-    ]),
     VideoController.uploadVideo
+)
+router.post('/insert',
+    isAuthenticated,
+    VideoController.insertVideo
 )
 
 router.get('/', VideoController.getAllVideos)
