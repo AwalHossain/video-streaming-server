@@ -13,6 +13,7 @@ const app: Express = express();
 console.log(config.sentry.dsn, 'config.sentry.dsn');
 Sentry.init({
   dsn: config.sentry.dsn,
+  environment: 'devlopment',
   integrations: [
     // enable HTTP calls tracing
     new Sentry.Integrations.Http({ tracing: true }),
@@ -24,6 +25,8 @@ Sentry.init({
   tracesSampleRate: 1.0, //  Capture 100% of the transactions
   // Set sampling rate for profiling - this is relative to tracesSampleRate
   profilesSampleRate: 1.0,
+
+  tracePropagationTargets: ['all'],
 });
 
 // The request handler must be the first middleware on the app
@@ -35,6 +38,10 @@ app.use(Sentry.Handlers.tracingHandler());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
+
+app.get('/test', (req: Request, res: Response) => {
+  res.send('Hello World!');
+});
 
 app.get('/debug-sentry', function mainHandler() {
   throw new Error('My first Sentry error!');
