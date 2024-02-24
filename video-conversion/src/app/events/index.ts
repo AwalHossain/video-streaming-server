@@ -1,7 +1,8 @@
+import { logger } from '../../shared/logger';
 import initVideoEvent from '../modules/video/video.events';
 
 const subscribeToEvents = () => {
-  console.log('subscribing to events');
+  logger.info('subscribing to events');
   initVideoEvent();
 };
 

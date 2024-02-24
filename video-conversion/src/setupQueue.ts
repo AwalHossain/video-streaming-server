@@ -1,6 +1,5 @@
-import { setupAllQueueEvent } from "./worker/jobWorker";
+import { logger } from './shared/logger';
+import { setupAllQueueEvent } from './worker/jobWorker';
 
-
-    setupAllQueueEvent();
-console.log("Queue server has started! port 6379");
-
+setupAllQueueEvent();
+logger.info('Queue server has started! port 6379');

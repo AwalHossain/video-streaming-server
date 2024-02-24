@@ -2,6 +2,7 @@ import { QueueEvents, Worker } from 'bullmq';
 import { QUEUE_EVENTS } from '../constant/queueEvents';
 import { QUEUE_EVENT_HANDLERS } from '../handler/videoEventHandler';
 import setupVideoHandler from '../handler/videoLifecycleHandler';
+import { logger } from '../shared/logger';
 import { RedisClient } from '../shared/redis';
 
 // const redisConnection = {
@@ -23,7 +24,7 @@ export const listenQueueEvent = (queueName: string) => {
 
   // Uncomment and modify event listeners as needed
   queueEvents.on('waiting', ({ jobId }) => {
-    console.log(`A job with ID ${jobId} is waiting`);
+    logger.info(`A job with ID ${jobId} is waiting`);
   });
 
   const worker = new Worker(
@@ -39,10 +40,10 @@ export const listenQueueEvent = (queueName: string) => {
   );
 
   worker.on('failed', (job, err) => {
-    console.log(`${job.id} has failed with ${err.message}`);
+    logger.info(`${job.id} has failed with ${err.message}`);
   });
 
-  console.log(`${queueName} worker started at ${new Date().toTimeString()}`);
+  logger.info(`${queueName} worker started at ${new Date().toTimeString()}`);
 };
 
 export const setupAllQueueEvent = () => {

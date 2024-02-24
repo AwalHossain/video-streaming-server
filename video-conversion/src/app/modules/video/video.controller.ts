@@ -5,13 +5,14 @@ import catchAsync from '../../../errors/catchAsyncError';
 import { getVideoDurationAndResolution } from '../../../handler/videoProcessingHandler';
 import { addQueueItem } from '../../../queues/addJobToQueue';
 import { io } from '../../../server';
+import { logger } from '../../../shared/logger';
 import { RedisClient } from '../../../shared/redis';
 import { EVENT } from '../../events/event.constant';
 
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
 
-  console.log('checking userId', userId);
+  logger.info('checking userId', userId);
   {
     if (!req.files['video']) {
       io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, {
@@ -26,7 +27,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
 
     const videoMetadata = req.body.videoMetadata;
 
-    console.log('videoMetadata checking here', videoMetadata);
+    logger.info('videoMetadata checking here', videoMetadata);
 
     io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, {
       status: 'success',

@@ -16,6 +16,7 @@ import { NOTIFY_EVENTS, QUEUE_EVENTS } from '../constant/queueEvents';
 import ApiError from '../errors/apiError';
 import { io } from '../server';
 import EventEmitter from '../shared/event-manager';
+import { errorLogger, logger } from '../shared/logger';
 import { RedisClient } from '../shared/redis';
 // import { VIDEO_STATUS } from "./video.constant";
 // import { VideoService } from "./video.service";
@@ -40,7 +41,7 @@ const videoLifecycleHandler = async () => {
     Object.values(QUEUE_EVENTS).forEach((queueName) => {
       EventEmitter.on(queueName, async (data) => {
         if (queueName === QUEUE_EVENTS.VIDEO_UPLOADED) {
-          console.log(data, 'upload data........');
+          logger.info(data, 'upload data........');
         }
 
         if (queueName === QUEUE_EVENTS.VIDEO_PROCESSED) {
@@ -102,7 +103,7 @@ const videoLifecycleHandler = async () => {
                 fileData,
                 fileData.length,
               );
-              console.log(
+              logger.info(
                 `Uploaded block blob ${key} successfully`,
                 uploadBlobResponse.requestId,
               );
@@ -119,7 +120,7 @@ const videoLifecycleHandler = async () => {
               );
             }
           } catch (error) {
-            console.error('Error uploading folder:', error);
+            errorLogger.error('Error uploading folder:', error);
             io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
               status: 'failed',
               message: 'Video uploading failed',
@@ -152,7 +153,7 @@ const videoLifecycleHandler = async () => {
             rootFolder,
             `./uploads/${file}/thumbnails`,
           );
-          console.log(
+          logger.info(
             'i am the hls converted handler!',
             data.path,
             'checking',
@@ -206,9 +207,9 @@ const videoLifecycleHandler = async () => {
 
             // Delete the folder after uploading all files
             await fsextra.remove(deletedFolder);
-            console.log(`Deleted folder: ${deletedFolder}`);
+            logger.info(`Deleted folder: ${deletedFolder}`);
           } catch (error) {
-            console.log(error, 'error');
+            errorLogger.error(error, 'error');
             io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
               status: 'failed',
               message: 'Video uploading failed',
@@ -219,8 +220,8 @@ const videoLifecycleHandler = async () => {
       });
     });
   } catch (error) {
+    errorLogger.error(error, 'error');
     throw new ApiError(500, 'Video lifecycle handler failed');
-    console.log(error, 'error');
   }
 };
 export default videoLifecycleHandler;

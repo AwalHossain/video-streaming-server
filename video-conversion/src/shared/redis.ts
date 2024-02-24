@@ -1,4 +1,5 @@
 import { Redis } from 'ioredis';
+import { errorLogger, logger } from './logger';
 
 // const redisConfig = {
 //     username: config.redis.username,
@@ -18,11 +19,11 @@ const redisConnection = new Redis(redisConfig);
 export const redisPubClient = new Redis(redisConfig);
 export const redisSubClient = new Redis(redisConfig);
 
-redisConnection.on('error', (error) => console.log('RedisError', error));
-redisConnection.on('connect', () => console.log('Redis Connected'));
+redisConnection.on('error', (error) => errorLogger.log('RedisError', error));
+redisConnection.on('connect', () => logger.info('Redis Connected'));
 
 redisConnection.on('message', (channel, message) => {
-  console.log(`Received the following message from ${channel}: ${message}`);
+  logger.info(`Received the following message from ${channel}: ${message}`);
 });
 
 const set = async (key: string, value: string, ex: number): Promise<void> => {

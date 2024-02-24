@@ -8,6 +8,7 @@ import path from 'path';
 import { NOTIFY_EVENTS } from '../../constant/queueEvents';
 import { io } from '../../server';
 import EventEmitter from '../../shared/event-manager';
+import { logger } from '../../shared/logger';
 import { RedisClient } from '../../shared/redis';
 import { EVENT } from '../events/event.constant';
 
@@ -51,7 +52,7 @@ const fileFilter = async (
   cb: (error: Error | null, acceptFile: boolean) => void,
 ) => {
   const userId = req.user.id;
-  console.log(userId, 'checking user id');
+  logger.info(userId, 'checking user id');
 
   if (
     file.mimetype === 'video/mp4' ||
@@ -78,13 +79,13 @@ const fileFilter = async (
 
     const videoMetadata: any = await new Promise((resolve) => {
       EventEmitter.once('videoMetadata', (data) => {
-        console.log(data, 'data from event manager');
+        logger.info(data, 'data from event manager');
         resolve(data);
       });
     });
 
     // redisClient.publish(NOTIFY_EVENTS.NOTIFY_VIDEO_INITIAL_DB_INFO, JSON.stringify(payload));
-    console.log('videoMetadata', videoMetadata, 'userid');
+    logger.info('videoMetadata', videoMetadata, 'userid');
     io.to(userId).emit(
       'message',
       'This is such a bullishit, cause i am sendign the meesage to different user!',

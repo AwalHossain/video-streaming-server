@@ -2,6 +2,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
 import subscribeToEvents from './app/events';
+import { errorLogger, logger } from './shared/logger';
 import { setupAllQueueEvent } from './worker/jobWorker';
 
 const PORT: number = 8000;
@@ -21,13 +22,13 @@ io.on('connection', (socket) => {
   const userId = socket.handshake.query.userId;
 
   // Log a message
-  console.log(`User ${userId} connected`);
+  logger.info(`User ${userId} connected`);
 
   // Join the user to the room
   socket.join(userId);
 
   socket.on('disconnect', () => {
-    console.log(`User ${userId} disconnected`);
+    logger.info(`User ${userId} disconnected`);
   });
 });
 
@@ -36,13 +37,12 @@ async function bootstrap() {
     subscribeToEvents();
 
     server.listen(PORT, async () => {
-      console.log(`listening on port ${PORT}`);
-      console.log('application setup completed successfully');
+      logger.info(`listening on port ${PORT}`);
+      logger.info('application started');
       setupAllQueueEvent();
-      console.log('application started', new Date().toTimeString());
     });
   } catch (error) {
-    console.error('Error connecting to Redis', error);
+    errorLogger.error('Error connecting to Server', error);
   }
 }
 
