@@ -6,11 +6,11 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 // import globalErrorHandler from "./app/middleware/globalErrorhandler";
 import router from './app/routes/index';
 import config from './config';
+import { errorLogger } from './shared/logger';
 dotenv.config();
 
 const app: Express = express();
 
-console.log(config.sentry.dsn, 'config.sentry.dsn');
 Sentry.init({
   dsn: config.sentry.dsn,
   environment: 'devlopment',
@@ -54,7 +54,7 @@ app.use(Sentry.Handlers.errorHandler());
 
 process.on('unhandledRejection', (error) => {
   Sentry.captureException(error);
-  console.error('Unhandled Rejection at:', error);
+  errorLogger.error('Unhandled Rejection at:', error);
 
   Sentry.flush(2000).then(() => {
     process.exit(1);
@@ -63,7 +63,7 @@ process.on('unhandledRejection', (error) => {
 
 process.on('uncaughtException', (error) => {
   Sentry.captureException(error);
-  console.error('There was an uncaught error', error);
+  errorLogger.error('There was an uncaught error', error);
 
   Sentry.flush(2000).then(() => {
     process.exit(1);
