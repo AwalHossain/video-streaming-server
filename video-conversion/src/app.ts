@@ -10,9 +10,6 @@ dotenv.config();
 
 const app: Express = express();
 
-app.use(express.urlencoded({ extended: true }));
-
-app.use(cors());
 console.log(config.sentry.dsn, 'config.sentry.dsn');
 Sentry.init({
   dsn: config.sentry.dsn,
@@ -35,6 +32,10 @@ app.use(Sentry.Handlers.requestHandler());
 // TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler());
 
+app.use(express.urlencoded({ extended: true }));
+
+app.use(cors());
+
 app.get('/debug-sentry', function mainHandler() {
   throw new Error('My first Sentry error!');
 });
@@ -44,6 +45,23 @@ app.use(`/`, router);
 // The error handler must be registered before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
 
+process.on('unhandledRejection', (error) => {
+  Sentry.captureException(error);
+  console.error('Unhandled Rejection at:', error);
+
+  Sentry.flush(2000).then(() => {
+    process.exit(1);
+  });
+});
+
+process.on('uncaughtException', (error) => {
+  Sentry.captureException(error);
+  console.error('There was an uncaught error', error);
+
+  Sentry.flush(2000).then(() => {
+    process.exit(1);
+  });
+});
 // app.use(globalErrorHandler)
 
 //handle not found
