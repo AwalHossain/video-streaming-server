@@ -124,6 +124,8 @@ const videoLifecycleHandler = async () => {
               status: 'failed',
               message: 'Video uploading failed',
             });
+
+            throw new ApiError(500, 'Video uploading to Space failed');
           }
         };
 
