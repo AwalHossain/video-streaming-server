@@ -5,9 +5,19 @@
     "moduleResolution": "node",
     "allowJs": true,
     "checkJs": true,
-    "outDir": "dist", // Compiled Output Directory
+
+    // Compiled Output Directory
+    "outDir": "dist",
+
     "rootDir": "",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "inlineSources": true,
+
+    // Set `sourceRoot` to  "/" to strip the build path prefix
+    // from generated source code references.
+    // This improves issue grouping in Sentry.
+    "sourceRoot": "/"
   },
   "include": [
     "src/**/*.js", // Every js file inside src folder
