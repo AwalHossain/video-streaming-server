@@ -17,6 +17,9 @@ const config = {
     accountKey: process.env.AZURE_ACCOUNT_KEY,
     containerName: process.env.AZURE_CONTAINER_NAME,
   },
+  sentry: {
+    dsn: process.env.SENTRY_DSN,
+  },
 };
 
 export default config;
