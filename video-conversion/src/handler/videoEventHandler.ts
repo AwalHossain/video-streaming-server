@@ -1,13 +1,16 @@
-import { Job } from "bullmq";
-import fs from "fs";
-import path from "path";
-import EventEmitter from "../shared/event-manager";
-import { NOTIFY_EVENTS, QUEUE_EVENTS } from "../constant/queueEvents";
-import { addQueueItem } from "../queues/addJobToQueue";
-import { processMp4ToHls, processRawFileToMp4WithWatermark, } from "./videoProcessingHandler";
+import { Job } from 'bullmq';
+import fs from 'fs';
+import path from 'path';
+import { NOTIFY_EVENTS, QUEUE_EVENTS } from '../constant/queueEvents';
+import { addQueueItem } from '../queues/addJobToQueue';
+import EventEmitter from '../shared/event-manager';
+import {
+  processMp4ToHls,
+  processRawFileToMp4WithWatermark,
+} from './videoProcessingHandler';
 
 const uploadedHandler = async (job: Job) => {
-  console.log("i am the uploaded handler!", job.data.title);
+  console.log('i am the uploaded handler!', job.data.title);
   await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSING, {
     ...job.data,
     completed: true,
@@ -16,21 +19,21 @@ const uploadedHandler = async (job: Job) => {
 };
 
 const processingHandler = async (job: Job) => {
-  console.log("i am the processing handler!", job.data);
+  console.log('i am the processing handler!', job.data);
 
   // create folder based on path that getiing form job data
 
-  const folderName = job.data.destination.split("/")[1];
+  const folderName = job.data.destination.split('/')[1];
   const uploadPath = `uploads/${folderName}/processed`;
   fs.mkdirSync(uploadPath, { recursive: true });
 
   let watermarkPath = job.data?.watermarkPath;
-  console.log("watermarkPath checkkkkk.....", watermarkPath);
+  console.log('watermarkPath checkkkkk.....', watermarkPath);
 
   if (watermarkPath && !fs.existsSync(path.resolve(watermarkPath))) {
     watermarkPath = null;
   }
-  const processed = await processRawFileToMp4WithWatermark(
+  await processRawFileToMp4WithWatermark(
     `./${job.data.path}`,
     uploadPath,
     {
@@ -45,7 +48,7 @@ const processingHandler = async (job: Job) => {
 };
 
 const processedHandler = async (job: Job) => {
-  console.log("i am the processed handler!", job.data.path);
+  console.log('i am the processed handler!', job.data.path);
   await addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTING, {
     ...job.data,
     completed: true,
@@ -53,29 +56,23 @@ const processedHandler = async (job: Job) => {
   return;
 };
 
-
-
 const hlsConvertingHandler = async (job: Job) => {
-  console.log("i am the hls converting handler!", job.data);
-  const folderName = job.data.destination.split("/")[1];
+  console.log('i am the hls converting handler!', job.data);
+  const folderName = job.data.destination.split('/')[1];
   const uploadPath = `uploads/${folderName}/hls`;
   console.log(uploadPath, 'checing upload hls upload pathe');
 
   fs.mkdirSync(uploadPath, { recursive: true });
-  const hlsConverted = await processMp4ToHls(
-    `./${job.data.path}`,
-    uploadPath,
-    {
-      ...job.data,
-      completed: true,
-      next: QUEUE_EVENTS.VIDEO_HLS_CONVERTED,
-    }
-  );
+  await processMp4ToHls(`./${job.data.path}`, uploadPath, {
+    ...job.data,
+    completed: true,
+    next: QUEUE_EVENTS.VIDEO_HLS_CONVERTED,
+  });
   return;
 };
 
 const hlsConvertedHandler = async (job: Job) => {
-  console.log("hls converted handler!", job.data);
+  console.log('hls converted handler!', job.data);
   await addQueueItem(NOTIFY_EVENTS.NOTIFY_VIDEO_HLS_CONVERTED, {
     ...job.data,
     completed: true,
