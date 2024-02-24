@@ -49,6 +49,7 @@
     "@sentry/profiling-node": "^7.102.1",
     "aws-sdk": "^2.1561.0",
     "bullmq": "^5.2.1",
+    "chalk": "^4.1.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
@@ -60,6 +61,8 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^1.4.5-lts.1",
     "multer-s3": "^3.0.1",
-    "socket.io": "^4.7.4"
+    "socket.io": "^4.7.4",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^5.0.0"
   }
 }
