@@ -4,3 +4,8 @@ node_modules
 uploads
 # Sentry Config File
 .sentryclirc
+
+# Log files
+*.log
+logs
+
