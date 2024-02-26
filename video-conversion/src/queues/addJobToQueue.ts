@@ -2,7 +2,6 @@ import { Queue } from 'bullmq';
 import { ALL_EVENTS as QUEUE_EVENTS } from '../constant/queueEvents';
 
 import eventEmitter from '../shared/event-manager';
-import { logger } from '../shared/logger';
 import { RedisClient } from '../shared/redis';
 
 // const redisConnection = {
@@ -43,7 +42,7 @@ const addQueueItem = async (queueName: string, item: QueueItem) => {
     throw new Error(`queue ${queueName} not found from queues file`);
   }
 
-  logger.info('AddQuueeue ', queueName, item);
+  console.log('AddQuueeue ', queueName, item);
 
   eventEmitter.emit(queueName, item);
 
