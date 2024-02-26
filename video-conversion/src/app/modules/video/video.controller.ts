@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable prefer-const */
 import { Request, Response } from 'express';
 import { NOTIFY_EVENTS, QUEUE_EVENTS } from '../../../constant/queueEvents';
@@ -8,10 +9,10 @@ import { io } from '../../../server';
 import { logger } from '../../../shared/logger';
 import { RedisClient } from '../../../shared/redis';
 import { EVENT } from '../../events/event.constant';
+import { videoQueue } from './vidoeQueue';
 
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
-
   logger.info('checking userId', userId);
   {
     if (!req.files['video']) {
@@ -25,14 +26,28 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       return;
     }
 
-    const videoMetadata = req.body.videoMetadata;
+    // Call the videoQueue function
+    const videoMetadata = (await videoQueue(
+      req.files['video'][0],
+      userId,
+    )) as any;
 
-    logger.info('videoMetadata checking here', videoMetadata);
+    console.log('videoMetadata checking here', videoMetadata);
 
     io.to(userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_UPLOADED, {
       status: 'success',
       message: 'Video upload is success',
     });
+
+    // channel.sendToQueue(
+    //   userQueue,
+    //   Buffer.from(
+    //     JSON.stringify({
+    //       status: 'success',
+    //       message: 'Video upload is success',
+    //     }),
+    //   ),
+    // );
 
     const video = req.files['video'][0];
 
