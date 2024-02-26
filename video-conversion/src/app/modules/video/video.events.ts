@@ -1,25 +1,26 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import eventManager from '../../../shared/event-manager';
-import { errorLogger, logger } from '../../../shared/logger';
-import { redisSubClient } from '../../../shared/redis';
-import { EVENT } from '../../events/event.constant';
-
 const initVideoEvent = () => {
-  redisSubClient.subscribe(EVENT.GET_VIDEO_METADATA_EVENT, (err, count) => {
-    if (err) {
-      errorLogger.log('Error in lastVideoEvent', err);
-    }
-    logger.info('Subscribed to lastVideoEvent', count);
-  });
-
-  redisSubClient.on('message', (channel, message) => {
-    if (channel === EVENT.GET_VIDEO_METADATA_EVENT) {
-      logger.info(`Received the following message from ${channel}: ${message}`);
-      const data = JSON.parse(message);
-      eventManager.emit('videoMetadata', data);
-    }
-    logger.info(`Received the following message from ${channel}: ${message}`);
-  });
+  // const options = {
+  //   correlationId: 'correal',
+  //   replyTo: EVENT.GET_VIDEO_METADATA_EVENT,
+  // };
+  // RabbitMQ.consume(
+  //   EVENT.GET_VIDEO_METADATA_EVENT,
+  //   async (msg: Message, ack: () => void) => {
+  //     try {
+  //       // check if correlationId is the same as the one sent
+  //       console.log('correlationId', msg);
+  //       if (msg.properties.correlationId === options.correlationId) {
+  //         const data = JSON.parse(msg.content.toString());
+  //         console.log('data', data);
+  //         logger.info(data, 'data from event manager');
+  //         // EventEmitter.emit('videoMetadata', data);
+  //         ack();
+  //       }
+  //     } catch (err) {
+  //       console.error('Message processing error', err);
+  //     }
+  //   },
+  // );
 };
 
 export default initVideoEvent;
