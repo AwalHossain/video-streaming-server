@@ -7,24 +7,33 @@ import mongoose, { SortOrder } from "mongoose";
 import ApiError from "../../../error/apiError";
 import { PaginationHelper } from "../../../helpers/paginationHelper";
 import { IpaginationOptions } from "../../../interface/pagination";
-import { redisPubClient } from "../../../shared/redis";
+import RabbitMQ from "../../../shared/rabbitMQ";
 import { EVENT } from "../../events/event.constants";
 import { videoSearchableFields } from "./video.constant";
 import { IPayload, IVdieosFilterableFields } from "./video.interface";
 import { Video } from "./video.model";
 // // TODO: add logging
 
-const insertIntoDBFromEvent = async (document: IPayload) => {
-  console.log("insertIntoDBFromEvent", document);
+type IInsertIntoDBFromEvent = {
+  data: IPayload;
+  correlationId: string;
+};
+
+const insertIntoDBFromEvent = async ({
+  data,
+  correlationId,
+}: IInsertIntoDBFromEvent) => {
+  console.log("insertIntoDBFromEvent", data, correlationId);
 
   try {
-    const result = await Video.create(document);
+    const result = await Video.create(data);
 
     if (result) {
-      await redisPubClient.publish(
-        EVENT.GET_VIDEO_METADATA_EVENT,
-        JSON.stringify(result)
-      );
+      const options = {
+        correlationId: correlationId, // assuming this is where you're storing the correlationId
+        replyTo: EVENT.GET_VIDEO_METADATA_EVENT,
+      };
+      RabbitMQ.sendToQueue(EVENT.GET_VIDEO_METADATA_EVENT, result, options);
     }
     return result;
   } catch (error) {
