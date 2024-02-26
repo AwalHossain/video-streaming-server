@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import app from './app';
 import subscribeToEvents from './app/events';
 import { errorLogger, logger } from './shared/logger';
+import rabbitMQConnection from './shared/rabbitMQ';
 import { setupAllQueueEvent } from './worker/jobWorker';
 
 const PORT: number = 8000;
@@ -20,7 +21,9 @@ io.on('connection', (socket) => {
   // get the user's id
 
   const userId = socket.handshake.query.userId;
-
+  if (!userId) {
+    return;
+  }
   // Log a message
   logger.info(`User ${userId} connected`);
 
@@ -35,6 +38,7 @@ io.on('connection', (socket) => {
 async function bootstrap() {
   try {
     subscribeToEvents();
+    await rabbitMQConnection.connect();
 
     server.listen(PORT, async () => {
       logger.info(`listening on port ${PORT}`);
