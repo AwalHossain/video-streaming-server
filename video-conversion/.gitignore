@@ -1,6 +1,6 @@
 node_modules
 .env
-.dist
+dist
 uploads
 # Sentry Config File
 .sentryclirc
