@@ -1,4 +1,3 @@
-
-export type IUser ={
-    id: string,
-}
+export type IUser = {
+  id: string;
+};
