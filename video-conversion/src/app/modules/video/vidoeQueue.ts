@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Message } from 'amqplib';
 import path from 'path';
+import { API_SERVER_EVENTS } from '../../../constant/events';
 import { logger } from '../../../shared/logger';
 import RabbitMQ from '../../../shared/rabbitMQ';
 import { EVENT } from '../../events/event.constant';
@@ -8,7 +9,7 @@ import { EVENT } from '../../events/event.constant';
 export const videoQueue = (file: any, userId: any) => {
   return new Promise((resolve, reject) => {
     try {
-      logger.info(userId, 'checking from queue');
+      logger.info('checking from queue');
 
       if (
         file.mimetype === 'video/mp4' ||
@@ -34,13 +35,13 @@ export const videoQueue = (file: any, userId: any) => {
         };
 
         RabbitMQ.sendToQueue(
-          EVENT.INSERT_VIDEO_METADATA_EVENT,
+          API_SERVER_EVENTS.INSERT_VIDEO_METADATA_EVENT,
           payload,
           options,
         );
 
         RabbitMQ.consume(
-          EVENT.GET_VIDEO_METADATA_EVENT,
+          API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
           async (msg: Message, ack: () => void) => {
             try {
               if (msg.properties.correlationId === options.correlationId) {
