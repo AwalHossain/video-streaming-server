@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
+import { Message } from "amqplib";
 import RabbitMQ from "../../../shared/rabbitMQ";
 import { EVENT } from "../../events/event.constants";
 import { VideoService } from "./video.service";
@@ -129,20 +130,23 @@ const initVideoEvents = () => {
 
   // Ensure the queue is declared before consuming from it
 
-  RabbitMQ.consume(EVENT.INSERT_VIDEO_METADATA_EVENT, async (msg: any, ack) => {
-    try {
-      // Process the message
-      const data = JSON.parse(msg.content.toString());
-      const correlationId = msg.properties.correlationId;
-      await VideoService.insertIntoDBFromEvent({ data, correlationId });
-      // Acknowledge the message
-      ack();
-    } catch (error) {
-      console.error("Error processing message:", error);
-      // Optionally, you can reject the message, which will requeue it
-      // channel.nack(msg);
+  RabbitMQ.consume(
+    EVENT.INSERT_VIDEO_METADATA_EVENT,
+    async (msg: Message, ack) => {
+      try {
+        // Process the message
+        const data = JSON.parse(msg.content.toString());
+        const correlationId = msg.properties.correlationId;
+        await VideoService.insertIntoDBFromEvent({ data, correlationId });
+        // Acknowledge the message
+        ack();
+      } catch (error) {
+        console.error("Error processing message:", error);
+        // Optionally, you can reject the message, which will requeue it
+        // channel.nack(msg);
+      }
     }
-  });
+  );
 };
 
 export default initVideoEvents;
