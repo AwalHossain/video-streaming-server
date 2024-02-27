@@ -1,4 +1,4 @@
-import client, { Channel, Connection } from "amqplib";
+import client, { Channel, Connection, Message } from "amqplib";
 import { errorLogger, logger } from "./logger";
 
 interface Options {
@@ -71,7 +71,7 @@ class RabbitMQConnection {
 
   async consume(
     queue: string,
-    callback: (message: any, ack: () => void) => void
+    callback: (message: Message, ack: () => void) => void
   ) {
     try {
       if (!this.channel) {
