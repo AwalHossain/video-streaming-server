@@ -11,7 +11,7 @@
     "video-server": "nodemon ./src/video-server.ts",
     "db": "docker-compose up -d",
     "server": "concurrently \"npm run web-server\" \"npm run video-processor\" ",
-    "start": "npm run web-server",
+    "start": "ts-node-dev --respawn --transpile-only ./src/server.ts",
     "stop": "pm2 delete all",
     "restart": "pm2 restart all",
     "logs": "pm2 logs",
