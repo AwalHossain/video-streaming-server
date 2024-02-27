@@ -4,6 +4,7 @@ import { io as clientIo } from 'socket.io-client';
 import app from './app';
 import { NOTIFY_EVENTS } from './constants/notify';
 import { errorLogger, logger } from './shared/logger';
+import RabbitMQ from './shared/rabbitMQ';
 
 const PORT: number = 8001;
 
@@ -51,6 +52,7 @@ videoConversionNamespace.on('connection', (socket) => {
 
 async function bootstrap() {
   try {
+    await RabbitMQ.connect();
     server.listen(PORT, async () => {
       logger.info(`listening on port ${PORT}`);
       logger.info('application started');
