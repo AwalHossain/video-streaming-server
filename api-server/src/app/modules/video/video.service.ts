@@ -4,11 +4,11 @@
 import { ObjectId } from "mongodb";
 import mongoose, { SortOrder } from "mongoose";
 
+import { API_SERVER_EVENTS } from "../../../constants/event";
 import ApiError from "../../../error/apiError";
 import { PaginationHelper } from "../../../helpers/paginationHelper";
 import { IpaginationOptions } from "../../../interface/pagination";
 import RabbitMQ from "../../../shared/rabbitMQ";
-import { EVENT } from "../../events/event.constants";
 import { videoSearchableFields } from "./video.constant";
 import { IPayload, IVdieosFilterableFields } from "./video.interface";
 import { Video } from "./video.model";
@@ -27,13 +27,24 @@ const insertIntoDBFromEvent = async ({
 
   try {
     const result = await Video.create(data);
-
     if (result) {
       const options = {
         correlationId: correlationId, // assuming this is where you're storing the correlationId
-        replyTo: EVENT.GET_VIDEO_METADATA_EVENT,
+        replyTo: API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
       };
-      RabbitMQ.sendToQueue(EVENT.GET_VIDEO_METADATA_EVENT, result, options);
+      RabbitMQ.sendToQueue(
+        API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
+        result,
+        options,
+        (err, ok) => {
+          if (err) {
+            console.error("Failed to send message to queue:", err);
+          } else {
+            console.log("Message sent to queue successfully:", ok);
+          }
+        }
+      );
+      console.log(result, "result");
     }
     return result;
   } catch (error) {
