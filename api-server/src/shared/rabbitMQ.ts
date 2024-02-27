@@ -22,18 +22,18 @@ class RabbitMQConnection {
       logger.info("⏳Connecting to RabbitMQ");
       this.connection = await client.connect(process.env.RABBITMQ_URL);
 
-      this.connection.on("error", (error) => {
-        errorLogger.error("RabbitMQ connection error", error);
-        // Try to reconnect
-        setTimeout(this.connect, 3000);
-      });
+      // this.connection.on("error", (error) => {
+      //   errorLogger.error("RabbitMQ connection error", error);
+      //   // Try to reconnect
+      //   setTimeout(this.connect, 3000);
+      // });
 
-      this.connection.on("close", () => {
-        this.connected = false;
-        logger.info("RabbitMQ connection closed");
-        // Try to reconnect
-        setTimeout(this.connect, 3000);
-      });
+      // this.connection.on("close", () => {
+      //   this.connected = false;
+      //   logger.info("RabbitMQ connection closed");
+      //   // Try to reconnect
+      //   setTimeout(this.connect, 3000);
+      // });
 
       logger.info(`✅ RabbitMQ connected successfully`);
 
@@ -47,7 +47,12 @@ class RabbitMQConnection {
   }
 
   // Send message to queue
-  async sendToQueue(queue: string, message: any, options?: Options) {
+  async sendToQueue(
+    queue: string,
+    message: any,
+    options?: Options,
+    callback?: (err: any, ok: any) => void
+  ) {
     try {
       if (!this.channel) {
         await this.connect();
@@ -57,11 +62,15 @@ class RabbitMQConnection {
         durable: false,
       });
 
-      this.channel.sendToQueue(
+      const ok = this.channel.sendToQueue(
         queue,
         Buffer.from(JSON.stringify(message)),
         options
       );
+
+      if (callback) {
+        callback(null, ok);
+      }
     } catch (error) {
       errorLogger.error("Error sending message to queue", error);
     }
