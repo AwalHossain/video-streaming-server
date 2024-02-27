@@ -43,6 +43,8 @@ async function bootstrap() {
     server.listen(PORT, async () => {
       logger.info(`listening on port ${PORT}`);
       logger.info('application started');
+
+      // calling the setupAllQueueEvent function to run the worker
       setupAllQueueEvent();
     });
   } catch (error) {
