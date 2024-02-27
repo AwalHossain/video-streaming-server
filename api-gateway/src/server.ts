@@ -4,7 +4,6 @@ import { io as clientIo } from 'socket.io-client';
 import app from './app';
 import { NOTIFY_EVENTS } from './constants/notify';
 import { errorLogger, logger } from './shared/logger';
-import { redisConnection } from './shared/redis';
 
 const PORT: number = 8001;
 
@@ -53,10 +52,6 @@ videoConversionNamespace.on('connection', (socket) => {
 async function bootstrap() {
   try {
     server.listen(PORT, async () => {
-      redisConnection.on('error', (error) =>
-        errorLogger.log('RedisError', error),
-      );
-      redisConnection.on('connect', () => logger.info('Redis Connected'));
       logger.info(`listening on port ${PORT}`);
       logger.info('application started');
     });
