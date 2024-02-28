@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 // import globalErrorHandler from "./app/middleware/globalErrorhandler";
 // import router from './app/routes/index';
+import router from './app/routes';
 import config from './config';
 import { errorLogger } from './shared/logger';
 dotenv.config();
@@ -47,7 +48,7 @@ app.get('/debug-sentry', function mainHandler() {
   throw new Error('My first Sentry error!');
 });
 
-// app.use(`/`, router);
+app.use(`/api/v1`, router);
 
 // The error handler must be registered before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
