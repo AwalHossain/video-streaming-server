@@ -5,7 +5,7 @@ import { errorLogger, logger } from './shared/logger';
 import RabbitMQ from './shared/rabbitMQ';
 import { setupRabbitMQConsumers } from './socket';
 
-const PORT: number = 8001;
+const PORT: number = 5000;
 
 const server = http.createServer(app);
 
