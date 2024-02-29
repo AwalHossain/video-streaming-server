@@ -30,7 +30,7 @@ class RabbitMQConnection {
         if (!this.reconnecting) {
           errorLogger.error('RabbitMQ connection error', error);
           // Try to reconnect
-          setTimeout(this.connect, 3000);
+          setTimeout(() => this.connect(), 3000);
         }
       });
 
@@ -39,7 +39,7 @@ class RabbitMQConnection {
         if (!this.reconnecting) {
           logger.info('RabbitMQ connection closed');
           // Try to reconnect
-          setTimeout(this.connect, 3000);
+          setTimeout(() => this.connect(), 3000);
         }
       });
 
@@ -80,7 +80,6 @@ class RabbitMQConnection {
   }
 
   // Consume message from queue
-
   async consume(
     queue: string,
     callback: (message: Message, ack: () => void) => void,
