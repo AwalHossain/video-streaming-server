@@ -56,6 +56,7 @@ const uploadToBucket = catchAsync(async (req: Request, res: Response) => {
     duration: '0:00',
     visibility: 'Public',
     author: '65b7879311d7094f2af84fcb',
+    fileName: file.filename,
     title: file.originalname.split('.')[0].replace(/[_]/g, ''),
   };
 
