@@ -15,25 +15,32 @@ class RabbitMQConnection {
   connection!: Connection;
   channel!: Channel;
   private connected!: boolean;
+  private reconnecting: boolean = false;
 
   async connect(): Promise<void> {
     if (this.connected && this.channel) return;
+    if (this.reconnecting) return; // Prevent multiple reconnection attempts
 
     try {
+      this.reconnecting = true;
       logger.info('⏳Connecting to RabbitMQ');
       this.connection = await client.connect(process.env.RABBITMQ_URL);
 
       this.connection.on('error', (error) => {
-        errorLogger.error('RabbitMQ connection error', error);
-        // Try to reconnect
-        setTimeout(this.connect, 3000);
+        if (!this.reconnecting) {
+          errorLogger.error('RabbitMQ connection error', error);
+          // Try to reconnect
+          setTimeout(this.connect, 3000);
+        }
       });
 
       this.connection.on('close', () => {
         this.connected = false;
-        logger.info('RabbitMQ connection closed');
-        // Try to reconnect
-        setTimeout(this.connect, 3000);
+        if (!this.reconnecting) {
+          logger.info('RabbitMQ connection closed');
+          // Try to reconnect
+          setTimeout(this.connect, 3000);
+        }
       });
 
       logger.info(`✅ RabbitMQ connected successfully`);
@@ -42,8 +49,11 @@ class RabbitMQConnection {
 
       logger.info(`🛸 RabbitMQ channel created successfully`);
       this.connected = true;
+      this.reconnecting = false; // Reset reconnecting flag
     } catch (error) {
+      this.reconnecting = false; // Reset the flag if an error occurs
       errorLogger.error('Error connecting to RabbitMQ', error);
+      throw error; // Re-throw the error
     }
   }
 
@@ -65,6 +75,7 @@ class RabbitMQConnection {
       );
     } catch (error) {
       errorLogger.error('Error sending message to queue', error);
+      throw error; // Re-throw the error
     }
   }
 
@@ -91,6 +102,7 @@ class RabbitMQConnection {
       });
     } catch (error) {
       errorLogger.error('Error consuming message from queue', error);
+      throw error; // Re-throw the error
     }
   }
 }
