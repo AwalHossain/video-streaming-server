@@ -1,18 +1,15 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable prefer-const */
 import { Request, Response } from 'express';
 
-import {
-  API_GATEWAY_EVENTS,
-  API_SERVER_EVENTS,
-  QUEUE_EVENTS,
-} from '../../../constant/events';
+import { API_GATEWAY_EVENTS, QUEUE_EVENTS } from '../../../constant/events';
 import catchAsync from '../../../errors/catchAsyncError';
 import { getVideoDurationAndResolution } from '../../../processor/videoProcessingHandler';
 import { addQueueItem } from '../../../queues/addJobToQueue';
 import { io } from '../../../server';
+import eventManager from '../../../shared/event-manager';
 import RabbitMQ from '../../../shared/rabbitMQ';
-import { videoQueue } from './vidoeQueue';
 
 const uploadVideo = catchAsync(async (req: Request, res: Response) => {
   const userId = req.user.id;
@@ -31,10 +28,13 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
     const video = req.files['video'][0];
 
     // Call the videoQueue function
-    const videoMetadata = (await videoQueue(
-      req.files['video'][0],
-      userId,
-    )) as any;
+    let videoMetadata;
+    const handleVideoMetadata = async (data) => {
+      console.log('videoMetadata checking here', data);
+      videoMetadata = data;
+      // Rest of your code that depends on videoMetadata...
+    };
+    eventManager.on('messageReceived', handleVideoMetadata);
 
     console.log('videoMetadata checking here', videoMetadata);
 
@@ -61,7 +61,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
       fileName: video.filename,
       videoPath: video.path,
       watermarkPath: image?.path ?? null,
-      title: videoMetadata.originalName,
+      title: videoMetadata?.originalName,
       duration: videoDuration,
     };
 
@@ -71,7 +71,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
     // },);
 
     const updateMetadata = {
-      id: videoMetadata._id,
+      id: videoMetadata?._id,
       history: { status: QUEUE_EVENTS.VIDEO_UPLOADED, createdAt: Date.now() },
       ...payload,
     };
@@ -81,10 +81,10 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
     //   JSON.stringify(sendData),
     // );
 
-    RabbitMQ.sendToQueue(
-      API_SERVER_EVENTS.INSERT_VIDEO_METADATA_EVENT,
-      updateMetadata,
-    );
+    // RabbitMQ.sendToQueue(
+    //   API_SERVER_EVENTS.INSERT_VIDEO_METADATA_EVENT,
+    //   updateMetadata,
+    // );
 
     // io.to(userId).emit(API_GATEWAY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, {
     //   status: 'success',
@@ -104,7 +104,7 @@ const uploadVideo = catchAsync(async (req: Request, res: Response) => {
 
     await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
       userId,
-      id: videoMetadata._id,
+      id: videoMetadata?._id,
       ...payload,
       ...video,
     });
