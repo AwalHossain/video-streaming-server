@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import client, { Channel, Connection, Message } from 'amqplib';
 import { errorLogger, logger } from './logger';
 
@@ -47,7 +48,7 @@ class RabbitMQConnection {
   }
 
   // Send message to queue
-  async sendToQueue(queue: string, message: Message, options?: Options) {
+  async sendToQueue(queue: string, message: any, options?: Options) {
     try {
       if (!this.channel) {
         await this.connect();
