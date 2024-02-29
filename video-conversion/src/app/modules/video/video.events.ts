@@ -1,26 +1,26 @@
+import { Message } from 'amqplib';
+import { VIDEO_CONVERSION_SERVER } from '../../../constant/events';
+import downloadBlob from '../../../processor/downloadFile';
+import RabbitMQ from '../../../shared/rabbitMQ';
+
 const initVideoEvent = () => {
-  // const options = {
-  //   correlationId: 'correal',
-  //   replyTo: EVENT.GET_VIDEO_METADATA_EVENT,
-  // };
-  // RabbitMQ.consume(
-  //   EVENT.GET_VIDEO_METADATA_EVENT,
-  //   async (msg: Message, ack: () => void) => {
-  //     try {
-  //       // check if correlationId is the same as the one sent
-  //       console.log('correlationId', msg);
-  //       if (msg.properties.correlationId === options.correlationId) {
-  //         const data = JSON.parse(msg.content.toString());
-  //         console.log('data', data);
-  //         logger.info(data, 'data from event manager');
-  //         // EventEmitter.emit('videoMetadata', data);
-  //         ack();
-  //       }
-  //     } catch (err) {
-  //       console.error('Message processing error', err);
-  //     }
-  //   },
-  // );
+  // event form the api-gateway
+  RabbitMQ.consume(
+    VIDEO_CONVERSION_SERVER.SEND_VIDEO_METADATA_EVENT,
+    async (msg: Message, ack: () => void) => {
+      try {
+        const data = JSON.parse(msg.content.toString());
+        console.log(data, 'get data from api-gateway');
+
+        const { containerName, originalName, userId } = data;
+        // Emit the 'messageReceived' event
+        await downloadBlob(containerName, originalName, userId);
+        ack();
+      } catch (err) {
+        console.error(err);
+      }
+    },
+  );
 };
 
 export default initVideoEvent;
