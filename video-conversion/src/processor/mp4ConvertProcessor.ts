@@ -40,6 +40,8 @@ const processRawFileToMp4WithWatermark = async (
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
 
+  console.log(fileExt, 'fileExt', fileNameWithoutExt, 'fileNameWithoutExt');
+
   const outputFileName = `${outputFolder}/${fileNameWithoutExt}.mp4`;
 
   const ffmpegCommand = ffmpeg(filePath).output(outputFileName);
