@@ -1,7 +1,7 @@
 import { QueueEvents, Worker } from 'bullmq';
-import { QUEUE_EVENTS } from '../constant/queueEvents';
-import { QUEUE_EVENT_HANDLERS } from '../handler/videoEventHandler';
-import setupVideoHandler from '../handler/videoLifecycleHandler';
+import { QUEUE_EVENTS } from '../constant/events';
+import { QUEUE_EVENT_HANDLERS } from '../processor/videoEventHandler';
+import videoLifecycleHandler from '../processor/videoLifecycleHandler';
 import { logger } from '../shared/logger';
 import { RedisClient } from '../shared/redis';
 
@@ -50,7 +50,6 @@ export const setupAllQueueEvent = () => {
   Object.values(QUEUE_EVENTS).map((queueName) => {
     listenQueueEvent(queueName);
   });
-  setupVideoHandler();
-
+  videoLifecycleHandler();
   return true;
 };
