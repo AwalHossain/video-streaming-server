@@ -10,7 +10,7 @@ import { UserService } from "./user.service";
 
 const router = express.Router();
 
-router.post("/signup", UserController.registrationUser);
+router.post("/register", UserController.registrationUser);
 
 router.post("/login", UserController.loginUser);
 
