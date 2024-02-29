@@ -16,14 +16,6 @@ interface ProcessedFile {
   outputFileName: string;
 }
 
-/**
- * Process mp4 to hls
- * @param filePath
- * @param outputFolder
- * @param jobData
- * @returns
- */
-
 interface JobData {
   completed: boolean;
   path: string;
