@@ -34,7 +34,6 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
 const logger = createLogger({
   level: "info",
   format: combine(colorize(), label({ label: "MERN" }), timestamp(), myFormat),
-  defaultMeta: { service: "user-service" },
   transports: [
     new transports.Console({ format: combine(colorize(), infiConsoleFormat) }),
     new DailyRotateFile({
@@ -54,9 +53,8 @@ const logger = createLogger({
 });
 
 const errorLogger = createLogger({
-  level: "info",
+  level: "error",
   format: combine(label({ label: "MERN" }), timestamp(), myFormat),
-  defaultMeta: { service: "user-service" },
   transports: [
     new transports.Console({
       format: combine(colorize(), eorrorConsoleFormat),
