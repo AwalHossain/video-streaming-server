@@ -7,13 +7,17 @@ import { User } from "./user.model";
 const register = async (data: IUser) => {
   const result = await User.findOne({ email: data.email });
 
+  console.log("result", result);
+
   if (result) {
     throw new ApiError(httpStatus.BAD_REQUEST, "Email already exists");
   }
 
-  const user = await User.create(data);
-
-  return user;
+  const newUser = await User.create(data);
+  if (!newUser) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Failed to create user");
+  }
+  return newUser;
 };
 
 const login = async (data: IUser) => {
