@@ -1,6 +1,5 @@
 import { Job } from 'bullmq';
 import fs from 'fs';
-import path from 'path';
 import { QUEUE_EVENTS } from '../constant/events';
 import { addQueueItem } from '../queues/addJobToQueue';
 import { logger } from '../shared/logger';
@@ -24,23 +23,21 @@ const processingHandler = async (job: Job) => {
   const folderName = job.data.destination.split('/')[1];
   const uploadPath = `uploads/${folderName}/processed`;
   fs.mkdirSync(uploadPath, { recursive: true });
-
-  let watermarkPath = job.data?.watermarkPath;
-  logger.info('watermarkPath checkkkkk.....', watermarkPath);
-
-  if (watermarkPath && !fs.existsSync(path.resolve(watermarkPath))) {
-    watermarkPath = null;
-  }
-  await processRawFileToMp4WithWatermark(
-    `./${job.data.path}`,
+  console.log(
+    'checking',
+    job.data,
+    'another',
     uploadPath,
-    {
-      ...job.data,
-      completed: true,
-      next: QUEUE_EVENTS.VIDEO_PROCESSED,
-    },
-    watermarkPath ? `./${watermarkPath}` : null,
+    'checking',
+    job.data,
   );
+  logger.info('watermarkPath checkkkkk.....', job);
+
+  await processRawFileToMp4WithWatermark(`./${job.data.path}`, uploadPath, {
+    ...job.data,
+    completed: true,
+    next: QUEUE_EVENTS.VIDEO_PROCESSED,
+  });
 
   return;
 };
