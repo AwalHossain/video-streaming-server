@@ -72,13 +72,6 @@ const fileFilter = async (
 
       // // send the video metadata to the user queue
 
-      // const options = {
-      //   correlationId: 'correal',
-      //   replyTo: EVENT.GET_VIDEO_METADATA_EVENT,
-      // };
-      // // Send the message
-      // RabbitMQ.sendToQueue(EVENT.INSERT_VIDEO_METADATA_EVENT, payload, options);
-
       // // Create a promise that will be resolved when the response is received
       // const responsePromise = new Promise((resolve, reject) => {
       //   RabbitMQ.consume(
