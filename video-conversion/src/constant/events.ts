@@ -18,6 +18,10 @@ export const API_SERVER_EVENTS = {
   VIDEO_THUMBNAIL_GENERATED_EVENT: 'video-thumbnail-generated',
 };
 
+export const VIDEO_CONVERSION_SERVER = {
+  SEND_VIDEO_METADATA_EVENT: 'send-video-metadata',
+};
+
 export const API_GATEWAY_EVENTS = {
   NOTIFY_VIDEO_HLS_CONVERTED: 'notify.video.hls.converted',
   NOTIFY_VIDEO_WATERMARKED: 'notify.video.watermarked',
