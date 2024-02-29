@@ -1,25 +1,30 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { AxiosError } from 'axios';
 import { ErrorRequestHandler, NextFunction, Request, Response } from 'express';
 import config from '../../config';
-
 import ApiError from '../../errors/apiError';
-import { IGenericErrorMessage } from '../../interface/error';
 
-const globalErrorHandler: ErrorRequestHandler = (
+const globalExceptionHandler: ErrorRequestHandler = (
   error,
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-  let statusCode = 500;
-  let message = 'Something went wrong !';
-  let errorMessages: IGenericErrorMessage[] = [];
+  let errorMessages: {
+    path: string;
+    message: string;
+  }[] = [];
 
-  if (error instanceof ApiError) {
+  let statusCode = 500;
+  let message = 'Something went wrong';
+
+  if (error instanceof AxiosError) {
+    statusCode = error.response?.status || 500;
+    message = error.response?.data?.message || 'Something went wrong';
+    errorMessages = error.response?.data?.errorMessages || [];
+  } else if (error instanceof ApiError) {
     statusCode = error?.statusCode;
-    message = error.message;
+    message = error?.message;
     errorMessages = error?.message
       ? [
           {
@@ -48,4 +53,4 @@ const globalErrorHandler: ErrorRequestHandler = (
   });
 };
 
-export default globalErrorHandler;
+export default globalExceptionHandler;
