@@ -1,41 +1,6 @@
 /* eslint-disable no-useless-escape */
 import { Request } from 'express';
-import fs from 'fs';
 import multer from 'multer';
-
-let globalName = '';
-const storageEngine = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let uploadFolder = '';
-
-    globalName = sanitizeFileName(
-      file.originalname.split('.')[0].replace(/\s+/g, '_') + '_' + Date.now(),
-    );
-    if (!uploadFolder) {
-      uploadFolder = `container-${new Date().getTime()}`;
-    }
-    const uploadPath = `uploads/${uploadFolder}/videos`;
-    fs.mkdirSync(uploadPath, { recursive: true });
-
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    const isImage =
-      file.mimetype === 'image/png' ||
-      file.mimetype === 'image/jpg' ||
-      file.mimetype === 'image/jpeg';
-
-    if (isImage) {
-      cb(null, globalName + '.png');
-    } else {
-      cb(null, globalName);
-    }
-  },
-});
-
-function sanitizeFileName(blobName: string): string {
-  return blobName.replace(/[\(\)]/g, '_');
-}
 
 const fileFilter = async (
   req: Request,
@@ -60,7 +25,7 @@ const fileFilter = async (
 };
 
 export const uploadMiddleware = multer({
-  storage: storageEngine,
+  storage: multer.memoryStorage(),
   fileFilter: fileFilter,
   limits: {
     fileSize: 1024 * 1024 * 50,
