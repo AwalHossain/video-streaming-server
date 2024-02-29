@@ -16,34 +16,15 @@ import { Video } from "./video.model";
 
 type IInsertIntoDBFromEvent = {
   data: IPayload;
-  correlationId: string;
 };
 
-const insertIntoDBFromEvent = async ({
-  data,
-  correlationId,
-}: IInsertIntoDBFromEvent) => {
-  console.log("insertIntoDBFromEvent", data, correlationId);
+const insertIntoDBFromEvent = async (data: IInsertIntoDBFromEvent) => {
+  console.log("insertIntoDBFromEvent", data);
 
   try {
     const result = await Video.create(data);
     if (result) {
-      const options = {
-        correlationId: correlationId, // assuming this is where you're storing the correlationId
-        replyTo: API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
-      };
-      RabbitMQ.sendToQueue(
-        API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
-        result,
-        options,
-        (err, ok) => {
-          if (err) {
-            console.error("Failed to send message to queue:", err);
-          } else {
-            console.log("Message sent to queue successfully:", ok);
-          }
-        }
-      );
+      RabbitMQ.sendToQueue(API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT, result);
       console.log(result, "result");
     }
     return result;
