@@ -16,6 +16,7 @@ const config = {
     accountName: process.env.AZURE_ACCOUNT_NAME,
     accountKey: process.env.AZURE_ACCOUNT_KEY,
     containerName: process.env.AZURE_CONTAINER_NAME,
+    storage_connection_string: process.env.AZURE_STORAGE_CONNECTION_STRING,
   },
   sentry: {
     dsn: process.env.SENTRY_DSN,
