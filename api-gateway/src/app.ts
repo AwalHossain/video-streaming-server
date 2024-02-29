@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 // import globalErrorHandler from "./app/middleware/globalErrorhandler";
 // import router from './app/routes/index';
+import globalErrorHandler from './app/middleware/globalErrorHandler';
 import router from './app/routes';
 import config from './config';
 import { errorLogger } from './shared/logger';
@@ -37,7 +38,7 @@ app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.json());
 app.use(cors());
 
 app.get('/test', (req: Request, res: Response) => {
@@ -49,6 +50,8 @@ app.get('/debug-sentry', function mainHandler() {
 });
 
 app.use(`/api/v1`, router);
+
+app.use(globalErrorHandler);
 
 // The error handler must be registered before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
@@ -70,8 +73,6 @@ process.on('uncaughtException', (error) => {
     process.exit(1);
   });
 });
-
-// app.use(globalErrorHandler)
 
 //handle not found
 app.use((req: Request, res: Response, next: NextFunction) => {
