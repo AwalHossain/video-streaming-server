@@ -37,8 +37,8 @@ io.on('connection', (socket) => {
 
 async function bootstrap() {
   try {
-    subscribeToEvents();
     await rabbitMQConnection.connect();
+    subscribeToEvents();
 
     server.listen(PORT, async () => {
       logger.info(`listening on port ${PORT}`);
