@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import fsextra from 'fs-extra';
 import path from 'path';
 import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
 import ApiError from '../errors/apiError';
@@ -116,7 +115,7 @@ const processHLSFile = async (data: any, queueName: string) => {
 
     RabbitMQ.sendToQueue(API_SERVER_EVENTS.VIDEO_PUBLISHED_EVENT, publishData);
     // Delete the folder after uploading all files
-    await fsextra.remove(deletedFolder);
+    // await fsextra.remove(deletedFolder);
     logger.info(`Deleted folder: ${deletedFolder}`);
   } catch (error) {
     errorLogger.error(error, 'error');
