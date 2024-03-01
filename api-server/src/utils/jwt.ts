@@ -1,20 +1,17 @@
 import config from "../config";
 
-import jwt from 'jsonwebtoken';
+import jwt from "jsonwebtoken";
 
 const createToken = (id: any) => {
-    const token = jwt.sign({ id }, config.jwtSecret, {
-        expiresIn: "7d",
-    });
+  const token = jwt.sign({ id }, config.jwtSecret, {
+    expiresIn: "7d",
+  });
 
-    return token;
-}
+  return token;
+};
 
-
-
-const verifyToken = (token) => {
-    return jwt.verify(token, config.jwtSecret);
-}
+const verifyToken = (token: string) => {
+  return jwt.verify(token, config.jwtSecret);
+};
 
 export { createToken, verifyToken };
-
