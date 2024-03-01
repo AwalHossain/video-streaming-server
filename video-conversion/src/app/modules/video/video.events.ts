@@ -12,9 +12,9 @@ const initVideoEvent = () => {
         const data = JSON.parse(msg.content.toString());
         console.log(data, 'get data from api-gateway');
 
-        const { containerName, originalName, userId } = data;
+        const { containerName, fileName, userId } = data;
         // Emit the 'messageReceived' event
-        await downloadBlob(containerName, originalName, userId);
+        await downloadBlob(containerName, fileName, userId);
         ack();
       } catch (err) {
         console.error(err);
