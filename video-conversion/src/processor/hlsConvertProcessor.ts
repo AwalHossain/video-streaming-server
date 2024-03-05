@@ -21,6 +21,7 @@ interface JobData {
   path: string;
   destination: string;
   userId: string;
+  fileName: string;
 }
 
 const processMp4ToHls = async (
@@ -81,8 +82,9 @@ const processMp4ToHls = async (
             );
           })
           .on('progress', function (progress: FfmpegProgress) {
-            logger.info(
-              `Processing: ${progress.percent}% done for ${rendition.name}`,
+            console.log(
+              jobData.fileName,
+              `is Processing: ${progress.percent}% done for ${rendition.name}`,
             );
 
             renditionProgress[rendition.name] = progress.percent;
@@ -95,7 +97,7 @@ const processMp4ToHls = async (
             const overallProgress = Math.round(
               totalProgress / renditions.length,
             );
-            logger.info(`Overall progress: ${overallProgress}%`);
+            console.log(`Overall progress: ${overallProgress}%`);
 
             if (overallProgress - lastReportedProgress >= 10) {
               lastReportedProgress = overallProgress;
@@ -120,17 +122,6 @@ const processMp4ToHls = async (
           })
           .on('error', function (err: Error) {
             errorLogger.log('An error occurred: ', err.message);
-            //   io.to(jobData.userId).emit(
-            //     NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-            //     {
-            //       status: 'failed',
-            //       name: 'Adaptive bit rate',
-            //       progress: 0,
-            //       fileName: fileNameWithoutExt,
-            //       message: 'Video hls convering Processed failed',
-            //     },
-            //   );
-
             const videoBitRateProcessingData = {
               userId: jobData.userId,
               status: 'failed',
@@ -153,18 +144,6 @@ const processMp4ToHls = async (
 
     // Wait for all renditions to complete
     await Promise.all(promises);
-
-    // Notify that all renditions are complete
-    //   io.to(jobData.userId).emit(
-    //     NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-    //     {
-    //       status: 'completed',
-    //       name: 'Adaptive bit rate',
-    //       fileName: fileNameWithoutExt,
-    //       progress: 100,
-    //       message: 'Video hls convering Processed successfully',
-    //     },
-    //   );
 
     const videoBitRateProcessedData = {
       userId: jobData.userId,
