@@ -208,6 +208,7 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
       },
     },
     {
+      upsert: true,
       new: true,
     }
   );
@@ -215,8 +216,8 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
   return updatedDoc;
 };
 
-const updateHistory = async (id: ObjectId, { history, ...rest }) => {
-  console.log("updating history", history, id);
+const updateHistory = async (id: string, history: IPayload) => {
+  console.log("updating history", history, id, "and");
 
   try {
     const updatedDoc = await Video.findOneAndUpdate(
@@ -225,9 +226,8 @@ const updateHistory = async (id: ObjectId, { history, ...rest }) => {
       },
       {
         $push: {
-          history,
+          history: history,
         },
-        $set: rest,
       },
       {
         new: true,
