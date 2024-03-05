@@ -24,12 +24,28 @@ const initVideoEvents = () => {
     }
   );
 
+  // update metadata event
+  RabbitMQ.consume(
+    API_SERVER_EVENTS.UPDATE_METADATA_EVENT,
+    async (msg: Message, ack) => {
+      console.log(
+        `Received the following message from VIDEO_processed_EVENT: ${msg.content.toString()}`
+      );
+      const data = JSON.parse(msg.content.toString());
+      console.log(
+        `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${data}`
+      );
+      await VideoService.update(data.id, { ...data });
+
+      ack();
+    }
+  );
   // update processed event
   RabbitMQ.consume(
     API_SERVER_EVENTS.VIDEO_PROCESSED_EVENT,
     async (msg: Message, ack) => {
       console.log(
-        `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${msg.content.toString()}`
+        `Received the following message from VIDEO_processed_EVENT: ${msg.content.toString()}`
       );
       const data = JSON.parse(msg.content.toString());
       console.log(
@@ -46,11 +62,11 @@ const initVideoEvents = () => {
     API_SERVER_EVENTS.VIDEO_THUMBNAIL_GENERATED_EVENT,
     async (msg: Message, ack) => {
       console.log(
-        `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${msg.content.toString()}`
+        `Received the following message from VIDEO_thumbnail_EVENT: ${msg.content.toString()}`
       );
       const data = JSON.parse(msg.content.toString());
       console.log(
-        `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${data}`
+        `Received the following message from VIdeo_thumbnail_CONVERTED_EVENT: ${data}`
       );
       await VideoService.updateHistory(data.id, data.history);
 
@@ -63,11 +79,11 @@ const initVideoEvents = () => {
     API_SERVER_EVENTS.VIDEO_HLS_CONVERTED_EVENT,
     async (msg: Message, ack) => {
       console.log(
-        `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${msg.content.toString()}`
+        `Received the following message from VIDEO_published_EVENT: ${msg.content.toString()}`
       );
       const data = JSON.parse(msg.content.toString());
       console.log(
-        `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${data}`
+        `Received the following message from VIDEO_published_EVENT: ${data}`
       );
       await VideoService.updateHistory(data.id, data.history);
 
@@ -86,7 +102,7 @@ const initVideoEvents = () => {
       console.log(
         `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${data}`
       );
-      await VideoService.updateHistory(data.id, data.history);
+      await VideoService.update(data.id, { ...data });
 
       ack();
     }
