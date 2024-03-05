@@ -47,6 +47,7 @@ const initiateVideoProcessing = async ({
   RabbitMQ.sendToQueue(API_SERVER_EVENTS.UPDATE_METADATA_EVENT, {
     id: videoMetadata._id,
     videoPath,
+    duration: videoDuration,
   });
   await addQueueItem(QUEUE_EVENTS.VIDEO_UPLOADED, {
     userId,
