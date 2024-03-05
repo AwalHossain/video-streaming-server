@@ -9,18 +9,6 @@ import uploadProcessedFile from './uploadToCloud';
 const processHLSFile = async (data: any, queueName: string) => {
   const dataCopy = JSON.parse(JSON.stringify(data));
 
-  console.log('dataCopy', dataCopy);
-  console.log(
-    'dataCopy having fight again data having flight',
-    dataCopy,
-    'data',
-    data,
-  );
-
-  // await VideoService.updateHistory(data.id, {
-  //   history: { status: queueName, createdAt: Date.now() },
-  // });
-
   const hlsData = {
     id: dataCopy.id,
     history: { status: queueName, createdAt: Date.now() },
@@ -28,21 +16,16 @@ const processHLSFile = async (data: any, queueName: string) => {
   RabbitMQ.sendToQueue(API_SERVER_EVENTS.VIDEO_HLS_CONVERTED_EVENT, hlsData);
 
   const rootFolder = path.resolve('./');
-  // destination: 'uploads/videoplayback_1693755779611
   const file = dataCopy.destination.split('/')[1];
   const fileName = dataCopy.fileName;
-  const folderName = dataCopy.folder;
   const dataObj = {
-    videoLink: `https://mernvideo.blob.core.windows.net/${folderName}/${fileName}_master.m3u8`,
-    thumbnailUrl: `https://mernvideo.blob.core.windows.net/${folderName}/${fileName}.png`,
+    videoLink: `https://mernvideo.blob.core.windows.net/${file}/${fileName}_master.m3u8`,
+    thumbnailUrl: `https://mernvideo.blob.core.windows.net/${file}/${fileName}.png`,
   };
 
   console.log('dataObj', dataObj, `./uploads/${file}/hls`, `${file}`);
 
   const deletedFolder = path.join(rootFolder, `./uploads/${file}`);
-  //   const folderPath1 = path.join(rootFolder, `./uploads/${file}/hls`);
-  //   const folderPath2 = path.join(rootFolder, `./uploads/${file}/thumbnails`);
-
   try {
     await uploadProcessedFile(
       rootFolder,
@@ -57,19 +40,6 @@ const processHLSFile = async (data: any, queueName: string) => {
         dataCopy,
       );
 
-    //   await VideoService.updateHistory(data.id, {
-    //     history: { status: "Successfully uploaded to the S3 bucket.", createdAt: Date.now() },
-    //   });
-
-    // io.to(data.userId).emit(
-    //   NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS,
-    //   {
-    //     status: 'completed',
-    //     name: 'AWS Bucket uploading',
-    //     message: 'Video upload completed',
-    //     fileName: data.fileName,
-    //   },
-    // );
     const awsData = {
       userId: dataCopy.userId,
       status: 'completed',
@@ -82,11 +52,6 @@ const processHLSFile = async (data: any, queueName: string) => {
       awsData,
     );
 
-    // io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_VIDEO_PUBLISHED, {
-    //   status: 'success',
-    //   name: 'Video published',
-    //   message: 'Video published',
-    // });
     const awsUploadCompleted = {
       userId: dataCopy.userId,
       status: 'success',
@@ -98,19 +63,12 @@ const processHLSFile = async (data: any, queueName: string) => {
       API_GATEWAY_EVENTS.NOTIFY_VIDEO_PUBLISHED,
       awsUploadCompleted,
     );
-    //   await VideoService.update(data.id, {
-    //     status: VIDEO_STATUS.PUBLISHED,
-    //     videoLink: `https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/${file}/${data.fileName}_master.m3u8`,
-    //     thumbnailUrl: `https://mern-video-bucket.sgp1.cdn.digitaloceanspaces.com/${file}/${data.fileName}.png`,
-    //   })
 
     const publishData = {
       id: dataCopy.id,
-      history: {
-        status: 'published',
-        videoLink: `https://mernvideo.blob.core.windows.net/${folderName}/${fileName}_master.m3u8`,
-        thumbnailUrl: `https://mernvideo.blob.core.windows.net/${folderName}/${fileName}.png`,
-      },
+      status: 'published',
+      videoLink: `https://mernvideo.blob.core.windows.net/${file}/${fileName}_master.m3u8`,
+      thumbnailUrl: `https://mernvideo.blob.core.windows.net/${file}/${fileName}.png`,
     };
 
     RabbitMQ.sendToQueue(API_SERVER_EVENTS.VIDEO_PUBLISHED_EVENT, publishData);
@@ -119,10 +77,6 @@ const processHLSFile = async (data: any, queueName: string) => {
     logger.info(`Deleted folder: ${deletedFolder}`);
   } catch (error) {
     errorLogger.error(error, 'error');
-    // io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
-    //   status: 'failed',
-    //   message: 'Video uploading failed',
-    // });
     throw new ApiError(500, 'Video uploading to Space failed');
   }
 };
