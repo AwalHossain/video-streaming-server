@@ -6,9 +6,8 @@ export type IPayload = {
   videoLink?: string;
   viewsCount?: number;
   duration?: string;
+  history?: [{ status: string; createdAt: number }];
 };
-
-
 
 export type IVdieosFilterableFields = {
   searchTerm?: string;
@@ -16,4 +15,4 @@ export type IVdieosFilterableFields = {
   category?: string;
   recordingDate?: string;
   tags?: string[];
-}
+};
