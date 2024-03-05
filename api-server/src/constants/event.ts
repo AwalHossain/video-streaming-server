@@ -5,4 +5,5 @@ export const API_SERVER_EVENTS = {
   VIDEO_HLS_CONVERTED_EVENT: "video-hls-converted",
   VIDEO_PUBLISHED_EVENT: "video-published",
   VIDEO_THUMBNAIL_GENERATED_EVENT: "video-thumbnail-generated",
+  UPDATE_METADATA_EVENT: "update-metadata",
 };
