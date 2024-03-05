@@ -16,7 +16,7 @@ const uploadedHandler = async (job: Job) => {
 };
 
 const processingHandler = async (job: Job) => {
-  logger.info('i am the processing handler!', job.data);
+  console.log('i am the processing handler!', job.data);
 
   // create folder based on path that getiing form job data
 
@@ -24,15 +24,10 @@ const processingHandler = async (job: Job) => {
   const uploadPath = `uploads/${folderName}/processed`;
   fs.mkdirSync(uploadPath, { recursive: true });
   console.log(
-    'checking',
-    job.data,
-    'another',
-    uploadPath,
-    'checking',
+    'upload path from processing Handler, Before Proceeding to processRawFileToMp4WithWatermark process(1)',
+
     job.data,
   );
-  logger.info('watermarkPath checkkkkk.....', job);
-
   await processRawFileToMp4WithWatermark(`./${job.data.path}`, uploadPath, {
     ...job.data,
     completed: true,
