@@ -14,8 +14,8 @@ const initVideoEvent = () => {
 
         const { containerName, fileName, userId } = data;
         // Emit the 'messageReceived' event
-        await downloadBlob(containerName, fileName, userId);
         ack();
+        await downloadBlob(containerName, fileName, userId);
       } catch (err) {
         console.error(err);
       }
