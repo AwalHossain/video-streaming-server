@@ -61,10 +61,6 @@ const uploadProcessedFile = async (
     }
   } catch (error) {
     errorLogger.error('Error uploading folder:', error);
-    // io.to(data.userId).emit(NOTIFY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED, {
-    //   status: 'failed',
-    //   message: 'Video uploading failed',
-    // });
     const failedProgress = {
       userId: data.userId,
       status: 'failed',
