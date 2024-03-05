@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import {
   API_SERVER_EVENTS,
   VIDEO_CONVERSION_SERVER,
@@ -12,7 +13,11 @@ const uploadToBucket = catchAsync(async (req: Request, res: Response) => {
   const file = req?.file;
   // Rename file to remove spaces and add timestamp
   file.filename =
-    file.originalname.split('.')[0].replace(/\s+/g, '-') + Date.now();
+    file.originalname
+      .split('.')[0]
+      .replace(/\s+/g, '-')
+      .replace(/\(.*?\)/g, '')
+      .replace(/\[.*?\]/g, '') + uuidv4();
 
   const userId = req.user.id;
   if (!file) {
@@ -23,7 +28,7 @@ const uploadToBucket = catchAsync(async (req: Request, res: Response) => {
   }
 
   // azure container name
-  const containerName = `container-${new Date().getTime()}`;
+  const containerName = `upload-container-${uuidv4()}`;
   // call azureUpload function to upload file to azure
   const response = await azureUpload(file, containerName);
   console.log('response', response);
@@ -54,7 +59,8 @@ const uploadToBucket = catchAsync(async (req: Request, res: Response) => {
   res.status(200).json({
     status: 'success',
     message: 'File uploaded successfully',
-    response,
+    payload,
+    data,
   });
 });
 
