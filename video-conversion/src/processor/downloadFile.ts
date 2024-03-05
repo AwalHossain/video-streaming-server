@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import AsyncLock from 'async-lock';
 import path from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import { API_SERVER_EVENTS } from '../constant/events';
 import { IVideoMetadata } from '../interface/common';
 import EventEmitter from '../shared/event-manager';
+import { logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
 import azureDownload from '../utils/azureDownload';
 import initiateVideoProcessing from './initiateVideoProcessing';
@@ -19,6 +22,7 @@ const getVideoMetadata = async (): Promise<any> => {
   );
 };
 
+const lock = new AsyncLock();
 async function downloadBlob(
   containerName: string,
   blobName: string,
@@ -28,24 +32,32 @@ async function downloadBlob(
   await getVideoMetadata();
 
   let videoMetadata: IVideoMetadata;
-  EventEmitter.on('videoMetadata', (data) => {
-    videoMetadata = data;
+  await new Promise((resolve) => {
+    EventEmitter.once('videoMetadata', (data) => {
+      videoMetadata = data;
+      resolve(videoMetadata);
+    });
   });
 
   let uploadFolder = '';
   if (!uploadFolder) {
-    uploadFolder = `container-${new Date().getTime()}`;
+    uploadFolder = `container-${uuidv4()}`;
   }
 
   // download blob from azure
-  await azureDownload({ containerName, blobName, uploadFolder });
+  await lock.acquire('azureDownload', async () => {
+    await azureDownload({ containerName, blobName, uploadFolder });
+  });
 
   const destination = path
+    .normalize(path.join('uploads', uploadFolder, 'videos'))
+    .replace(/\\/g, '/');
+
+  const videoPath = path
     .normalize(path.join('uploads', uploadFolder, 'videos', blobName))
     .replace(/\\/g, '/');
 
-  const videoPath = path.join('uploads', uploadFolder, 'videos', blobName);
-  console.log('Destination path:', JSON.stringify(destination));
+  logger.info('Destination path:' + JSON.stringify(destination));
   // intiate video conversion
   await initiateVideoProcessing({
     videoPath,
