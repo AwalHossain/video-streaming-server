@@ -21,6 +21,7 @@ const HttpService = (baseUrl: string): AxiosInstance => {
 
   instance.interceptors.response.use(
     (response) => {
+      response.data.statusCode = response.status;
       return response.data;
     },
     (error) => {
