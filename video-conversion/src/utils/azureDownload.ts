@@ -25,8 +25,10 @@ const azureDownload = async ({
   );
 
   const rootDidrectory = `${rootFolder}/uploads/${uploadFolder}/videos`;
-  fs.mkdirSync(rootDidrectory, { recursive: true });
-
+  // Check if the directory exists before trying to create it
+  if (!fs.existsSync(rootDidrectory)) {
+    fs.mkdirSync(rootDidrectory, { recursive: true });
+  }
   // write buffer to disk
   const downloadPath = path.join(rootDidrectory, blobName);
   if (buffer instanceof Buffer) {
