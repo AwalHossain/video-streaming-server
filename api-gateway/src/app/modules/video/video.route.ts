@@ -13,5 +13,8 @@ router.post(
 );
 
 router.get('/', VideoController.getAllVideos);
+router.get('/myvideos', isAuthenticated, VideoController.getMyVideos);
+router.put('/update/:id', isAuthenticated, VideoController.updateVideo);
+router.get('/:id', VideoController.getVideoById);
 
 export const VideoRoutes = router;
