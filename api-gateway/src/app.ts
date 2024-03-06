@@ -39,7 +39,12 @@ app.use(Sentry.Handlers.tracingHandler());
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors());
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL1!, process.env.CLIENT_URL2!],
+    credentials: true,
+  }),
+);
 
 app.get('/test', (req: Request, res: Response) => {
   res.send('Hello World!');
