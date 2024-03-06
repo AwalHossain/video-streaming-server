@@ -2,7 +2,7 @@
 import AsyncLock from 'async-lock';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { API_SERVER_EVENTS } from '../constant/events';
+import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
 import { IVideoMetadata } from '../interface/common';
 import EventEmitter from '../shared/event-manager';
 import { logger } from '../shared/logger';
@@ -28,6 +28,13 @@ async function downloadBlob(
   blobName: string,
   userId: string,
 ) {
+  RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_DOWNLOADING, {
+    userId,
+    status: 'processing',
+    name: 'Video Downloading form bucket',
+    fileName: blobName,
+    message: 'Video is downloading',
+  });
   // get video metadata from api-server
   await getVideoMetadata();
 
@@ -47,6 +54,13 @@ async function downloadBlob(
   // download blob from azure
   await lock.acquire('azureDownload', async () => {
     await azureDownload({ containerName, blobName, uploadFolder });
+  });
+  RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_DOWNLOADING, {
+    userId,
+    status: 'completed',
+    name: 'Video Downloading form bucket',
+    fileName: blobName,
+    message: 'Video is downloaded',
   });
 
   const destination = path
