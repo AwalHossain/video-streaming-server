@@ -10,7 +10,7 @@ const ModuleRoutes = [
     route: AuthRoutes,
   },
   {
-    path: '/video',
+    path: '/videos',
     route: VideoRoutes,
   },
 ];
