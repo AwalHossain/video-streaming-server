@@ -1,11 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // intiaate video Processing
 
-import {
-  API_GATEWAY_EVENTS,
-  API_SERVER_EVENTS,
-  QUEUE_EVENTS,
-} from '../constant/events';
+import { API_SERVER_EVENTS, QUEUE_EVENTS } from '../constant/events';
 import { addQueueItem } from '../queues/addJobToQueue';
 import RabbitMQ from '../shared/rabbitMQ';
 import { getVideoDurationAndResolution } from './videoProcessingHandler';
@@ -25,14 +21,14 @@ const initiateVideoProcessing = async ({
 }: VideoPath) => {
   // update status to download complete
 
-  const uploadMsg = {
-    userId,
-    status: 'success',
-    message: 'Video upload is success',
-  };
+  // const uploadMsg = {
+  //   userId,
+  //   status: 'success',
+  //   message: 'Video upload is success',
+  // };
 
-  //   passing an event to the client to make sure video sucessfully uploaded & downloaded & ready to process
-  RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_UPLOADED, uploadMsg);
+  // //   passing an event to the client to make sure video sucessfully uploaded & downloaded & ready to process
+  // RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_UPLOADED, uploadMsg);
 
   const { videoDuration } = await getVideoDurationAndResolution(videoPath);
 
