@@ -30,7 +30,21 @@ const loginUser = async (req: Request): Promise<IGenericResponse> => {
   return response;
 };
 
+const checkSession = async (req: Request): Promise<IGenericResponse> => {
+  const response: IGenericResponse = await apiService.get(
+    '/auth/check-session',
+    {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    },
+  );
+
+  return response;
+};
+
 export const AuthService = {
   registrationUser,
   loginUser,
+  checkSession,
 };
