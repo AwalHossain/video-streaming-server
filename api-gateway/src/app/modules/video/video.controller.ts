@@ -4,6 +4,8 @@ import {
   API_SERVER_EVENTS,
   VIDEO_CONVERSION_SERVER,
 } from '../../../constants/event';
+import { NOTIFY_EVENTS } from '../../../constants/notify';
+import RabbitMQ from '../../../shared/rabbitMQ';
 import sendResponse from '../../../shared/response';
 import azureUpload from '../../../utils/azureUpload';
 import broadcastVideoEvent from './video.event';
@@ -15,6 +17,14 @@ const uploadToBucket = async (
   next: NextFunction,
 ) => {
   try {
+    RabbitMQ.sendToQueue(NOTIFY_EVENTS.NOTIFT_VIDEO_UPLOADING_BUCKET, {
+      userId: req.user.id,
+      status: 'processing',
+      name: 'Video Uploading to bucket',
+      fileName: req?.file?.originalname,
+      message: 'Video is uploading to bucket',
+    });
+
     // Check if file is present
     const file = req?.file;
     // Rename file to remove spaces and add timestamp
@@ -70,6 +80,14 @@ const uploadToBucket = async (
       message: 'File uploaded successfully',
       payload,
       data,
+    });
+
+    RabbitMQ.sendToQueue(NOTIFY_EVENTS.NOTIFT_VIDEO_UPLOADING_BUCKET, {
+      userId: req.user.id,
+      status: 'completed',
+      name: 'Video Uploading to bucket',
+      fileName: req?.file?.originalname,
+      message: 'Video is uploaded to bucket',
     });
   } catch (err) {
     next(err);
