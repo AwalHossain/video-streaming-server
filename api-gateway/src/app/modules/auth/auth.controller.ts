@@ -29,7 +29,22 @@ const loginUer = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
+const checkSession = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const response = await AuthService.checkSession(req);
+
+    sendResponse(res, response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const AuthController = {
   registrationUser,
   loginUer,
+  checkSession,
 };
