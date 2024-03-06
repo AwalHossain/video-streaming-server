@@ -93,7 +93,56 @@ const getAllVideos = async (
   }
 };
 
+const getMyVideos = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await VideoService.getMyVideos(req);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'My videos fetched successfully',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateVideo = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const result = await VideoService.updateVideo(req);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Video updated successfully',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getVideoById = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const result = await VideoService.getVideoById(req);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Video fetched successfully',
+      data: result,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const VideoController = {
   uploadToBucket,
   getAllVideos,
+  getMyVideos,
+  updateVideo,
+  getVideoById,
 };
