@@ -68,7 +68,7 @@ const updateVideo = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateHistory = catchAsync(async (req: Request, res: Response) => {
-  const id = new ObjectId(req.params.id);
+  const id = req.params.id;
   const result = await VideoService.updateHistory(id, req.body);
 
   res.send(result);
