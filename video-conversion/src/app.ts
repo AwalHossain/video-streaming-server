@@ -4,7 +4,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 // import globalErrorHandler from "./app/middleware/globalErrorhandler";
-import router from './app/routes/index';
 import config from './config';
 import { errorLogger } from './shared/logger';
 dotenv.config();
@@ -37,8 +36,12 @@ app.use(Sentry.Handlers.tracingHandler());
 
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors());
-
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL1!, process.env.CLIENT_URL2!],
+    credentials: true,
+  }),
+);
 app.get('/test', (req: Request, res: Response) => {
   res.send('Hello World!');
 });
@@ -47,7 +50,7 @@ app.get('/debug-sentry', function mainHandler() {
   throw new Error('My first Sentry error!');
 });
 
-app.use(`/`, router);
+// app.use(`/`, router);
 
 // The error handler must be registered before any other error middleware and after all controllers
 app.use(Sentry.Handlers.errorHandler());
