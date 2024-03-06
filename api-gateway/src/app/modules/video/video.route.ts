@@ -12,4 +12,6 @@ router.post(
   VideoController.uploadToBucket,
 );
 
+router.get('/', VideoController.getAllVideos);
+
 export const VideoRoutes = router;
