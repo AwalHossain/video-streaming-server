@@ -1,5 +1,5 @@
-import chalk from 'chalk';
 import path from 'path';
+import util from 'util';
 import { createLogger, format, transports } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 
@@ -10,14 +10,27 @@ const infiConsoleFormat = printf(({ level, message, label, timestamp }) => {
   const hour = date.getHours();
   const minutes = date.getMinutes();
   const seconds = date.getSeconds();
-  return `${chalk.blue(`[${date.toDateString()} ${hour}:${minutes}:${seconds}]`)} ${chalk.green(`[${label}]`)} ${level}: ${message}`;
+
+  // If message is an object, convert it to a string using util.inspect
+  // If message is an object, convert it to a string using util.inspect
+  if (typeof message === 'object') {
+    message = util.inspect(message, null, Infinity, true);
+  }
+
+  return `[${date.toDateString()} ${hour}:${minutes}:${seconds} ] [${label}] ${level}: ${message}`;
 });
 const eorrorConsoleFormat = printf(({ level, message, label, timestamp }) => {
   const date = new Date(timestamp);
   const hour = date.getHours();
   const minutes = date.getMinutes();
   const seconds = date.getSeconds();
-  return `${chalk.red(`[${date.toDateString()} ${hour}:${minutes}:${seconds}]`)} ${chalk.redBright(`[${label}]`)} ${level}: ${message}`;
+
+  // If message is an object, convert it to a string using util.inspect
+  if (typeof message === 'object') {
+    message = util.inspect(message, null, Infinity, true);
+  }
+
+  return `[${date.toDateString()} ${hour}:${minutes}:${seconds} ] [${label}] ${level}: ${message}`;
 });
 
 const myFormat = printf(({ level, message, label, timestamp }) => {
@@ -25,11 +38,17 @@ const myFormat = printf(({ level, message, label, timestamp }) => {
   const hour = date.getHours();
   const minutes = date.getMinutes();
   const seconds = date.getSeconds();
+
+  // If message is an object, convert it to a string using util.inspect
+  if (typeof message === 'object') {
+    message = util.inspect(message, null, Infinity, true);
+  }
+
   return `[${date.toDateString()} ${hour}:${minutes}:${seconds} ] [${label}] ${level}: ${message}`;
 });
 const logger = createLogger({
   level: 'info',
-  format: combine(colorize(), label({ label: 'MERN' }), timestamp(), myFormat),
+  format: combine(label({ label: 'MERN' }), timestamp()),
   defaultMeta: { service: 'user-service' },
   transports: [
     new transports.Console({ format: combine(colorize(), infiConsoleFormat) }),
@@ -45,6 +64,7 @@ const logger = createLogger({
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
+      format: myFormat,
     }),
   ],
 });
@@ -69,6 +89,7 @@ const errorLogger = createLogger({
       zippedArchive: true,
       maxSize: '20m',
       maxFiles: '14d',
+      format: myFormat,
     }),
   ],
 });
