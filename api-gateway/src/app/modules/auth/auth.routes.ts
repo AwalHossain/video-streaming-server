@@ -7,4 +7,6 @@ router.post('/register', AuthController.registrationUser);
 
 router.post('/login', AuthController.loginUer);
 
+router.get('/check-session', AuthController.checkSession);
+
 export const AuthRoutes = router;
