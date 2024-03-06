@@ -4,6 +4,7 @@ import {
   API_SERVER_EVENTS,
   VIDEO_CONVERSION_SERVER,
 } from '../../../constants/event';
+import sendResponse from '../../../shared/response';
 import azureUpload from '../../../utils/azureUpload';
 import broadcastVideoEvent from './video.event';
 import { VideoService } from './video.service';
@@ -83,11 +84,7 @@ const getAllVideos = async (
   try {
     const result = await VideoService.getAllVideos(req);
 
-    res.status(200).json({
-      status: 'success',
-      message: 'All videos fetched successfully',
-      data: result,
-    });
+    sendResponse(res, result);
   } catch (err) {
     next(err);
   }
@@ -97,11 +94,7 @@ const getMyVideos = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await VideoService.getMyVideos(req);
 
-    res.status(200).json({
-      status: 'success',
-      message: 'My videos fetched successfully',
-      data: result,
-    });
+    sendResponse(res, result);
   } catch (err) {
     next(err);
   }
@@ -111,11 +104,7 @@ const updateVideo = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const result = await VideoService.updateVideo(req);
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Video updated successfully',
-      data: result,
-    });
+    sendResponse(res, result);
   } catch (err) {
     next(err);
   }
@@ -129,11 +118,7 @@ const getVideoById = async (
   try {
     const result = await VideoService.getVideoById(req);
 
-    res.status(200).json({
-      status: 'success',
-      message: 'Video fetched successfully',
-      data: result,
-    });
+    sendResponse(res, result);
   } catch (err) {
     next(err);
   }
