@@ -12,5 +12,5 @@ jobs:
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{secrets.NEW_PAT}}
-          repository: ${{ github.repository }}/video-conversion/.github/workflows/docker-build.yml
+          repository: ${{ github.repository }}
           event-type: build
