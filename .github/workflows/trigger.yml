@@ -11,6 +11,6 @@ jobs:
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.PAT }}
+          token: ${{secrets.PAT}}
           repository: ${{ github.repository }}
           event-type: build
