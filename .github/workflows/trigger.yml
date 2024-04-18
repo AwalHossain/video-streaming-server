@@ -11,5 +11,5 @@ jobs:
       - name: Call Docker Build Workflow
         uses: actions/workflow-call@v0
         with:
-          workflow: video-conversion/.github/workflows/docker-build.yml
+          workflow: ../../video-conversion/.github/workflows/docker-build.yml
           secrets: ${{ toJson(secrets) }}
