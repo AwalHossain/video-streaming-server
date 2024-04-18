@@ -1,0 +1,19 @@
+version: "3"
+services:
+  conversion: 
+    build:
+      context: .
+      target: final
+    volumes:
+      - ./src:/app/src
+      - ./uploads:/app/uploads
+    networks:
+      - backend
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+
+networks:
+  backend:
+    driver: bridge
