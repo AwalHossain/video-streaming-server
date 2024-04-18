@@ -2,15 +2,14 @@ name: Central Workflow
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
 
 jobs:
   dispatch:
     runs-on: ubuntu-latest
     steps:
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v2
+      - name: Call Docker Build Workflow
+        uses: actions/workflow-call@v0
         with:
-          token: ${{secrets.NEW_PAT}}
-          repository: ${{ github.repository }}
-          event-type: build
+          workflow: video-conversion/.github/workflows/docker-build.yml
+          secrets: ${{ toJson(secrets) }}
