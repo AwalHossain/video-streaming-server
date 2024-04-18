@@ -1,19 +1,20 @@
 import { Redis } from 'ioredis';
+import config from '../config';
 import { errorLogger, logger } from './logger';
 
-// const redisConfig = {
-//     username: config.redis.username,
-//     password: config.redis.password,
-//     host: config.redis.host,
-//     port: parseInt(config.redis.port),
-//     maxRetriesPerRequest: null,
-//   };
-
 const redisConfig = {
-  host: 'localhost',
-  port: 6379,
-  maxRetriesPerRequest: null,
-};
+    username: config.redis.username,
+    password: config.redis.password,
+    host: config.redis.host,
+    port: parseInt(config.redis.port),
+    maxRetriesPerRequest: null,
+  };
+
+// const redisConfig = {
+//   host: 'localhost',
+//   port: 6379,
+//   maxRetriesPerRequest: null,
+// };
 
 const redisConnection = new Redis(redisConfig);
 export const redisPubClient = new Redis(redisConfig);
