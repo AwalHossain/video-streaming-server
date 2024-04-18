@@ -1,8 +1,8 @@
-name: NodeJS with Grunt
+name: Publish Docker Image
 
 on:
-  push:
-    branches: [ "main" ]
+  repository_dispatch:
+    types: [build]
 
 jobs:
   build:
