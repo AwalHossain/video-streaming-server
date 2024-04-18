@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2018",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": true,
+
+    // Compiled Output Directory
+    "outDir": "dist",
+
+    "rootDir": "",
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "inlineSources": true,
+
+    // Set `sourceRoot` to  "/" to strip the build path prefix
+    // from generated source code references.
+    // This improves issue grouping in Sentry.
+    "sourceRoot": "/"
+  },
+  "include": [
+    "src/**/*.js", // Every js file inside src folder
+    "src/**/*.ts", // Every ts file inside src folder
+    "*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    ".serverless", // Exclude serverless directory
+    "dist" // Exclude compiled output by Typescript compiler
+  ]
+}
