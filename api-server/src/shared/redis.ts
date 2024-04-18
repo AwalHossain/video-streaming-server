@@ -1,35 +1,34 @@
-import { Redis } from 'ioredis';
-
-// const redisConfig = {
-//     username: config.redis.username,
-//     password: config.redis.password,
-//     host: config.redis.host,
-//     port: parseInt(config.redis.port),
-//     maxRetriesPerRequest: null,
-//   };
+import { Redis } from "ioredis";
+import config from "../config";
 
 const redisConfig = {
-  host: 'localhost',
-  port: 6379,
+  username: config.redis.username,
+  password: config.redis.password,
+  host: config.redis.host,
+  port: parseInt(config.redis.port),
   maxRetriesPerRequest: null,
 };
+
+// const redisConfig = {
+//   host: 'localhost',
+//   port: 6379,
+//   maxRetriesPerRequest: null,
+// };
 
 const redisConnection = new Redis(redisConfig);
 export const redisPubClient = new Redis(redisConfig);
 export const redisSubClient = new Redis(redisConfig);
 
-redisConnection.on('error', (error) => console.log('RedisError', error))
-redisConnection.on('connect', () => console.log('Redis Connected'))
+redisConnection.on("error", (error) => console.log("RedisError", error));
+redisConnection.on("connect", () => console.log("Redis Connected"));
 
-redisConnection.on('message', (channel, message) => {
+redisConnection.on("message", (channel, message) => {
   console.log(`Received the following message from ${channel}: ${message}`);
 });
 
-
-
 const set = async (key: string, value: string, ex: number): Promise<void> => {
   if (ex) {
-    await redisConnection.set(key, value, 'EX', ex);
+    await redisConnection.set(key, value, "EX", ex);
   } else {
     await redisConnection.set(key, value);
   }
