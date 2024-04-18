@@ -1,6 +1,7 @@
 version: "3"
 services:
   conversion: 
+    container_name: video-conversion
     build:
       context: .
       target: final
