@@ -1,6 +1,6 @@
 version: "3"
 services:
-  conversion: 
+  server: 
     container_name: video-conversion
     build:
       context: .
