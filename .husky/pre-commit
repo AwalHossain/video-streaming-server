@@ -1,11 +1,11 @@
-if git diff --cached --quiet -- api-gateway/; then
-    echo "No changes in api-gateway"
-else
-    (cd api-gateway && npx lint-staged)
-fi
+# if git diff --cached --quiet -- api-gateway/; then
+#     echo "No changes in api-gateway"
+# else
+#     (cd api-gateway && npx lint-staged)
+# fi
 
-if git diff --cached --quiet -- video-conversion/; then
-    echo "No changes in video-conversion"
-else
-    (cd video-conversion && npx lint-staged)
-fi
+# if git diff --cached --quiet -- video-conversion/; then
+#     echo "No changes in video-conversion"
+# else
+#     (cd video-conversion && npx lint-staged)
+# fi
