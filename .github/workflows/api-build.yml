@@ -20,3 +20,16 @@ jobs:
           fi
       - name: Checkout
         uses: actions/checkout@v3
+
+      - name: Login to docker hub
+        run: echo "${{secrets.DOCKERHUB_TOKEN}}" | docker login -u "${{secrets.DOCKERHUB_USERNAME}}"
+
+      - name: Build API Gateway Docker Image
+        run: docker build ./api-gateway --file Dockerfile --tag ${{secrets.DOCKERHUB_USERNAME}}/api-gateway:latest
+      - name: Push API Gateway Docker Image
+        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/api-gateway:latest
+
+      - name: Build API Server Docker Image
+        run: docker build ./api-server --file Dockerfile --tag ${{secrets.DOCKERHUB_USERNAME}}/api-server:latest
+      - name: Push API Server Docker Image
+        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/api-server:latest
