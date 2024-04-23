@@ -1,0 +1,15 @@
+name: Deploy Docker image to Azure VM
+
+on:
+  workflow_run:
+    workflows: ["Publish Video-Conversion Docker Image"]
+    types:
+      - completed
+
+jobs:
+  build:
+    runs-on: self-hosted
+
+    steps:
+      - name: Stop the old container
+        run: docker stop video-conversion-server || true
