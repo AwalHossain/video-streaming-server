@@ -1,4 +1,4 @@
-name: Publish video-conversion Docker Image
+name: Publish Video-Conversion Docker Image
 
 on:
   push:
