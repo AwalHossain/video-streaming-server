@@ -1,9 +1,10 @@
-version: "3"
+version: "3".
 services:
- api:
+ server:
   build:
    context: .
-   target: production
+   target: final
 
   ports:  
    - 8000:8000
+
