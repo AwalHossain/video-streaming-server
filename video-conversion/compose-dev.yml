@@ -15,6 +15,3 @@ services:
     env_file:
       - .env
 
-networks:
-  backend:
-    driver: bridge
