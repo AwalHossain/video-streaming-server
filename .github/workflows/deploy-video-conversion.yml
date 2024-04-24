@@ -23,4 +23,4 @@ jobs:
         run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-server:latest
 
       - name: Run the image
-        run: docker compose -f compose-dev.yml up -d
+        run: docker run -d --name video-conversion-server ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-server:latest
