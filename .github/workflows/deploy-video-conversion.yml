@@ -17,10 +17,10 @@ jobs:
         run: docker rm video-conversion-api || true
 
       - name: Delete the old image
-        run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-api:latest || true
+        run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest || true
 
       - name: Pull the image from dockerhub
-        run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-api:latest
+        run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
 
       - name: Run the image
-        run: docker run -d --name video-conversion-api ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-api:latest
+        run: docker run -d --name video-conversion-v1 ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-v1:latest
