@@ -17,7 +17,7 @@ jobs:
         run: echo "${{secrets.DOCKERHUB_TOKEN}}" | docker login -u "${{secrets.DOCKERHUB_USERNAME}}" --password-stdin
 
       - name: Build Docker Image
-        run: docker build ./video-conversion --file Dockerfile --tag ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-api:latest
+        run: docker build ./video-conversion --file video-conversion/Dockerfile --tag ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-api:latest
 
       - name: Push Docker Image
         run: docker push ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-api:latest
