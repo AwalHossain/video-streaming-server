@@ -13,3 +13,15 @@ jobs:
     steps:
       - name: Stop the old container
         run: docker stop video-conversion-server || true
+
+      - name: Delete the old container
+        run: docker rm video-conversion-server || true
+
+      - name: Delete the old image
+        run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-server:latest || true
+
+      - name: Pull the image from dockerhub
+        run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-server:latest
+
+      - name: Run the image
+        run: docker compose up -d
