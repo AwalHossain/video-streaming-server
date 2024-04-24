@@ -2,6 +2,12 @@ FROM node:18-alpine AS builder
 # working directory
 WORKDIR /app
 
+# define arguments
+ARG SENTRY_DSN
+
+# set environment variables
+ENV SENTRY_DSN=$SENTRY_DSN
+
 # copy everything into the container working directory
 COPY . .
 COPY .env.example .env
