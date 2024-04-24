@@ -1,0 +1,5 @@
+version: "3.8"
+services:
+  node-app:
+    image: awel07/video-conversion-api:latest
+    container_name: video-conversion-api
