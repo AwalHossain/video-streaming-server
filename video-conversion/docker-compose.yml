@@ -1,14 +1,5 @@
-version: "3"
+version: '3.8'
 services:
-  api: 
-    build: .
-    networks:
-      - backend
-    ports:
-      - 8000:8000
-    env_file:
-      - .env
-
-networks:
-  backend:
-    driver: bridge
+  node-app:
+    image: awel07/video-conversion-api:latest
+    container_name: video-conversion-api
