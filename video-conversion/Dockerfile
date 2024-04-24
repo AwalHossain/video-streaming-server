@@ -3,10 +3,10 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # define arguments
-ARG SENTRY_DSN
+ARG SENTRY_AUTH_TOKEN
 
 # set environment variables
-ENV SENTRY_DSN=$SENTRY_DSN
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
 
 # copy everything into the container working directory
 COPY . .
