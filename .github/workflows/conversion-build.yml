@@ -19,6 +19,6 @@ jobs:
       - name: Build Docker Image
         run: |
           cd video-conversion
-          docker build --no-cache . --file Dockerfile --tag ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
+          docker build --no-cache --build-arg SENTRY_DSN=${{secrets.SENTRY_DSN}} . --file Dockerfile --tag ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
       - name: Push Docker Image
         run: docker push ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
