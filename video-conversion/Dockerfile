@@ -20,8 +20,11 @@ RUN apk add --no-cache ffmpeg
 COPY --from=builder ./app/dist ./dist
 COPY package.json .
 COPY yarn.lock .
+COPY --from=builder /app/entrypoint.sh .
+COPY .env .
 
 RUN yarn install --production
 
-CMD [ "yarn", "start" ]
+RUN ["chmod", "+x", "./entrypoint.sh"]
+ENTRYPOINT [ "sh","./entrypoint.sh" ]
 
