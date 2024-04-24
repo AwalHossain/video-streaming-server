@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-  server:
+  v1:
     build:
       context: .
       target: final
