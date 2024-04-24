@@ -4,7 +4,7 @@ WORKDIR /app
 
 # copy everything into the container working directory
 COPY . .
-COPY .env .
+COPY .env.example .env
 # every RUN command creates a new layer in the image & increases the image size
 RUN yarn install
 RUN yarn build
