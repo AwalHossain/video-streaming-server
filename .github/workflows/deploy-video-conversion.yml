@@ -1,10 +1,9 @@
 name: Deploy Docker image to Azure VM
 
 on:
-  workflow_run:
-    workflows: ["Publish Video-Conversion Docker Image"]
-    types:
-      - completed
+  push:
+    branches:
+      - master
 
 jobs:
   build:
