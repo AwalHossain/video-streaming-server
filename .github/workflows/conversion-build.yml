@@ -3,7 +3,7 @@ name: Publish Video-Conversion Docker Image
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build:
