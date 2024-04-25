@@ -1,18 +1,24 @@
-FROM node:14
+FROM node:18-alpine AS builder
+# working directory
+WORKDIR /app
 
-# Install Redis
-RUN apt-get update && apt-get install -y redis-server
-
-# Create app directory
-WORKDIR /usr/src/app
-
-# Install app dependencies
-COPY package*.json ./
-
-RUN npm install
-
-# Bundle app source
+# copy everything into the container working directory
 COPY . .
+# every RUN command creates a new layer in the image & increases the image size
+RUN yarn install
+RUN yarn build
 
-EXPOSE 8080
-CMD [ "node", "your-app-start-file.js" ]
+# production environment
+
+FROM node:18-alpine AS final
+
+WORKDIR /app
+
+COPY --from=builder ./app/dist ./dist
+COPY package.json .
+COPY yarn.lock .
+
+RUN yarn install --production
+
+CMD [ "yarn", "start" ]
+
