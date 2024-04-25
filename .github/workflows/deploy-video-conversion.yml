@@ -22,5 +22,9 @@ jobs:
       - name: Pull the image from dockerhub
         run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
 
+      - name: Generate .env file
+        run: |
+          echo "${{secrets.ENV_FILE}}" > .env
+
       - name: Run the image
-        run: docker run -d --name video-conversion-v1 ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-v1:latest
+        run: docker run -d --name video-conversion-v1 --env-file .env ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-v1:latest
