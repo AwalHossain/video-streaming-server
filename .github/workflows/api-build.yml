@@ -3,7 +3,7 @@ name: Publish api Docker Image
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
