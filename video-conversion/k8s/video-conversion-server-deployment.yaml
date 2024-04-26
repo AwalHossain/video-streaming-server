@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: video-conversion-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: video-conversion-server
+  template:
+    metadata:
+      labels:
+        app: video-conversion-server
+    spec:
+      containers:
+        - name: video-conversion-server
+          image: awel07/api-server
+          envFrom:
+            - configMapRef:
+                name: conversion-config
+          ports:
+            - containerPort: 8080
