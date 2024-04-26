@@ -4,6 +4,7 @@ WORKDIR /app
 
 # copy everything into the container working directory
 COPY . .
+COPY .env .env
 # every RUN command creates a new layer in the image & increases the image size
 RUN yarn install
 RUN yarn build
@@ -18,6 +19,7 @@ WORKDIR /app
 RUN apk add --no-cache ffmpeg
 
 COPY --from=builder ./app/dist ./dist
+COPY --from=builder ./app/.env .
 COPY package.json .
 COPY yarn.lock .
 
