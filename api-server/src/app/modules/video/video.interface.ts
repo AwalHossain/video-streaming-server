@@ -6,6 +6,7 @@ export type IPayload = {
   videoLink?: string;
   viewsCount?: number;
   duration?: string;
+  rawVideoLink?: string;
   history?: [{ status: string; createdAt: number }];
 };
 
