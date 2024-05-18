@@ -6,6 +6,7 @@ import ApiError from '../errors/apiError';
 import { errorLogger, logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
 import uploadProcessedFile from './uploadToCloud';
+import config from '../config';
 
 const processHLSFile = async (data: any, queueName: string) => {
   const dataCopy = JSON.parse(JSON.stringify(data));
@@ -20,8 +21,9 @@ const processHLSFile = async (data: any, queueName: string) => {
   const file = dataCopy.destination.split('/')[1];
   const fileName = dataCopy.fileName;
   const dataObj = {
-    videoLink: `https://mernvideo.blob.core.windows.net/${file}/${fileName}_master.m3u8`,
-    thumbnailUrl: `https://mernvideo.blob.core.windows.net/${file}/${fileName}.png`,
+    videoLink: `${config.azure.blob_url}/${file}/${fileName}_master.m3u8`,
+    thumbnailUrl: `${config.azure.blob_url}/${file}/${fileName}.png`,
+    rawVideoLink: `${file}/${fileName}`,
   };
 
   console.log('dataObj', dataObj, `./uploads/${file}/hls`, `${file}`);
