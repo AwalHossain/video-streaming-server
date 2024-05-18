@@ -4,6 +4,6 @@
     "ghcr.io/devcontainers/features/common-utils:1": "sh"
   },
   "containerEnv": {
-    "WORKSPACE_STORAGESIZE": "12gb"
+    "WORKSPACE_STORAGESIZE": "62gb"
   }
 }
