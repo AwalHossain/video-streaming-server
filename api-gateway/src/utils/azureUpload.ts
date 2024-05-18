@@ -6,6 +6,8 @@ const azureUpload = async (
   file: Express.Multer.File,
   containerName: string,
 ) => {
+  console.log('azureUpload called', file, containerName);
+
   try {
     const blobServiceClient = BlobServiceClient.fromConnectionString(
       config.azure.storage_connection_string,
@@ -17,7 +19,7 @@ const azureUpload = async (
       access: 'container',
     });
 
-    console.log(file, 'file');
+    console.log(file, 'file inside azureUpload');
 
     // Create blob client for the specific file location
     const blockBlobClient = containerClient.getBlockBlobClient(file.filename);
