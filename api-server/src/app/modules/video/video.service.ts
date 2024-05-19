@@ -8,9 +8,10 @@ import { API_SERVER_EVENTS } from "../../../constants/event";
 import ApiError from "../../../error/apiError";
 import { PaginationHelper } from "../../../helpers/paginationHelper";
 import { IpaginationOptions } from "../../../interface/pagination";
+import { logger } from "../../../shared/logger";
 import RabbitMQ from "../../../shared/rabbitMQ";
 import { videoSearchableFields } from "./video.constant";
-import { IPayload, IVdieosFilterableFields } from "./video.interface";
+import { IHistory, IPayload, IVdieosFilterableFields } from "./video.interface";
 import { Video } from "./video.model";
 // // TODO: add logging
 
@@ -19,14 +20,26 @@ type IInsertIntoDBFromEvent = {
 };
 
 const insertIntoDBFromEvent = async (data: IInsertIntoDBFromEvent) => {
-  console.log("insertIntoDBFromEvent", data);
+  logger.info("insertIntoDBFromEvent", data);
 
   try {
     const result = await Video.create(data);
     if (result) {
+      const { _id, title, author, tags } = result;
+      let updateData = {
+        id: _id.toString(),
+        history: { status: "inserted", createdAt: Date.now() },
+      };
+
+      let UpdatedResult = await updateHistory(
+        updateData.id,
+        updateData.history
+      );
+
       RabbitMQ.sendToQueue(API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT, result);
-      console.log(result, "result");
+      logger.info("Result", result, "result plus updated data", UpdatedResult);
     }
+
     return result;
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
@@ -216,7 +229,7 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
   return updatedDoc;
 };
 
-const updateHistory = async (id: string, history: IPayload) => {
+const updateHistory = async (id: string, history: IHistory) => {
   console.log("updating history", history, id, "and");
 
   try {
