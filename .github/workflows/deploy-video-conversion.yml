@@ -1,9 +1,9 @@
 name: Deploy Docker image to Azure VM
 
 on:
-  push:
-    branches:
-      - master
+  workflow_run:
+    workflows: ["Publish Video-Conversion Docker Image"]
+    types: [completed]
 
 jobs:
   build:
@@ -11,16 +11,20 @@ jobs:
 
     steps:
       - name: Stop the old container
-        run: docker stop video-conversion-server || true
+        run: docker stop video-conversion-api || true
 
       - name: Delete the old container
-        run: docker rm video-conversion-server || true
+        run: docker rm video-conversion-api || true
 
       - name: Delete the old image
-        run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-server:latest || true
+        run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest || true
 
       - name: Pull the image from dockerhub
-        run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-server:latest
+        run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
+
+      - name: Generate .env file
+        run: |
+          echo "${{secrets.ENV_FILE}}" > .env
 
       - name: Run the image
-        run: docker run -d --name video-conversion-server ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-server:latest
+        run: docker run -d --name video-conversion-v1 --env-file .env ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-v1:latest

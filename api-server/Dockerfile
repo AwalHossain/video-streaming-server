@@ -1,8 +1,9 @@
-FROM node:18-alpine AS builder
-# working directory
+FROM node:18-alpine
 WORKDIR /app
-
-# copy everything into the container working directory
+ADD package*.json ./
+RUN npm install
+RUN apk update
+RUN apk add ffmpeg
 COPY . .
 COPY .env .env
 # every RUN command creates a new layer in the image & increases the image size

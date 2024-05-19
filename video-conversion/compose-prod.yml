@@ -1,10 +1,8 @@
-version: "3".
+version: '3.7'
 services:
- server:
-  build:
-   context: .
-   target: final
-
-  ports:  
-   - 8000:8000
-
+  v1:
+    build:
+      context: .
+      target: final
+    ports:
+      - 8000:8000

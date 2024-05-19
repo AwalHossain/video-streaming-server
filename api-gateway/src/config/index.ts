@@ -29,6 +29,7 @@ const config = {
   services: {
     api: process.env.API_SERVICE,
     video: process.env.VIDEO_SERVICE,
+    client: process.env.CLIENT_URL1,
   },
 };
 

@@ -36,17 +36,13 @@ router.get("/google/callback", passport.authenticate("google"), (req, res) => {
     },
   };
 
-  // Send a script that posts a message to the opener window
-  res.send(`
-        <script>
-            window.opener.postMessage(${JSON.stringify(user)}, "${
-    config.clientUrl
-  }");
-            window.close();
-        </script>
-    `);
+  // Redirect back to the API Gateway with the user data in the query string
+  res.redirect(
+    `${config.apiGatway}/auth/google/callback?user=${encodeURIComponent(
+      JSON.stringify(user)
+    )}`
+  );
 });
-
 router.get("/logout", UserController.logoutUser);
 
 router.get("/check-session", isAuthenticated, async (req, res) => {

@@ -2,6 +2,12 @@ FROM node:18-alpine AS builder
 # working directory
 WORKDIR /app
 
+# define arguments
+ARG SENTRY_AUTH_TOKEN
+
+# set environment variables
+ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
+
 # copy everything into the container working directory
 COPY . .
 COPY .env .env
@@ -20,10 +26,10 @@ RUN apk add --no-cache ffmpeg
 
 COPY --from=builder ./app/dist ./dist
 COPY --from=builder ./app/.env .
+COPY --from=builder ./app/.env .
 COPY package.json .
 COPY yarn.lock .
 
 RUN yarn install --production
 
 CMD [ "yarn", "start" ]
-
