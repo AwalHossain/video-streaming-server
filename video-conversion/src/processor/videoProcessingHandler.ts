@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ffmpegPath from 'ffmpeg-static';
 import ffmpeg from 'fluent-ffmpeg';
-import { errorLogger } from '../shared/logger';
+import { errorLogger, logger } from '../shared/logger';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 
@@ -43,6 +43,7 @@ export const getVideoDurationAndResolution = async (
         errorLogger.log('An error occurred in ffprobe ', err);
         reject(err);
       } else {
+        logger.info('videoDuration format', metadata.format);
         videoDuration = formatDuration(parseInt(metadata.format.duration));
         videoResolution.width = metadata.streams[0].width;
         videoResolution.height = metadata.streams[0].height;
