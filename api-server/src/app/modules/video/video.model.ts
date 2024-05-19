@@ -53,7 +53,7 @@ const VideoSchema = new mongoose.Schema(
     videoLink: {
       type: String,
     },
-    rawVideoLink:{
+    rawVideoLink: {
       type: String,
     },
     videoPath: {
@@ -92,6 +92,9 @@ const VideoSchema = new mongoose.Schema(
     },
     size: {
       type: Number,
+    },
+    videoConversionTime: {
+      type: String,
     },
   },
   {
