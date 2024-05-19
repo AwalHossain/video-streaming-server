@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fsextra from 'fs-extra';
 import path from 'path';
+import config from '../config';
 import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
 import ApiError from '../errors/apiError';
 import { errorLogger, logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
 import uploadProcessedFile from './uploadToCloud';
-import config from '../config';
 
 const processHLSFile = async (data: any, queueName: string) => {
   const dataCopy = JSON.parse(JSON.stringify(data));
@@ -70,8 +70,9 @@ const processHLSFile = async (data: any, queueName: string) => {
     const publishData = {
       id: dataCopy.id,
       status: 'published',
-      videoLink: `https://mernvideo.blob.core.windows.net/${file}/${fileName}_master.m3u8`,
-      thumbnailUrl: `https://mernvideo.blob.core.windows.net/${file}/${fileName}.png`,
+      videoLink: dataObj.videoLink,
+      thumbnailUrl: dataObj.thumbnailUrl,
+      rawVideoLink: dataObj.rawVideoLink,
     };
 
     RabbitMQ.sendToQueue(API_SERVER_EVENTS.VIDEO_PUBLISHED_EVENT, publishData);
