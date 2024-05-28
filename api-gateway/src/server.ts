@@ -36,12 +36,12 @@ async function bootstrap() {
       logger.info('application started');
     });
 
-    process.on('SIGTERM', () => {
-      logger.info('SIGTERM received');
-      if (server) {
-        server.close();
-      }
-    });
+    // process.on('SIGTERM', () => {
+    //   logger.info('SIGTERM received');
+    //   if (server) {
+    //     server.close();
+    //   }
+    // });
   } catch (error) {
     errorLogger.error('Error connecting to Server', error);
   }

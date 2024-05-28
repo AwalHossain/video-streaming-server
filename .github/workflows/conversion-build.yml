@@ -3,13 +3,19 @@ name: Publish Video-Conversion Docker Image
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Check trigger phrase
+        run: |
+          if [ ${{ github.event.inputs.trigger_phrase }} != "deploy" ]; then
+              echo "The trigger phrase is incorrect. Please enter the correct trigger phrase."
+              exit 1
+          fi
       - name: Checkout
         uses: actions/checkout@v3
 

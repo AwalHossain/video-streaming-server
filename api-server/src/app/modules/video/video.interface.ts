@@ -6,7 +6,13 @@ export type IPayload = {
   videoLink?: string;
   viewsCount?: number;
   duration?: string;
-  history?: [{ status: string; createdAt: number }];
+  rawVideoLink?: string;
+  history?: IHistory;
+};
+
+export type IHistory = {
+  status: string;
+  createdAt: number;
 };
 
 export type IVdieosFilterableFields = {

@@ -50,7 +50,7 @@ const logger = createLogger({
 });
 
 const errorLogger = createLogger({
-  level: 'info',
+  level: 'error',
   format: combine(label({ label: 'MERN' }), timestamp(), myFormat),
   defaultMeta: { service: 'user-service' },
   transports: [

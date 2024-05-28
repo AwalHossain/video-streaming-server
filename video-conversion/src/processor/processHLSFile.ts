@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fsextra from 'fs-extra';
 import path from 'path';
+import config from '../config';
 import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
 import ApiError from '../errors/apiError';
 import { errorLogger, logger } from '../shared/logger';
@@ -20,8 +21,9 @@ const processHLSFile = async (data: any, queueName: string) => {
   const file = dataCopy.destination.split('/')[1];
   const fileName = dataCopy.fileName;
   const dataObj = {
-    videoLink: `https://mernvideo.blob.core.windows.net/${file}/${fileName}_master.m3u8`,
-    thumbnailUrl: `https://mernvideo.blob.core.windows.net/${file}/${fileName}.png`,
+    videoLink: `${config.azure.blob_url}/${file}/${fileName}_master.m3u8`,
+    thumbnailUrl: `${config.azure.blob_url}/${file}/${fileName}.png`,
+    rawVideoLink: `${file}/${fileName}`,
   };
 
   console.log('dataObj', dataObj, `./uploads/${file}/hls`, `${file}`);
@@ -68,8 +70,9 @@ const processHLSFile = async (data: any, queueName: string) => {
     const publishData = {
       id: dataCopy.id,
       status: 'published',
-      videoLink: `https://mernvideo.blob.core.windows.net/${file}/${fileName}_master.m3u8`,
-      thumbnailUrl: `https://mernvideo.blob.core.windows.net/${file}/${fileName}.png`,
+      videoLink: dataObj.videoLink,
+      thumbnailUrl: dataObj.thumbnailUrl,
+      rawVideoLink: dataObj.rawVideoLink,
     };
 
     RabbitMQ.sendToQueue(API_SERVER_EVENTS.VIDEO_PUBLISHED_EVENT, publishData);

@@ -12,6 +12,7 @@ const initVideoEvents = () => {
       try {
         // Process the message
         console.log(msg.content.toString(), "msg.content.toString()");
+
         const data = JSON.parse(msg.content.toString());
         await VideoService.insertIntoDBFromEvent(data);
         // Acknowledge the message

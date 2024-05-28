@@ -8,9 +8,10 @@ import { API_SERVER_EVENTS } from "../../../constants/event";
 import ApiError from "../../../error/apiError";
 import { PaginationHelper } from "../../../helpers/paginationHelper";
 import { IpaginationOptions } from "../../../interface/pagination";
+import { logger } from "../../../shared/logger";
 import RabbitMQ from "../../../shared/rabbitMQ";
 import { videoSearchableFields } from "./video.constant";
-import { IPayload, IVdieosFilterableFields } from "./video.interface";
+import { IHistory, IPayload, IVdieosFilterableFields } from "./video.interface";
 import { Video } from "./video.model";
 // // TODO: add logging
 
@@ -19,14 +20,26 @@ type IInsertIntoDBFromEvent = {
 };
 
 const insertIntoDBFromEvent = async (data: IInsertIntoDBFromEvent) => {
-  console.log("insertIntoDBFromEvent", data);
+  logger.info("insertIntoDBFromEvent", data);
 
   try {
     const result = await Video.create(data);
     if (result) {
+      const { _id, title, author, tags } = result;
+      let updateData = {
+        id: _id.toString(),
+        history: { status: "inserted", createdAt: Date.now() },
+      };
+
+      let UpdatedResult = await updateHistory(
+        updateData.id,
+        updateData.history
+      );
+
       RabbitMQ.sendToQueue(API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT, result);
-      console.log(result, "result");
+      logger.info("Result", result, "result plus updated data", UpdatedResult);
     }
+
     return result;
   } catch (error) {
     if (error instanceof mongoose.Error.ValidationError) {
@@ -197,7 +210,7 @@ const incrementViewCount = async (id: ObjectId) => {
 const update = async (id: ObjectId, document: Partial<IPayload>) => {
   console.log("updating document", document);
 
-  const updatedDoc = await Video.updateOne(
+  const updatedDoc = await Video.findOneAndUpdate(
     {
       _id: new ObjectId(id),
     },
@@ -212,11 +225,19 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
       new: true,
     }
   );
-  console.log("updating document", updatedDoc);
+  console.log("successfully updated document", updatedDoc);
+
+  if (updatedDoc.status === "published") {
+    const time = await calculateConversionTime(updatedDoc.history);
+    updatedDoc.videoConversionTime = time;
+    const result = await updatedDoc.save();
+    console.log("result after saving", result);
+  }
+
   return updatedDoc;
 };
 
-const updateHistory = async (id: string, history: IPayload) => {
+const updateHistory = async (id: string, history: IHistory) => {
   console.log("updating history", history, id, "and");
 
   try {
@@ -251,6 +272,27 @@ const getById = async (id: string) => {
     console.error(error);
     return error;
   }
+};
+
+const calculateConversionTime = async (history: IHistory[]) => {
+  console.log("calculating conversion time", history);
+  const insertedTime = history.find(
+    (item) => item.status === "inserted"
+  )?.createdAt;
+  const convertedTime = history.find(
+    (item) => item.status === "video.hls.converted"
+  )?.createdAt;
+  console.log("insertedTime", insertedTime, "convertedTime", convertedTime);
+
+  if (!insertedTime || !convertedTime) {
+    return "N/A";
+  }
+  const diff = convertedTime - insertedTime;
+  // convert to seconds
+  const seconds = (diff / 1000).toFixed(2) + "s";
+  console.log("conversion time", seconds);
+
+  return seconds;
 };
 
 export const VideoService = {

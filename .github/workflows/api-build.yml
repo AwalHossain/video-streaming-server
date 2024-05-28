@@ -1,11 +1,9 @@
 name: Publish api Docker Image
 
 on:
-  workflow_dispatch:
-    inputs:
-      trigger_phrase:
-        description: "Enter the trigger phrase"
-        required: true
+  push:
+    branches:
+      - master
 
 jobs:
   build:

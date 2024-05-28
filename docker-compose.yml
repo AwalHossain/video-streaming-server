@@ -1,5 +1,18 @@
-version: "3.8"
+version: "3.7"
 services:
-  node-app:
-    image: awel07/video-conversion-api:latest
-    container_name: video-conversion-api
+  api-gateway:
+    build:
+      context: ./api-gateway
+      target: final
+    ports:
+      - 5000:5000
+    env_file:
+      - ./api-gateway/.env
+  api-server:
+    build:
+      context: ./api-server
+      target: final
+    ports:
+      - 3000:3000
+    env_file:
+      - ./api-server/.env

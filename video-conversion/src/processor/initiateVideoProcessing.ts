@@ -3,6 +3,7 @@
 
 import { API_SERVER_EVENTS, QUEUE_EVENTS } from '../constant/events';
 import { addQueueItem } from '../queues/addJobToQueue';
+import { logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
 import { getVideoDurationAndResolution } from './videoProcessingHandler';
 
@@ -31,6 +32,8 @@ const initiateVideoProcessing = async ({
   // RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_UPLOADED, uploadMsg);
 
   const { videoDuration } = await getVideoDurationAndResolution(videoPath);
+
+  logger.info('videoDuration', videoDuration);
 
   const payload = {
     ...videoMetadata,
