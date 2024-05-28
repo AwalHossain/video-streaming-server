@@ -1,30 +1,30 @@
-name: Deploy Docker image to Azure VM
+# name: Deploy Docker image to Azure VM
 
-on:
-  workflow_run:
-    workflows: ["Publish Video-Conversion Docker Image"]
-    types: [completed]
+# on:
+#   workflow_run:
+#     workflows: ["Publish Video-Conversion Docker Image"]
+#     types: [completed]
 
-jobs:
-  build:
-    runs-on: self-hosted
+# jobs:
+#   build:
+#     runs-on: self-hosted
 
-    steps:
-      - name: Stop the old container
-        run: docker stop video-conversion-api || true
+#     steps:
+#       - name: Stop the old container
+#         run: docker stop video-conversion-api || true
 
-      - name: Delete the old container
-        run: docker rm video-conversion-api || true
+#       - name: Delete the old container
+#         run: docker rm video-conversion-api || true
 
-      - name: Delete the old image
-        run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest || true
+#       - name: Delete the old image
+#         run: docker rmi ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest || true
 
-      - name: Pull the image from dockerhub
-        run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
+#       - name: Pull the image from dockerhub
+#         run: docker pull ${{secrets.DOCKERHUB_USERNAME}}/video-conversion-v1:latest
 
-      - name: Generate .env file
-        run: |
-          echo "${{secrets.ENV_FILE}}" > .env
+#       - name: Generate .env file
+#         run: |
+#           echo "${{secrets.ENV_FILE}}" > .env
 
-      - name: Run the image
-        run: docker run -d --name video-conversion-v1 --env-file .env ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-v1:latest
+#       - name: Run the image
+#         run: docker run -d --name video-conversion-v1 --env-file .env ${{ secrets.DOCKERHUB_USERNAME }}/video-conversion-v1:latest
