@@ -37,6 +37,8 @@ router.get("/google/callback", passport.authenticate("google"), (req, res) => {
   };
 
   // Redirect back to the API Gateway with the user data in the query string
+  console.log(config.apiGatway,"config.apiGatway");
+  
   res.redirect(
     `${config.apiGatway}/auth/google/callback?user=${encodeURIComponent(
       JSON.stringify(user)
