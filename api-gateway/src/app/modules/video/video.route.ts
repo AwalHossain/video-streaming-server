@@ -1,16 +1,18 @@
 import { Router } from 'express';
 import isAuthenticated from '../../middleware/isAuthenticated';
-import { uploadMiddleware } from '../../middleware/uploadMiddleware';
 import { VideoController } from './video.controller';
 
 const router = Router();
 
-router.post(
-  '/upload',
+
+
+router.post('/presigned-url',
   isAuthenticated,
-  uploadMiddleware.single('video'),
-  VideoController.uploadToBucket,
-);
+  VideoController.getPresignedUrl);
+
+router.post('/confirm-upload',
+  isAuthenticated,
+  VideoController.confirmUpload);
 
 router.get('/', VideoController.getAllVideos);
 router.get('/myvideos', isAuthenticated, VideoController.getMyVideos);
