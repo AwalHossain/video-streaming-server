@@ -1,11 +1,12 @@
 import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
+import config from './config';
 import { errorLogger, logger } from './shared/logger';
 import RabbitMQ from './shared/rabbitMQ';
 import { setupRabbitMQConsumers } from './socket';
 
-const PORT: number = 5000;
+const PORT: number = config.port || 8000;
 
 const server = http.createServer(app);
 
