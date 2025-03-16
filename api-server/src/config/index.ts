@@ -11,11 +11,12 @@ export default {
   mongoUrl: process.env.MONGO_URL,
   redisUrl: process.env.REDIS_URL,
   redisPort: process.env.REDIS_PORT,
-  accessKey: process.env.ACCESS_KEY,
-  secretKey: process.env.SECRET_KEY,
-  endpoint: process.env.ENDPOINT,
-  region: process.env.REGION,
-  bucketName: process.env.BUCKET_NAME,
+  doSpaces: {
+    endpoint: process.env.DO_SPACES_ENDPOINT,
+    accessKey: process.env.DO_SPACES_ACCESS_KEY,
+    secretKey: process.env.DO_SPACES_SECRET_KEY,
+    bucketName: process.env.DO_SPACES_BUCKET_NAME,
+  },
   redis: {
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
