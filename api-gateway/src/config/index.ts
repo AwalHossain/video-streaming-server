@@ -7,7 +7,7 @@ dotenv.config({
 
 const config = {
   env: process.env.NODE_ENV || 'production',
-  port: process.env.PORT,
+  port: process.env.PORT as unknown as number,
   redis: {
     username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
@@ -30,6 +30,13 @@ const config = {
     api: process.env.API_SERVICE,
     video: process.env.VIDEO_SERVICE,
     client: process.env.CLIENT_URL1,
+  },
+  doSpaces: {
+    endpoint: process.env.DO_SPACES_ENDPOINT,
+    accessKey: process.env.DO_SPACES_ACCESS_KEY,
+    secretKey: process.env.DO_SPACES_SECRET_KEY,
+    bucketName: process.env.DO_SPACES_BUCKET_NAME,
+    region: process.env.DO_SPACES_REGION,
   },
 };
 
