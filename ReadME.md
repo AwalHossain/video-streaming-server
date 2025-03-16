@@ -4,8 +4,9 @@
 This project is a full-stack video streaming service built with the MERN stack (MongoDB, Express.js, React.js, Node.js) and TypeScript. It allows users to upload videos, which are then processed and converted into multiple bitrates for adaptive streaming. The application follows a microservices architecture and uses various technologies like RabbitMQ (message broker), Socket.IO (real-time communication), FFmpeg (video processing), and BullMQ (job queues).
 
 
-![Project Diagram](https://i.ibb.co/qDT7gDh/diagram-export-5-27-2024-2-41-36-PM.png)
+![Project Diagram]()
 
+![Project Diagram](https://github.com/user-attachments/assets/6831a4c5-6741-4999-9069-9f3efd6363cb)
 
 
 ## 🌐 Overview 
@@ -27,7 +28,7 @@ The video streaming service aims to provide a smooth experience for users to upl
 
 ## 🏗️ Architecture
 
-![Project Diagram](https://i.ibb.co/YQtr0yh/Untitled-2024-05-10-2008.png)
+![Project Diagram](https://github.com/user-attachments/assets/cab13e41-a327-4e42-8404-94335b381bf9)
 
 
 The microservices architecture consists of three main components:
