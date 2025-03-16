@@ -9,6 +9,7 @@ const registrationUser = async (
   next: NextFunction,
 ) => {
   try {
+    console.log('registrationUser', req.body);
     const response = await AuthService.registrationUser(req);
 
     sendResponse(res, response);
