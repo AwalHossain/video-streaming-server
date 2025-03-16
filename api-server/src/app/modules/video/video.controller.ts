@@ -82,6 +82,7 @@ const getById = catchAsync(async (req: Request, res: Response) => {
   // increment view count
   await VideoService.incrementViewCount(id);
 
+  
   res.status(200).json({
     status: "success",
     statusCode: 200,
