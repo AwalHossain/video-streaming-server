@@ -17,6 +17,6 @@ router.put("/update/:id", isAuthenticated, VideoController.updateVideo);
 
 router.patch("/updateHistory/:id", VideoController.updateHistory);
 
-router.get("/:id", VideoController.getById);
+// router.get("/:id", VideoController.getById);
 
 export const VideoRoutes = router;
