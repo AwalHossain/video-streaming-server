@@ -21,9 +21,11 @@ type IInsertIntoDBFromEvent = {
 
 const insertIntoDBFromEvent = async (data: IInsertIntoDBFromEvent) => {
   logger.info("insertIntoDBFromEvent", data);
+  console.log("insertIntoDBFromEvent", data);
 
   try {
     const result = await Video.create(data);
+    console.log("result", result);
     if (result) {
       const { _id, title, author, tags } = result;
       let updateData = {
