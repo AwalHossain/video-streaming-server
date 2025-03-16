@@ -56,6 +56,13 @@ app.get('/debug-sentry', function mainHandler() {
 
 app.use(`/api/v1`, router);
 
+app.get('/health', (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'API Gateway is running',
+  });
+});
+
 app.use(globalErrorHandler);
 
 // The error handler must be registered before any other error middleware and after all controllers
