@@ -9,7 +9,7 @@ import config from "./config";
 import { errorLogger, logger } from "./shared/logger";
 import RabbitMQ from "./shared/rabbitMQ";
 
-const PORT: number = 8001;
+const PORT: number = config.port as unknown as number || 8001;
 export let server = http.createServer(app);
 
 export const io = new Server(server, {
@@ -21,7 +21,6 @@ export const io = new Server(server, {
 
 io.on("connection", (socket) => {
   // get the user's id
-
   const userId = socket.handshake.query.userId;
 
   // Log a message
@@ -41,6 +40,8 @@ async function bootstrap() {
     subscribeToEvents();
     server = app.listen(PORT, async () => {
       logger.info(`listening on port ${PORT}`);
+      console.log("listening on port", PORT);
+      // console.log("config.mongoUrl", config.mongoUrl);
       const db = await mongoose.connect(config.mongoUrl);
       logger.info("database connected", db.connection.readyState);
       logger.info("application setup completed successfully");
