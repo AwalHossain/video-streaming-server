@@ -2,11 +2,12 @@ import http from 'http';
 import { Server } from 'socket.io';
 import app from './app';
 import subscribeToEvents from './app/events';
+import config from './config';
 import { errorLogger, logger } from './shared/logger';
 import rabbitMQConnection from './shared/rabbitMQ';
 import { setupAllQueueEvent } from './worker/jobWorker';
 
-const PORT: number = 8000;
+const PORT: number = config.port ? parseInt(config.port) : 8000;
 
 const server = http.createServer(app);
 
