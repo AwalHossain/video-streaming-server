@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config = {
+  port: process.env.PORT,
   redis: {
     username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
@@ -22,6 +23,13 @@ const config = {
   sentry: {
     dsn: process.env.SENTRY_DSN,
   },
+  doSpaces: {
+    endpoint: process.env.DO_SPACES_ENDPOINT,
+    accessKey: process.env.DO_SPACES_ACCESS_KEY,
+    secretKey: process.env.DO_SPACES_SECRET_KEY,
+    bucketName: process.env.DO_SPACES_BUCKET_NAME,
+    region: process.env.DO_SPACES_REGION,
+  }
 };
 
 export default config;
