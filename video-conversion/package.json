@@ -51,6 +51,7 @@
     "@sentry/profiling-node": "^7.102.1",
     "amqplib": "^0.10.3",
     "async-lock": "^1.4.1",
+    "aws-sdk": "^2.1692.0",
     "bullmq": "^5.2.1",
     "chalk": "^4.1.2",
     "cors": "^2.8.5",
