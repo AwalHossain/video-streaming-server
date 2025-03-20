@@ -232,6 +232,12 @@ const update = async (id: ObjectId, document: Partial<IPayload>) => {
   if (updatedDoc.status === "published") {
     const time = await calculateConversionTime(updatedDoc.history);
     updatedDoc.videoConversionTime = time;
+    // TODO fix this
+      // Add missing required fields if they're not present
+  if (!updatedDoc.originalName) updatedDoc.originalName = "Unknown";
+  if (!updatedDoc.recordingDate) updatedDoc.recordingDate = new Date();
+  if (!updatedDoc.author) updatedDoc.author = new ObjectId("67dbba095bc476b71171a2ea");
+  
     const result = await updatedDoc.save();
     console.log("result after saving", result);
   }
