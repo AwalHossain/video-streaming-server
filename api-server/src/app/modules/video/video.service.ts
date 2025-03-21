@@ -39,7 +39,7 @@ const insertIntoDBFromEvent = async (data: IInsertIntoDBFromEvent) => {
       );
 
       RabbitMQ.sendToQueue(API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT, result);
-      logger.info("Result", result, "result plus updated data", UpdatedResult);
+      console.log("Sending video metadata to Video Conversion Server", result, "sent to Video Conversion Server", UpdatedResult);
     }
 
     return result;
