@@ -26,7 +26,7 @@ const s3 = new AWS.S3({
 const uploadProcessedFile = async (
   rootFolder: string,
   folderPath: string,
-  data: any,
+  dataCopy: any,
 ) => {
   const bucketName = process.env.DO_SPACES_BUCKET_NAME;
   const absoluteFolderPath = path.join(rootFolder, folderPath);
@@ -38,8 +38,11 @@ const uploadProcessedFile = async (
     console.log(`Found ${files.length} files to upload`);
     
     // Create a base folder using the user ID
-    const userFolder = data.userId ? `uploads/${data.userId}/processed` : 'processed';
-    
+
+    const videoId = dataCopy.id || `video-${Date.now()}`;
+    const userFolder = dataCopy.userId 
+      ? `uploads/${dataCopy.userId}/videos/${videoId}` 
+      : `uploads/anonymous/videos/${videoId}`;
     for (const file of files) {
       const filePath = path.join(absoluteFolderPath, file);
       const fileStats = await fsPromises.stat(filePath);
@@ -81,11 +84,11 @@ const uploadProcessedFile = async (
       RabbitMQ.sendToQueue(
         API_GATEWAY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS,
         {
-          userId: data.userId,
+          userId: dataCopy.userId,
           status: 'processing',
           name: 'File Upload Progress',
           message: `Uploaded ${file}`,
-          fileName: data.fileName || file,
+          fileName: dataCopy.fileName || file,
           fileUrl: fileUrl
         }
       );
@@ -103,7 +106,7 @@ const uploadProcessedFile = async (
     RabbitMQ.sendToQueue(
       API_GATEWAY_EVENTS.NOTIFY_AWS_S3_UPLOAD_FAILED,
       {
-        userId: data.userId,
+        userId: dataCopy.userId,
         status: 'failed',
         message: `Video upload failed: ${error.message || 'Unknown error'}`
       }
