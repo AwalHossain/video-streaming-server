@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../config';
-import { API_GATEWAY_EVENTS } from '../constant/events';
+import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
 import { IVideoMetadata } from '../interface/common';
+import eventManager from '../shared/event-manager';
 import { errorLogger, logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
 import initiateVideoProcessing from './initiateVideoProcessing';
@@ -28,17 +29,17 @@ const s3 = new AWS.S3({
 });
 
 // Get video metadata from API server
-// const getVideoMetadata = async ()=> {
-//   await RabbitMQ.consume(
-//     API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
-//     (msg, ack) => {
-//       const data = JSON.parse(msg.content.toString());
-//       logger.info('Received video metadata:', data);
-//       EventEmitter.emit('videoMetadata', data);
-//       ack();
-//     },
-//   );
-// };
+const getVideoMetadata = async ()=> {
+  await RabbitMQ.consume(
+    API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
+    (msg, ack) => {
+      const data = JSON.parse(msg.content.toString());
+      console.log('Received video metadata: from api server', data);
+      eventManager.emit('videoMetadata', data);
+      ack();
+    },
+  );
+};
 
 // Download file from DO Spaces
 async function downloadBlob(
@@ -65,17 +66,15 @@ const originalName = fileName.substring(fileName.indexOf('-') + 1);
     });
 
     // Get video metadata (optional - you may want to remove if not needed)
-    // await getVideoMetadata();
+    await getVideoMetadata();
+   let videoMetadata = {} as IVideoMetadata;
 
-    const videoMetadata = {} as IVideoMetadata;
-    videoMetadata.fileName = fileName;
-    videoMetadata.originalName = originalName;
-    // await new Promise((resolve) => {
-    //   EventEmitter.once('videoMetadata', (data) => {
-    //     videoMetadata = data;
-    //     resolve(videoMetadata);
-    //   });
-    // });
+    await new Promise((resolve) => {
+      eventManager.once('videoMetadata', (data) => {
+        videoMetadata = data;
+        resolve(videoMetadata);
+      });
+    });
 
     // Create unique folder for this download
     const uploadFolder = `container-${uuidv4()}`;
