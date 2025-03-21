@@ -61,6 +61,7 @@ const confirmUpload = catchAsync(async (req: Request, res: Response) => {
   }
 
   const userId = req.user.id;
+  // console.log("userId", userId);
 
   // Notify that video is being processed
   RabbitMQ.sendToQueue(NOTIFY_EVENTS.NOTIFT_VIDEO_UPLOADING_BUCKET, {
