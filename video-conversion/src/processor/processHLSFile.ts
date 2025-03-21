@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import fsextra from 'fs-extra';
 import path from 'path';
-import config from '../config';
 import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
 import ApiError from '../errors/apiError';
 import { errorLogger, logger } from '../shared/logger';
@@ -20,26 +19,33 @@ const processHLSFile = async (data: any, queueName: string) => {
   const rootFolder = path.resolve('./');
   const file = dataCopy.destination.split('/')[1];
   const fileName = dataCopy.fileName;
-  const dataObj = {
-    videoLink: `${config.azure.blob_url}/${file}/${fileName}_master.m3u8`,
-    thumbnailUrl: `${config.azure.blob_url}/${file}/${fileName}.png`,
-    rawVideoLink: `${file}/${fileName}`,
-  };
+  const baseFileName = fileName.endsWith('.mp4') ? fileName.slice(0, -4) : fileName;
+  const bucketName = process.env.DO_SPACES_BUCKET_NAME;
+  
+  const videoId = dataCopy.id || `video-${Date.now()}`;
+  const userFolder = dataCopy.userId 
+    ? `uploads/${dataCopy.userId}/videos/${videoId}` 
+    : `uploads/anonymous/videos/${videoId}`;
+  
 
-  console.log('dataObj', dataObj, `./uploads/${file}/hls`, `${file}`);
+  const dataObj = {
+    videoLink: `https://${bucketName}.${process.env.DO_SPACES_REGION || 'sgp1'}.cdn.digitaloceanspaces.com/${userFolder}/${baseFileName}_master.m3u8`,
+    thumbnailUrl: `https://${bucketName}.${process.env.DO_SPACES_REGION || 'sgp1'}.cdn.digitaloceanspaces.com/${userFolder}/${baseFileName}.png`,
+    rawVideoLink: `${userFolder}/${baseFileName}`,
+  };
+  
+  console.log('dataObj', dataObj, `./uploads/${file}/hls`, `${file}`, dataCopy);
 
   const deletedFolder = path.join(rootFolder, `./uploads/${file}`);
   try {
     await uploadProcessedFile(
       rootFolder,
       `./uploads/${file}/hls`,
-      `${file}`,
       dataCopy,
     ),
       await uploadProcessedFile(
         rootFolder,
         `./uploads/${file}/thumbnails`,
-        `${file}`,
         dataCopy,
       );
 
