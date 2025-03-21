@@ -52,6 +52,12 @@ const initVideoEvents = () => {
       console.log(
         `Received the following message from VIDEO_HLS_CONVERTED_EVENT: ${data}`
       );
+          // Add validation for required fields
+    if (!data.id) {
+      console.error('Missing video ID in message:', data);
+      ack(); // Acknowledge but log error
+      return;
+    }
       await VideoService.updateHistory(data.id, data.history);
 
       ack();
@@ -65,7 +71,13 @@ const initVideoEvents = () => {
       console.log(
         `Received the following message from VIDEO_thumbnail_EVENT: ${msg.content.toString()}`
       );
-      const data = JSON.parse(msg.content.toString());
+      const data = JSON.parse(msg.content.toString()); 
+      // Add validation for required fields
+      if (!data.id) {
+        console.error('Missing video ID in message:', data);
+        ack(); // Acknowledge but log error
+        return;
+      }
       console.log(
         `Received the following message from VIdeo_thumbnail_CONVERTED_EVENT: ${data}`
       );
