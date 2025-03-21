@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import { API_SERVER_EVENTS, QUEUE_EVENTS } from '../constant/events';
 import ApiError from '../errors/apiError';
 import EventEmitter from '../shared/event-manager';
-import { errorLogger, logger } from '../shared/logger';
+import { errorLogger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
 import processHLSFile from './processHLSFile';
 // import { VIDEO_STATUS } from "./video.constant";
@@ -17,7 +17,7 @@ const videoLifecycleHandler = async () => {
       EventEmitter.on(queueName, async (data) => {
         if (queueName === QUEUE_EVENTS.VIDEO_UPLOADED) {
           const dataCopy = JSON.parse(JSON.stringify(data));
-          logger.info(dataCopy, 'upload data........');
+          console.log(dataCopy, 'upload data........');
         }
 
         if (queueName === QUEUE_EVENTS.VIDEO_PROCESSED) {
