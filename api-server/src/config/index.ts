@@ -27,7 +27,7 @@ export default {
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
   googleCallbackUrl: process.env.GOOGLE_CALLBACK_URL,
-  clientUrl: process.env.CLIENT_URL1,
+  clientUrl: process.env.CLIENT_URL,
   jwtSecret: process.env.JWT_SECRET,
   apiGatway: process.env.API_GATEWAY_URL,
 };
