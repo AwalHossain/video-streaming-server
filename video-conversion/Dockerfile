@@ -2,15 +2,9 @@ FROM node:18-alpine AS builder
 # working directory
 WORKDIR /app
 
-# define arguments
-ARG SENTRY_AUTH_TOKEN
-
-# set environment variables
-ENV SENTRY_AUTH_TOKEN=$SENTRY_AUTH_TOKEN
-
 # copy everything into the container working directory
 COPY . .
-COPY .env.example .env
+COPY .env .env
 # every RUN command creates a new layer in the image & increases the image size
 RUN yarn install
 RUN yarn build
