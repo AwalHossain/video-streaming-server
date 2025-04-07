@@ -7,6 +7,7 @@ import { UserService } from "./user.service";
 
 const registrationUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    console.log("data from api-server controller", req.body);
     const result = await UserService.register(req.body);
 
     const token = createToken(result._id);
@@ -26,6 +27,7 @@ const registrationUser = catchAsync(
 
 const loginUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
+    console.log("data from api-server controller", req.body);
     const result = await UserService.login(req.body);
 
     const token = createToken(result._id);
