@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const config = {
-  port: process.env.PORT,
+  port: process.env.PORT_VIDEO_SERVER,
   redis: {
     username: process.env.REDIS_USERNAME,
     password: process.env.REDIS_PASSWORD,
