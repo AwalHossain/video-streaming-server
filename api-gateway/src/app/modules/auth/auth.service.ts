@@ -1,9 +1,9 @@
-import { logger } from '@azure/storage-blob';
 import { Request } from 'express';
 import { IGenericResponse } from '../../../interface/common';
 import { apiService } from '../../../shared/axios';
 
 const registrationUser = async (req: Request): Promise<IGenericResponse> => {
+  console.log('got making api-server call', req.body);
   const response: IGenericResponse = await apiService.post(
     '/auth/register',
     req.body,
@@ -13,7 +13,7 @@ const registrationUser = async (req: Request): Promise<IGenericResponse> => {
       },
     },
   );
-  logger.info('User registered successfully', { response });
+  console.log('User registered successfully', { response });
   return response;
 };
 const loginUser = async (req: Request): Promise<IGenericResponse> => {
