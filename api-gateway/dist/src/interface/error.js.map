@@ -1,0 +1,1 @@
+{"version":3,"file":"error.js","sourceRoot":"/","sources":["src/interface/error.ts"],"names":[],"mappings":"","sourcesContent":["export type IGenericErrorMessage = {\n  path: string | number;\n  message: string;\n};\n\nexport type IGenericErrorResponse = {\n  statusCode: number;\n  message: string;\n  errorMessages: IGenericErrorMessage[];\n};\n"]}
