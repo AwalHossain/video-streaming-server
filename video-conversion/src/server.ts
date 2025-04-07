@@ -7,7 +7,7 @@ import { errorLogger, logger } from './shared/logger';
 import rabbitMQConnection from './shared/rabbitMQ';
 import { setupAllQueueEvent } from './worker/jobWorker';
 
-const PORT: number = config.port ? parseInt(config.port) : 8000;
+const PORT: number = config.port ? parseInt(config.port) : 8002;
 
 const server = http.createServer(app);
 
