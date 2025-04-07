@@ -9,7 +9,7 @@
     "prepare": "husky",
     "start": "node dist/src/server.js",
     "queue": "ts-node-dev --respawn --transpile-only src/setupQueue.ts",
-    "build": "tsc && yarn sentry:sourcemaps",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org stu-tu --project node-express ./dist && sentry-cli sourcemaps upload --org stu-tu --project node-express ./dist"
   },
