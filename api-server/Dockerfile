@@ -1,14 +1,14 @@
-FROM node:18-alpine
+FROM node:18-alpine AS builder
 WORKDIR /app
-ADD package*.json ./
-RUN npm install
-RUN apk update
-RUN apk add ffmpeg
+
+
+# copy everything into the container working directory
 COPY . .
 COPY .env .env
 # every RUN command creates a new layer in the image & increases the image size
 RUN yarn install
 RUN yarn build
+
 
 # production environment
 
