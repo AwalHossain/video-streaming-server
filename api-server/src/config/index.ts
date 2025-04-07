@@ -7,7 +7,7 @@ dotenv.config({
 
 export default {
   env: process.env.NODE_ENV || "development",
-  port: process.env.PORT,
+  port: process.env.PORT_API_SERVER,
   mongoUrl: process.env.MONGO_URL,
   redisUrl: process.env.REDIS_URL,
   redisPort: process.env.REDIS_PORT,
