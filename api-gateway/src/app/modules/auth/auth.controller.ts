@@ -19,7 +19,7 @@ const registrationUser = async (
 };
 const loginUer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log('loginUer', req.body);
+    console.log('got req.body', req.body);
 
     const response = await AuthService.loginUser(req);
     console.log('loginUser', response);
