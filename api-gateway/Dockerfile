@@ -1,12 +1,12 @@
 FROM node:18-alpine AS builder
-# working directory
 WORKDIR /app
 
-# copy everything into the container working directory
-COPY . .
-COPY .env .env
-# every RUN command creates a new layer in the image & increases the image size
+# Copy dependency files first
+COPY package.json yarn.lock ./
 RUN yarn install
+
+# Then copy source code
+COPY . .
 RUN yarn build
 
 # production environment
