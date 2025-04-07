@@ -16,11 +16,11 @@ const globalExceptionHandler: ErrorRequestHandler = (
   }[] = [];
 
   let statusCode = 500;
-  let message = 'Something went wrong';
+  let message = 'Something went wrong in api-gateway!';
 
   if (error instanceof AxiosError) {
     statusCode = error.response?.status || 500;
-    message = error.response?.data?.message || 'Something went wrong';
+    message = error.response?.data?.message || 'Something went wrong in api-gateway!';
     errorMessages = error.response?.data?.errorMessages || [];
   } else if (error instanceof ApiError) {
     statusCode = error?.statusCode;
