@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "lint": "eslint --quiet --fix",
-    "prepare": "husky",
+    "prepare": "test \"$NODE_ENV\" != \"production\" && husky install || echo 'Skipping husky install'",
     "start": "node dist/src/server.js",
     "queue": "ts-node-dev --respawn --transpile-only src/setupQueue.ts",
     "build": "tsc",

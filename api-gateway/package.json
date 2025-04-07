@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "lint": "eslint --quiet --fix",
     "start": "node dist/src/server.js",
-    "prepare": "husky",
+     "prepare": "test \"$NODE_ENV\" != \"production\" && husky install || echo 'Skipping husky install'",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
