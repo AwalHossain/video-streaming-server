@@ -27,9 +27,9 @@ const config = {
     dsn: process.env.SENTRY_DSN,
   },
   services: {
-    api: process.env.API_SERVICE,
-    video: process.env.VIDEO_SERVICE,
-    client: process.env.CLIENT_URL1,
+    api: process.env.API_SERVER_URL,
+    video: process.env.VIDEO_SERVER_URL,
+    client: process.env.CLIENT_URL,
   },
   doSpaces: {
     endpoint: process.env.DO_SPACES_ENDPOINT,
