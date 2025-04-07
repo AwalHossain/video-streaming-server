@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { ProfilingIntegration } from '@sentry/profiling-node';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
@@ -7,29 +6,29 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 // import router from './app/routes/index';
 import globalErrorHandler from './app/middleware/globalErrorHandler';
 import router from './app/routes';
-import config from './config';
+
 import { errorLogger } from './shared/logger';
 dotenv.config();
 
 const app: Express = express();
 
-Sentry.init({
-  dsn: config.sentry.dsn,
-  environment: 'devlopment',
-  integrations: [
-    // enable HTTP calls tracing
-    new Sentry.Integrations.Http({ tracing: true }),
-    // enable Express.js middleware tracing
-    new Sentry.Integrations.Express({ app }),
-    new ProfilingIntegration(),
-  ],
-  // Performance Monitoring
-  tracesSampleRate: 1.0, //  Capture 100% of the transactions
-  // Set sampling rate for profiling - this is relative to tracesSampleRate
-  profilesSampleRate: 1.0,
+// Sentry.init({
+//   dsn: config.sentry.dsn,
+//   environment: 'devlopment',
+//   integrations: [
+//     // enable HTTP calls tracing
+//     new Sentry.Integrations.Http({ tracing: true }),
+//     // enable Express.js middleware tracing
+//     new Sentry.Integrations.Express({ app }),
+//     new ProfilingIntegration(),
+//   ],
+//   // Performance Monitoring
+//   tracesSampleRate: 1.0, //  Capture 100% of the transactions
+//   // Set sampling rate for profiling - this is relative to tracesSampleRate
+//   profilesSampleRate: 1.0,
 
-  tracePropagationTargets: ['all'],
-});
+//   tracePropagationTargets: ['all'],
+// });
 
 // The request handler must be the first middleware on the app
 app.use(Sentry.Handlers.requestHandler());
