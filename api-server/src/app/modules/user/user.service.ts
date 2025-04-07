@@ -21,6 +21,7 @@ const register = async (data: IUser) => {
 };
 
 const login = async (data: IUser) => {
+  console.log("data from api-server service", data);
   const result = await User.findOne({ email: data.email });
 
   if (!result) {
