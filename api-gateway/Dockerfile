@@ -17,11 +17,12 @@ WORKDIR /app
 
 # copy the built files from the builder stage
 COPY --from=builder ./app/dist ./dist
-COPY --from=builder ./app/.env .
 
 COPY package.json .
 COPY yarn.lock .
 
 RUN yarn install --production
+
+EXPOSE 8000
 
 CMD ["npm", "start"]
