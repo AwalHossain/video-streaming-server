@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: video-conversion-server
-          image: awel07/api-server
+          image: awel07/video-conversion-server
           envFrom:
             - configMapRef:
                 name: conversion-config
