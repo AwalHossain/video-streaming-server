@@ -18,6 +18,8 @@ export const io = new Server(server, {
 });
 
 io.on('connection', (socket) => {
+  console.log('Connected to socket server');
+  console.log('Socket ID:', socket.id);
   const userId = socket.handshake.query.userId;
 
   socket.join(userId);
