@@ -11,8 +11,6 @@ const getAllVideos = async (req: Request) => {
     },
   });
 
-  console.log('result', result);
-
   if (result.statusCode !== 200)
     throw new ApiError(500, 'Failed to fetch videos');
 
