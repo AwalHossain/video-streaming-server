@@ -4,7 +4,7 @@
 import { ObjectId } from "mongodb";
 import mongoose, { SortOrder } from "mongoose";
 
-import { API_SERVER_EVENTS } from "../../../constants/event";
+import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from "../../../constants/event";
 import ApiError from "../../../error/apiError";
 import { PaginationHelper } from "../../../helpers/paginationHelper";
 import { IpaginationOptions } from "../../../interface/pagination";
@@ -39,6 +39,8 @@ const insertIntoDBFromEvent = async (data: IInsertIntoDBFromEvent) => {
       );
 
       RabbitMQ.sendToQueue(API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT, result);
+          // Notify about download start
+    RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_METADATA_SAVED, result);
       console.log("Sending video metadata to Video Conversion Server", result, "sent to Video Conversion Server", UpdatedResult);
     }
 
