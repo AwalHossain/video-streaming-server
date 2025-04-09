@@ -36,7 +36,7 @@ export const listenQueueEvent = (queueName: string) => {
       }
       throw new Error('No handler found for queue: ' + queueName);
     },
-    { connection: RedisClient.redisConnection },
+    { connection: RedisClient.redisConnection, concurrency: 3 },
   );
 
   worker.on('failed', (job, err) => {
