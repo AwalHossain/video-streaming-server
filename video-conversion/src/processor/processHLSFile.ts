@@ -19,7 +19,8 @@ const processHLSFile = async (data: any, queueName: string) => {
   const rootFolder = path.resolve('./');
   const file = dataCopy.destination.split('/')[1];
   const fileName = dataCopy.fileName;
-  const baseFileName = fileName.endsWith('.mp4') ? fileName.slice(0, -4) : fileName;
+  const fileExt = path.extname(fileName); // Gets extension with dot (.mp4, .mkv, etc.)
+  const baseFileName = fileExt ? fileName.slice(0, -fileExt.length) : fileName;
   const bucketName = process.env.DO_SPACES_BUCKET_NAME;
   
   const videoId = dataCopy.id || `video-${Date.now()}`;
