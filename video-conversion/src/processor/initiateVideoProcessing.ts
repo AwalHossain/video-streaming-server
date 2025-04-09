@@ -20,16 +20,6 @@ const initiateVideoProcessing = async ({
   userId,
   videoMetadata,
 }: VideoPath) => {
-  // update status to download complete
-
-  // const uploadMsg = {
-  //   userId,
-  //   status: 'success',
-  //   message: 'Video upload is success',
-  // };
-
-  // //   passing an event to the client to make sure video sucessfully uploaded & downloaded & ready to process
-  // RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_UPLOADED, uploadMsg);
 
   const { videoDuration } = await getVideoDurationAndResolution(videoPath);
 
