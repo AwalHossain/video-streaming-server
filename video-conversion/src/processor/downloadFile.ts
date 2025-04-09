@@ -34,7 +34,7 @@ const getVideoMetadata = async ()=> {
     API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
     (msg, ack) => {
       const data = JSON.parse(msg.content.toString());
-      console.log('Received video metadata: from api server', data);
+      console.log('Received video metadata: from api server, passing for download', data);
       eventManager.emit('videoMetadata', data);
       ack();
     },
@@ -107,11 +107,11 @@ const originalName = fileName.substring(fileName.indexOf('-') + 1);
       .createReadStream()
       .pipe(writeStream)
       .on('error', (err) => {
-        errorLogger.error('Error downloading from DO Spaces:', err);
+        console.log('Error downloading from DO Spaces:', err);
         reject(err);
       })
       .on('finish', () => {
-        logger.info(`Successfully downloaded file to ${videoPath}`);
+        console.log(`Successfully downloaded file to ${videoPath}`);
         resolve();
       });
     });
@@ -125,7 +125,7 @@ const originalName = fileName.substring(fileName.indexOf('-') + 1);
       message: 'Video successfully downloaded from Digital Ocean Spaces',
     });
 
-    logger.info('Starting video processing for file at: ' + videoPath);
+    console.log('Starting video processing for file at: ' + videoPath);
     
     // Process the video
     await initiateVideoProcessing({
