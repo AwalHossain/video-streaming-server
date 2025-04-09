@@ -1,1 +1,0 @@
-{"version":3,"file":"video.interface.js","sourceRoot":"/","sources":["src/app/modules/video/video.interface.ts"],"names":[],"mappings":"","sourcesContent":["\n\nexport interface PresignedUrlOptions {\n    filename: string;\n    contentType: string;\n    userId: string;\n    expirySeconds?: number;\n  }\n  "]}

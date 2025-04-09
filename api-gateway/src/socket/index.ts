@@ -14,7 +14,7 @@ export const setupRabbitMQConsumers = async () => {
 
         const { userId, ...data } = parsedMessage;
         logger.info(`Emitting event ${event} to user ${userId}`);
-        io.to(userId).emit(event, data);
+        io.to(userId || data.author).emit(event, data);
         ack();
       } catch (error) {
         logger.error(`Failed to process message for event ${event}:`, error);

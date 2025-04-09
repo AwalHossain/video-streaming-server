@@ -105,7 +105,7 @@ const confirmUpload = catchAsync(async (req: Request, res: Response) => {
     message: 'Video processing started',
     data: {
       payload,
-      processingInfo: data,
+      ...data,
     },
   });
 });
