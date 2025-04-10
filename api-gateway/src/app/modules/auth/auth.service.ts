@@ -43,8 +43,22 @@ const checkSession = async (req: Request): Promise<IGenericResponse> => {
   return response;
 };
 
+const getUserById = async (req: Request): Promise<IGenericResponse> => {
+  const response: IGenericResponse = await apiService.get(
+    `/auth/${req.params.id}`,
+    {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    },
+  );
+
+  return response;
+};
+
 export const AuthService = {
   registrationUser,
   loginUser,
   checkSession,
+  getUserById,
 };
