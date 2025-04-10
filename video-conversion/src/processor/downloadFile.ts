@@ -1,4 +1,3 @@
-import AWS from 'aws-sdk';
 import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +7,7 @@ import { IVideoMetadata } from '../interface/common';
 import eventManager from '../shared/event-manager';
 import { errorLogger, logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
+import s3 from '../shared/s3Client';
 import initiateVideoProcessing from './initiateVideoProcessing';
 
 // Debug logs
@@ -17,15 +17,6 @@ console.log("DO Spaces Config:", {
   secretKey: config.doSpaces.secretKey ? "EXISTS" : "MISSING",
   region: config.doSpaces.region,
   bucketName: config.doSpaces.bucketName
-});
-
-// Configure S3 client for Digital Ocean Spaces
-const s3 = new AWS.S3({
-  endpoint: `https://${config.doSpaces.endpoint.replace(/^https?:\/\//, '')}`, // Ensure proper format
-  accessKeyId: config.doSpaces.accessKey,
-  secretAccessKey: config.doSpaces.secretKey,
-  region: config.doSpaces.region,
-  s3ForcePathStyle: true
 });
 
 // Get video metadata from API server
@@ -67,12 +58,19 @@ const originalName = fileName.substring(fileName.indexOf('-') + 1);
 
     // Get video metadata (optional - you may want to remove if not needed)
     await getVideoMetadata();
-   let videoMetadata = {} as IVideoMetadata;
+    let videoMetadata = {} as IVideoMetadata;
 
-    await new Promise((resolve) => {
+    // Add timeout to prevent hanging if metadata never arrives
+    await new Promise<void>((resolve) => {
+      const metadataTimeout = setTimeout(() => {
+        logger.warn(`No metadata received after 5 seconds for file ${fileName}, continuing without it`);
+        resolve();
+      }, 5000);
+
       eventManager.once('videoMetadata', (data) => {
+        clearTimeout(metadataTimeout);
         videoMetadata = data;
-        resolve(videoMetadata);
+        resolve();
       });
     });
 
