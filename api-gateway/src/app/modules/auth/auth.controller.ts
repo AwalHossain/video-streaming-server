@@ -44,8 +44,19 @@ const checkSession = async (
   }
 };
 
+const getUserById = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const response = await AuthService.getUserById(req);
+
+    sendResponse(res, response);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const AuthController = {
   registrationUser,
   loginUer,
   checkSession,
+  getUserById,
 };
