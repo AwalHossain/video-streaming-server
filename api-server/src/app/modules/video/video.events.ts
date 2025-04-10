@@ -75,12 +75,13 @@ const initVideoEvents = () => {
       // Add validation for required fields
       if (!data.id) {
         console.error('Missing video ID in message:', data);
-        ack(); // Acknowledge but log error
+        // ack(); // Acknowledge but log error
         return;
       }
       console.log(
         `Received the following message from VIdeo_thumbnail_CONVERTED_EVENT: ${data}`
       );
+      await VideoService.update(data.id, { ...data });
       await VideoService.updateHistory(data.id, data.history);
 
       ack();
