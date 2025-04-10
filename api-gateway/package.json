@@ -59,5 +59,8 @@
     "uuid": "^9.0.1",
     "winston": "^3.11.0",
     "winston-daily-rotate-file": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
   }
 }
