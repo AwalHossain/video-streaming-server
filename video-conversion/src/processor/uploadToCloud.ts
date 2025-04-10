@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import AWS from 'aws-sdk';
 import dotenv from 'dotenv';
 import { promises as fsPromises } from 'fs';
 import path from 'path';
@@ -7,28 +6,21 @@ import config from '../config';
 import { API_GATEWAY_EVENTS } from '../constant/events';
 import ApiError from '../errors/apiError';
 import RabbitMQ from '../shared/rabbitMQ';
+import s3, { getCdnUrl, getUserFolder } from '../shared/s3Client';
 
 dotenv.config();
 // Log config for debugging
-// Log config
 console.log('Testing with:');
 console.log('- Endpoint:', process.env.DO_SPACES_ENDPOINT);
 console.log('- Bucket:', process.env.DO_SPACES_BUCKET_NAME);
 console.log('- Key starts with:', process.env.DO_SPACES_ACCESS_KEY?.substr(0, 5));
 
-// Configure S3 client
-const s3 = new AWS.S3({
-  endpoint: `https://${process.env.DO_SPACES_ENDPOINT}`,
-  accessKeyId: process.env.DO_SPACES_ACCESS_KEY,
-  secretAccessKey: process.env.DO_SPACES_SECRET_KEY,
-  region: process.env.DO_SPACES_REGION || 'us-east-1'
-});
 const uploadProcessedFile = async (
   rootFolder: string,
   folderPath: string,
   dataCopy: any,
 ) => {
-  const bucketName = process.env.DO_SPACES_BUCKET_NAME;
+  const bucketName = config.doSpaces.bucketName;
   const absoluteFolderPath = path.join(rootFolder, folderPath);
   console.log(`Uploading files from ${absoluteFolderPath} to ${bucketName}`);
   
@@ -38,11 +30,9 @@ const uploadProcessedFile = async (
     console.log(`Found ${files.length} files to upload`);
     
     // Create a base folder using the user ID
-
     const videoId = dataCopy.id || `video-${Date.now()}`;
-    const userFolder = dataCopy.userId 
-      ? `uploads/${dataCopy.userId}/videos/${videoId}` 
-      : `uploads/anonymous/videos/${videoId}`;
+    const userFolder = getUserFolder(dataCopy.userId, videoId);
+    
     for (const file of files) {
       const filePath = path.join(absoluteFolderPath, file);
       const fileStats = await fsPromises.stat(filePath);
@@ -74,13 +64,14 @@ const uploadProcessedFile = async (
         Bucket: bucketName,
         Key: key,
         Body: fileData,
+        ContentType: contentType,
         ACL: 'public-read'
       }).promise();
       
       console.log(`Successfully uploaded ${file} to ${bucketName}/${key}`, uploadResult);
       
       // Send notification
-      const fileUrl = `https://${bucketName}.${config.doSpaces.endpoint}/${key}`;
+      const fileUrl = getCdnUrl(key);
       RabbitMQ.sendToQueue(
         API_GATEWAY_EVENTS.NOTIFY_AWS_S3_UPLOAD_PROGRESS,
         {
