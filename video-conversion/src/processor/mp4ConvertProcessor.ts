@@ -3,12 +3,15 @@ import ffmpegPath from 'ffmpeg-static';
 import ffmpeg from 'fluent-ffmpeg';
 import fs from 'fs';
 import path from 'path';
-import { API_GATEWAY_EVENTS, QUEUE_EVENTS } from '../constant/events';
+import config from '../config';
+import { API_GATEWAY_EVENTS, API_SERVER_EVENTS, QUEUE_EVENTS } from '../constant/events';
 import { addQueueItem } from '../queues/addJobToQueue';
 import { errorLogger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
+import s3, { getCdnUrl, getUserFolder } from '../shared/s3Client';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
+
 interface JobData {
   completed: boolean;
   path: string;
@@ -17,6 +20,7 @@ interface JobData {
   fileName: string;
   folderName: string;
   next: string;
+  id?: string;
 }
 
 interface ProcessedFile {
@@ -163,23 +167,133 @@ const generateThumbnail = async (
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
   const thumbnailFileName = `${fileNameWithoutExt}.png`;
+  const thumbnailFilePath = `${outputFolder}/${thumbnailFileName}`;
   console.log(thumbnailFileName, 'thumbnailFileName');
-  ffmpeg(filePath)
-    .screenshots({
-      timestamps: ['00:01'],
-      filename: thumbnailFileName,
-      folder: `${outputFolder}`,
-      size: '320x240',
-    })
-    .on('end', async function () {
-      console.log(jobData.fileName, 'thumbnail generated!', jobData.path);
-      // await addQueueItem(QUEUE_EVENTS.VIDEO_THUMBNAIL_GENERATED, {
-      //   ...jobData,
-      //   completed: true,
-      //   path: thumbnailFileName
-      // });
+  
+  // Define a properly typed result to return
+  const result: ProcessedFile = {
+    fileName: fileNameWithoutExt,
+    outputFileName: thumbnailFilePath
+  };
+  
+  // Get video dimensions first to maintain aspect ratio
+  try {
+    // Dynamic import to avoid circular dependency
+    const videoHandler = await import('./videoProcessingHandler');
+    const { videoResolution } = await videoHandler.getVideoDurationAndResolution(filePath);
+    
+    // Calculate thumbnail size while preserving aspect ratio
+    // Use max width/height of 640px but keep aspect ratio
+    let thumbnailWidth, thumbnailHeight;
+    const MAX_DIMENSION = 640;
+    
+    if (videoResolution.width > videoResolution.height) {
+      // Horizontal video
+      thumbnailWidth = Math.min(MAX_DIMENSION, videoResolution.width);
+      thumbnailHeight = Math.round((thumbnailWidth / videoResolution.width) * videoResolution.height);
+    } else {
+      // Vertical video
+      thumbnailHeight = Math.min(MAX_DIMENSION, videoResolution.height);
+      thumbnailWidth = Math.round((thumbnailHeight / videoResolution.height) * videoResolution.width);
+    }
+    
+    const thumbnailSize = `${thumbnailWidth}x${thumbnailHeight}`;
+    console.log(`Creating thumbnail with size ${thumbnailSize} to preserve aspect ratio`);
+    
+    // Create a Promise for the ffmpeg operation
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(filePath)
+        .screenshots({
+          timestamps: ['00:01'],
+          filename: thumbnailFileName,
+          folder: `${outputFolder}`,
+          size: thumbnailSize,
+        })
+        .on('end', async function () {
+          console.log(jobData.fileName, 'thumbnail generated!', jobData.path);
+
+          // Upload thumbnail immediately to cloud storage
+          try {
+            const videoId = jobData.id || `video-${Date.now()}`;
+            const userFolder = getUserFolder(jobData.userId, videoId);
+            const key = `${userFolder}/${thumbnailFileName}`;
+            
+            // Read the thumbnail file
+            const thumbnailData = fs.readFileSync(thumbnailFilePath);
+            
+            // Upload to Digital Ocean Spaces
+            await s3.putObject({
+              Bucket: config.doSpaces.bucketName,
+              Key: key,
+              Body: thumbnailData,
+              ContentType: 'image/png',
+              ACL: 'public-read'
+            }).promise();
+            
+            // Generate thumbnail URL using helper function
+            const thumbnailUrl = getCdnUrl(key);
+            
+            // Update metadata with thumbnail URL
+            const updateData = {
+              id: jobData.id,
+              thumbnailUrl: thumbnailUrl
+            };
+            
+            // Send update to API server
+            RabbitMQ.sendToQueue(
+              API_SERVER_EVENTS.VIDEO_THUMBNAIL_GENERATED_EVENT,
+              updateData
+            );
+            
+            console.log(`Thumbnail uploaded to ${thumbnailUrl}`);
+          } catch (error) {
+            errorLogger.error('Error uploading thumbnail:', error.message);
+            console.log('Error uploading thumbnail:', error);
+          }
+
+          // notify
+          RabbitMQ.sendToQueue(
+            API_GATEWAY_EVENTS.NOTIFY_VIDEO_THUMBNAIL_GENERATED,
+            {
+              userId: jobData.userId,
+              status: 'success',
+              name: 'Video thumbnail',
+              fileName: fileNameWithoutExt,
+              message: 'Video thumbnail generated',
+            },
+          );
+          
+          resolve();
+        })
+        .on('error', (err) => {
+          errorLogger.error('Error generating thumbnail:', err.message);
+          reject(err);
+        });
     });
-  return;
+    
+  } catch (error) {
+    errorLogger.error('Error getting video resolution:', error.message);
+    console.log('Error getting video resolution:', error);
+    
+    // Use default size if we can't get the video resolution
+    await new Promise<void>((resolve) => {
+      ffmpeg(filePath)
+        .screenshots({
+          timestamps: ['00:01'],
+          filename: thumbnailFileName,
+          folder: `${outputFolder}`,
+          size: '320x240', // Fallback to default size
+        })
+        .on('end', function () {
+          resolve();
+        })
+        .on('error', function() {
+          resolve(); // Still resolve to avoid blocking the process
+        });
+    });
+  }
+  
+  return result;
 };
 
 export { generateThumbnail, processRawFileToMp4WithWatermark };
