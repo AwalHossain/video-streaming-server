@@ -28,4 +28,6 @@ router.get('/google/callback', (req: Request, res: Response) => {
   `);
 });
 
+router.get('/:id', AuthController.getUserById);
+
 export const AuthRoutes = router;
