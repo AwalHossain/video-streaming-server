@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../config';
-import { API_GATEWAY_EVENTS, API_SERVER_EVENTS } from '../constant/events';
+import { API_GATEWAY_EVENTS } from '../constant/events';
 import { IVideoMetadata } from '../interface/common';
-import eventManager from '../shared/event-manager';
-import { errorLogger, logger } from '../shared/logger';
+import { logger } from '../shared/logger';
+import { removeMetadata, waitForMetadata } from '../shared/metadataStore';
 import RabbitMQ from '../shared/rabbitMQ';
 import s3 from '../shared/s3Client';
 import initiateVideoProcessing from './initiateVideoProcessing';
@@ -19,32 +19,24 @@ console.log("DO Spaces Config:", {
   bucketName: config.doSpaces.bucketName
 });
 
-// Get video metadata from API server
-const getVideoMetadata = async ()=> {
-  await RabbitMQ.consume(
-    API_SERVER_EVENTS.GET_VIDEO_METADATA_EVENT,
-    (msg, ack) => {
-      const data = JSON.parse(msg.content.toString());
-      console.log('Received video metadata: from api server, passing for download', data);
-      eventManager.emit('videoMetadata', data);
-      ack();
-    },
-  );
-};
-
 // Download file from DO Spaces
 async function downloadBlob(
   bucketName: string,
   fileKey: string,
+  fileName:string,
   userId: string
 ) {
-  try {
-    logger.info(`Starting download: bucketName=${bucketName}, fileKey=${fileKey}, userId=${userId}`);
-    // Get the original filename and the new filename with timestamp
-const fileName = path.basename(fileKey);  // With timestamp
+  const uploadFolder = `container-${uuidv4()}`;
+  const destinationDir = path
+      .normalize(path.join('uploads', uploadFolder, 'videos'))
+      .replace(/\\/g, '/');
+  const videoPath = path
+      .normalize(path.join(destinationDir, path.basename(fileName)))
+      .replace(/\\/g, '/');
 
-// Extract just the original name from the filename
-const originalName = fileName.substring(fileName.indexOf('-') + 1);
+  try {
+    logger.info(`Starting download: bucketName=${bucketName}, fileName=${fileName}, userId=${userId}`);
+    const originalName = fileName.substring(fileName.indexOf('-') + 1);
 
     // Notify about download start
     RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_DOWNLOADING, {
@@ -56,64 +48,36 @@ const originalName = fileName.substring(fileName.indexOf('-') + 1);
       message: 'Video is downloading from Digital Ocean Spaces',
     });
 
-    // Get video metadata (optional - you may want to remove if not needed)
-    await getVideoMetadata();
-    let videoMetadata = {} as IVideoMetadata;
+    // Ensure destination directory exists
+    await fs.promises.mkdir(destinationDir, { recursive: true });
+    logger.info(`Created download directory: ${destinationDir}`);
 
-    // Add timeout to prevent hanging if metadata never arrives
-    await new Promise<void>((resolve) => {
-      const metadataTimeout = setTimeout(() => {
-        logger.warn(`No metadata received after 5 seconds for file ${fileName}, continuing without it`);
-        resolve();
-      }, 5000);
-
-      eventManager.once('videoMetadata', (data) => {
-        clearTimeout(metadataTimeout);
-        videoMetadata = data;
-        resolve();
-      });
-    });
-
-    // Create unique folder for this download
-    const uploadFolder = `container-${uuidv4()}`;
-    const destination = path
-      .normalize(path.join('uploads', uploadFolder, 'videos'))
-      .replace(/\\/g, '/');
-    
-    // Create destination directory
-    fs.mkdirSync(destination, { recursive: true });
-    
-
-    const videoPath = path
-      .normalize(path.join(destination, fileName))
-      .replace(/\\/g, '/');
-    
     logger.info(`Downloading file from DO Spaces to ${videoPath}`);
-    
-    // Download the file
-    await new Promise<void>((resolve, reject) => {
-      console.log('videoPath', videoPath);
-      const writeStream = fs.createWriteStream(videoPath);
 
-      console.log('bucketName', bucketName);
-      console.log('fileKey', fileKey);
-      
+    // Download the file using promises for cleaner async handling
+    await new Promise<void>((resolve, reject) => {
+      const writeStream = fs.createWriteStream(videoPath);
       s3.getObject({
         Bucket: bucketName,
         Key: fileKey
       })
       .createReadStream()
+      .on('error', (err) => {
+        console.error('Error piping stream from S3:', err);
+        writeStream.destroy();
+        reject(err);
+      })
       .pipe(writeStream)
       .on('error', (err) => {
-        console.log('Error downloading from DO Spaces:', err);
+        console.error(`Error writing file ${videoPath} to disk:`, err);
         reject(err);
       })
       .on('finish', () => {
-        console.log(`Successfully downloaded file to ${videoPath}`);
+        logger.info(`Successfully downloaded file to ${videoPath}`);
         resolve();
       });
     });
-    
+
     // Notify about download completion
     RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_VIDEO_DOWNLOADING, {
       userId,
@@ -123,28 +87,83 @@ const originalName = fileName.substring(fileName.indexOf('-') + 1);
       message: 'Video successfully downloaded from Digital Ocean Spaces',
     });
 
-    console.log('Starting video processing for file at: ' + videoPath);
-    
-    // Process the video
+    // --- Add log before waiting --- 
+    logger.info(`[downloadBlob] Download complete. Preparing to wait for metadata for fileName: ${fileName}`);
+
+    let videoMetadata: IVideoMetadata;
+    try {
+        // --- Add log right before the await --- 
+        logger.info(`[downloadBlob] Calling waitForMetadata for fileName: ${fileName}`);
+        videoMetadata = await waitForMetadata(fileName, 60000);
+        // --- Add log right after the await completes successfully --- 
+        logger.info(`[downloadBlob] Successfully received metadata for fileName: ${fileName}. Proceeding to process.`);
+        // Original log kept for context if needed
+        // logger.info(`Metadata received for fileKey: ${fileName}`);
+    } catch (metadataError) {
+        // --- Add log if waitForMetadata fails --- 
+        logger.error(`[downloadBlob] Error waiting for metadata for fileName ${fileName}:`, metadataError);
+        console.error(`Failed to get metadata for ${fileName}:`, metadataError); // Keep console for visibility
+        RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_EVENTS_FAILED, {
+          userId,
+          status: 'failed',
+          name: 'Metadata Retrieval',
+          message: `Failed to retrieve metadata for video ${fileName}. Processing cannot continue.`, 
+          fileName: fileName,
+        });
+        try {
+            logger.warn(`Cleaning up downloaded file due to metadata failure: ${videoPath}`);
+            await fs.promises.unlink(videoPath);
+            await fs.promises.rmdir(destinationDir).catch(() => {});
+        } catch (cleanupError) {
+            console.error(`Error cleaning up file ${videoPath} after metadata failure:`, cleanupError);
+        }
+        throw metadataError;
+    }
+
+    // --- Add log before initiating processing --- 
+    logger.info(`[downloadBlob] Preparing to initiate video processing for fileName: ${fileName}`);
+    // Original log kept for context
+    // logger.info('Starting video processing for file at: ' + videoPath);
+
     await initiateVideoProcessing({
       videoPath,
-      destination,
+      destination: destinationDir,
       userId,
       videoMetadata,
     });
-    
+
     return true;
   } catch (error) {
-    errorLogger.error('Error in downloadBlob:', error);
-    
-    RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_EVENTS_FAILED, {
-      userId,
-      status: 'failed',
-      name: 'Video Download',
-      message: 'Failed to download video from Digital Ocean Spaces',
-      fileName: path.basename(fileKey),
-    });
-    
+    console.error(`Error in downloadBlob process for fileKey ${fileName}:`, error);
+
+    // Robust check for the error type and message before accessing .includes
+    let isMetadataError = false;
+    if (error instanceof Error && typeof error.message === 'string') {
+        isMetadataError = error.message.includes('Metadata for fileKey');
+    }
+
+    // Send notification only if it wasn't the specific metadata error we already handled
+    if (!isMetadataError) {
+        RabbitMQ.sendToQueue(API_GATEWAY_EVENTS.NOTIFY_EVENTS_FAILED, {
+            userId,
+            status: 'failed',
+            name: 'Video Download/Processing',
+            message: `An error occurred during the download or processing of ${path.basename(fileName)}: ${error.message}`,
+            fileName: path.basename(fileName),
+        });
+    }
+
+    try {
+        if (fs.existsSync(videoPath)) {
+            logger.warn(`Cleaning up downloaded file due to error: ${videoPath}`);
+            await fs.promises.unlink(videoPath);
+            await fs.promises.rmdir(destinationDir).catch(() => {});
+        }
+    } catch (cleanupError) {
+        console.error(`Error during cleanup for file ${videoPath}:`, cleanupError);
+    }
+    removeMetadata(fileName);
+
     throw error;
   }
 }
