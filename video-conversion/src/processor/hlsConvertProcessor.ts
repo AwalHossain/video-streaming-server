@@ -90,6 +90,8 @@ const processMp4ToHls = async (
               `-b:v ${rendition.bitrate}`,
               `-g 48`,
               `-hls_time 10`,
+              `-hls_playlist_type vod`,                                    // Indicate Video on Demand type (adds #EXT-X-ENDLIST)
+              `-hls_flags independent_segments`,                           // Ensures each segment starts with a keyframe
               `-hls_list_size 0`,
               `-hls_segment_filename`,
               `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
