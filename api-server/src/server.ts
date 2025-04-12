@@ -36,7 +36,10 @@ io.on("connection", (socket) => {
 
 async function bootstrap() {
   try {
-    await RabbitMQ.connect();
+    await RabbitMQ.initialize().catch((error) => {
+      errorLogger.error("Error connecting to RabbitMQ", error);
+      process.exit(1);
+    });
     subscribeToEvents();
     server = app.listen(PORT, async () => {
       logger.info(`listening on port ${PORT}`);

@@ -38,7 +38,10 @@ io.on('connection', (socket) => {
 
 async function bootstrap() {
   try {
-    await rabbitMQConnection.connect();
+    await rabbitMQConnection.initialize().catch((error) => {
+      errorLogger.error("Error connecting to RabbitMQ", error);
+      process.exit(1);
+    });
     subscribeToEvents();
 
     server.listen(PORT, async () => {
