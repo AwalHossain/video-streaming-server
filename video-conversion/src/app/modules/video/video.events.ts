@@ -1,7 +1,6 @@
 import { Message } from 'amqplib';
 import { VIDEO_CONVERSION_SERVER } from '../../../constant/events';
 import downloadBlob from '../../../processor/downloadFile';
-import { logger } from '../../../shared/logger';
 import RabbitMQ from '../../../shared/rabbitMQ';
 
 const initVideoEvent = () => {
@@ -11,21 +10,21 @@ const initVideoEvent = () => {
     async (msg: Message, ack: () => void) => {
       try {
         const data = JSON.parse(msg.content.toString());
-        logger.info('Received data from api-gateway:', data);
+        console.log('Received data from api-gateway:', JSON.stringify(data));
 
-        const { bucketName, fileKey, userId } = data;
+        const { bucketName, fileKey, fileName, userId } = data;
         
-        if (!bucketName || !fileKey || !userId) {
-          logger.error('Missing required parameters for download', data);
+        if (!bucketName || !fileKey || !fileName || !userId) {
+          console.error('Missing required parameters for download', data);
           ack(); // Acknowledge even on error to prevent queue blockage
           return;
         }
         
         // Digital Ocean Spaces download
-        await downloadBlob(bucketName, fileKey, userId);
+        await downloadBlob(bucketName, fileKey, fileName, userId);
         ack();
       } catch (err) {
-        logger.error('Error in video event handler:', err);
+        console.error('Error in video event handler:', err);
         ack(); // Acknowledge even on error to prevent queue blockage
       }
     },
