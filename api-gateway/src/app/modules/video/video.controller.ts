@@ -79,6 +79,7 @@ const confirmUpload = catchAsync(async (req: Request, res: Response) => {
     visibility: 'Public',
     author: userId,
     fileName,
+    fileKey,
     title: originalName.split('.')[0].replace(/[_]/g, ''),
   };
 
