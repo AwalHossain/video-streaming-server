@@ -9,3 +9,4 @@ logs
 # Ignore all files in the video-conversion directory
 uploads/
 .mdc
+.cursor
