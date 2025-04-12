@@ -1,18 +1,61 @@
 version: "3.7"
 services:
   api-gateway:
-    build:
-      context: ./api-gateway
-      target: final
+    build: ./api-gateway
     ports:
-      - 5000:5000
+      - "8000:8000" # Example port
     env_file:
       - ./api-gateway/.env
+    depends_on:
+      - rabbitmq
+    volumes:
+      - ./api-gateway:/app
+      - /app/node_modules
+
   api-server:
-    build:
-      context: ./api-server
-      target: final
+    build: ./api-server
     ports:
-      - 3000:3000
+      - "8001:8001" # Example port
     env_file:
       - ./api-server/.env
+    depends_on:
+      - mongodb
+      - rabbitmq
+    volumes:
+      - ./api-server:/app
+      - /app/node_modules
+
+  video-conversion:
+    build: ./video-conversion
+    ports:
+      - "8002:8002" # Example port
+    env_file:
+      - ./video-conversion/.env
+    depends_on:
+      - redis
+      - rabbitmq
+    volumes:
+      - ./video-conversion:/app
+      - ./video-conversion/uploads:/app/uploads # Mount uploads volume
+      - /app/node_modules
+
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"  # For AMQP
+      - "15672:15672" # For Management UI
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+volumes:
+  mongo-data:
