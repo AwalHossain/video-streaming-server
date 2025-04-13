@@ -1,4 +1,4 @@
-# 🎥 Simple Video Streaming Platform 🍿 (Work in Progress!)
+# 🎥 Scallable Video Streaming Platform 🍿 (Work in Progress!)
 
 ![Project Architecture](Architecture.png)
 
