@@ -79,21 +79,8 @@ const processingHandler = async (job: Job) => {
           if (videoResolution.height > videoResolution.width) {
             logger.info(`Processing vertical mobile MP4 video. Resolution: ${videoResolution.width}x${videoResolution.height}`);
 
-            await new Promise((resolve, reject) => {
-              ffmpeg(filePath)
-                .output(destPath)
-                .outputOptions([
-                  // Simple scaling that maintains dimensions
-                  '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
-                  '-c:v', 'libx264',
-                  '-preset', 'medium',
-                  '-crf', '23',
-                  '-c:a', 'copy' // Copy audio stream without re-encoding
-                ])
-                .on('end', resolve)
-                .on('error', reject)
-                .run();
-            });
+            // Instead of trying to fix here, let's make a straight copy to preserve the original
+            fs.copyFileSync(filePath, destPath);
           } else {
             // For horizontal videos, just copy
             fs.copyFileSync(filePath, destPath);
