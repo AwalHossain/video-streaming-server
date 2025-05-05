@@ -1,6 +1,6 @@
 # 🎥 Scallable Video Streaming Platform 🍿 (Work in Progress!)
 
-![Project Architecture](architecture.png)
+![Project Architecture](Architecture.png)
 
 Hey there! 👋 This project is a cool video streaming service, a bit like a mini-YouTube or Netflix, built using Node.js, Express, React (eventually!), MongoDB, and TypeScript.
 
