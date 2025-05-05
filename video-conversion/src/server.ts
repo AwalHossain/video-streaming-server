@@ -4,6 +4,7 @@ import app from './app';
 import subscribeToEvents from './app/events';
 import config from './config';
 import { errorLogger, logger } from './shared/logger';
+import { resourceMonitor } from './shared/resourceMonitor';
 import rabbitMQConnection from './shared/rabbitMQ';
 import { setupAllQueueEvent } from './worker/jobWorker';
 
@@ -38,6 +39,10 @@ io.on('connection', (socket) => {
 
 async function bootstrap() {
   try {
+    // Initialize system resource monitoring
+    resourceMonitor.startMonitoring(10000); // Check every 10 seconds
+    logger.info('System resource monitoring started');
+
     await rabbitMQConnection.initialize().catch((error) => {
       errorLogger.error("Error connecting to RabbitMQ", error);
       process.exit(1);

@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
 // import globalErrorHandler from "./app/middleware/globalErrorhandler";
 import { errorLogger } from './shared/logger';
+import { resourceMonitor } from './shared/resourceMonitor';
 dotenv.config();
 
 const app: Express = express();
@@ -40,8 +41,32 @@ app.use(
     credentials: true,
   }),
 );
+
 app.get('/test', (req: Request, res: Response) => {
   res.send('Hello World!');
+});
+
+// Monitoring endpoint to check system resources and worker concurrency
+app.get('/status/resources', (req: Request, res: Response) => {
+  const resources = resourceMonitor.getResources();
+  
+  res.json({
+    status: 'success',
+    timestamp: new Date().toISOString(),
+    resources: {
+      cpu: {
+        usage: `${resources.cpuUsage}%`,
+        cores: resources.availableCpuCount
+      },
+      memory: {
+        usage: `${resources.memoryUsage}%`,
+        available: `${resources.availableMemoryMB} MB`,
+        total: `${resources.totalMemoryMB} MB`
+      }
+    },
+    // Current concurrency settings are calculated based on these resources
+    // You can access the actual worker data from a global workers array if needed
+  });
 });
 
 app.get('/debug-sentry', function mainHandler() {
