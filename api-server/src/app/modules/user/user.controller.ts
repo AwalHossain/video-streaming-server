@@ -35,7 +35,7 @@ const loginUser = catchAsync(
     sendResponse(res, {
       statusCode: 201,
       success: true,
-      message: "User registered successfully with token!",
+      message: "User Logged in successfully with token!",
       data: {
         ...result.toObject(),
         accessToken: token,

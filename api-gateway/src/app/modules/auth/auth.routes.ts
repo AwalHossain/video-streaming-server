@@ -17,7 +17,6 @@ router.get('/google', (req: Request, res: Response) => {
 router.get('/google/callback', (req: Request, res: Response) => {
   // Extract the user data from the query string
   const user = JSON.parse(decodeURIComponent(req.query.user as string));
-  console.log(user, 'user');
 
   // Send a script that posts a message to the opener window
   res.send(`
