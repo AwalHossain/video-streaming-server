@@ -169,24 +169,24 @@ const generateThumbnail = async (
   const thumbnailFileName = `${fileNameWithoutExt}.png`;
   const thumbnailFilePath = `${outputFolder}/${thumbnailFileName}`;
   console.log(thumbnailFileName, 'thumbnailFileName');
-  
+
   // Define a properly typed result to return
   const result: ProcessedFile = {
     fileName: fileNameWithoutExt,
     outputFileName: thumbnailFilePath
   };
-  
+
   // Get video dimensions first to maintain aspect ratio
   try {
     // Dynamic import to avoid circular dependency
     const videoHandler = await import('./videoProcessingHandler');
     const { videoResolution } = await videoHandler.getVideoDurationAndResolution(filePath);
-    
+
     // Calculate thumbnail size while preserving aspect ratio
     // Use max width/height of 640px but keep aspect ratio
     let thumbnailWidth, thumbnailHeight;
     const MAX_DIMENSION = 640;
-    
+
     if (videoResolution.width > videoResolution.height) {
       // Horizontal video
       thumbnailWidth = Math.min(MAX_DIMENSION, videoResolution.width);
@@ -196,10 +196,10 @@ const generateThumbnail = async (
       thumbnailHeight = Math.min(MAX_DIMENSION, videoResolution.height);
       thumbnailWidth = Math.round((thumbnailHeight / videoResolution.height) * videoResolution.width);
     }
-    
+
     const thumbnailSize = `${thumbnailWidth}x${thumbnailHeight}`;
     console.log(`Creating thumbnail with size ${thumbnailSize} to preserve aspect ratio`);
-    
+
     // Create a Promise for the ffmpeg operation
     await new Promise<void>((resolve, reject) => {
       ffmpeg(filePath)
@@ -217,10 +217,10 @@ const generateThumbnail = async (
             const videoId = jobData.id || `video-${Date.now()}`;
             const userFolder = getUserFolder(jobData.userId, videoId);
             const key = `${userFolder}/${thumbnailFileName}`;
-            
+
             // Read the thumbnail file
             const thumbnailData = fs.readFileSync(thumbnailFilePath);
-            
+
             // Upload to Digital Ocean Spaces
             await s3.putObject({
               Bucket: config.doSpaces.bucketName,
@@ -229,22 +229,22 @@ const generateThumbnail = async (
               ContentType: 'image/png',
               ACL: 'public-read'
             }).promise();
-            
+
             // Generate thumbnail URL using helper function
             const thumbnailUrl = getCdnUrl(key);
-            
+
             // Update metadata with thumbnail URL
             const updateData = {
               id: jobData.id,
               thumbnailUrl: thumbnailUrl
             };
-            
+
             // Send update to API server
             RabbitMQ.sendToQueue(
               API_SERVER_EVENTS.VIDEO_THUMBNAIL_GENERATED_EVENT,
               updateData
             );
-            
+
             console.log(`Thumbnail uploaded to ${thumbnailUrl}`);
           } catch (error) {
             errorLogger.error('Error uploading thumbnail:', error.message);
@@ -262,7 +262,7 @@ const generateThumbnail = async (
               message: 'Video thumbnail generated',
             },
           );
-          
+
           resolve();
         })
         .on('error', (err) => {
@@ -270,11 +270,11 @@ const generateThumbnail = async (
           reject(err);
         });
     });
-    
+
   } catch (error) {
     errorLogger.error('Error getting video resolution:', error.message);
     console.log('Error getting video resolution:', error);
-    
+
     // Use default size if we can't get the video resolution
     await new Promise<void>((resolve) => {
       ffmpeg(filePath)
@@ -287,12 +287,12 @@ const generateThumbnail = async (
         .on('end', function () {
           resolve();
         })
-        .on('error', function() {
+        .on('error', function () {
           resolve(); // Still resolve to avoid blocking the process
         });
     });
   }
-  
+
   return result;
 };
 
