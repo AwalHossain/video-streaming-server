@@ -13,7 +13,7 @@ const WEB_READY_FORMATS = ['.mp4', '.webm', '.mov', '.m4v'];
 // Function to check if a video needs conversion
 const needsConversion = (filePath: string): boolean => {
   const fileExt = path.extname(filePath).toLowerCase();
-  
+
   // If it's in our list of web-ready formats, we can skip conversion
   return !WEB_READY_FORMATS.includes(fileExt);
 };
@@ -29,16 +29,16 @@ const uploadedHandler = async (job: Job) => {
 
 const processingHandler = async (job: Job) => {
   console.log('i am the processing handler!', job.data);
-  
+
   try {
     const filePath = `./${job.data.path}`;
     const fileName = path.basename(filePath);
-    
+
     // Create folder based on path from job data
     const folderName = job.data.destination.split('/')[1];
     const uploadPath = `uploads/${folderName}/processed`;
     const thumbnailPath = `uploads/${folderName}/thumbnails`;
-    
+
     // Create directories safely
     try {
       fs.mkdirSync(uploadPath, { recursive: true });
@@ -47,21 +47,21 @@ const processingHandler = async (job: Job) => {
       logger.error(`Error creating directories:`, err);
       throw new Error(`Failed to create processing directories: ${err.message}`);
     }
-    
+
     // Check if file needs conversion to MP4
     if (!needsConversion(filePath)) {
       logger.info(`File ${filePath} is already in a web-ready format, skipping conversion`);
-      
+
       try {
         // Generate output filename with .mp4 extension to ensure consistency
         const fileNameWithoutExt = path.basename(fileName, path.extname(fileName));
         const destPath = `${uploadPath}/${fileNameWithoutExt}.mp4`;
-        
+
         // If not MP4, convert to MP4 otherwise just copy
         if (path.extname(filePath).toLowerCase() !== '.mp4') {
           // Simple format conversion without other processing
           await new Promise((resolve, reject) => {
-  
+
             ffmpeg(filePath)
               .output(destPath)
               .outputOptions('-c copy') // Just copy streams, no re-encoding
@@ -70,17 +70,43 @@ const processingHandler = async (job: Job) => {
               .run();
           });
         } else {
-          // Just copy the file if it's already MP4
-          fs.copyFileSync(filePath, destPath);
+          // For mobile videos that are already MP4, we ensure aspect ratio is preserved
+          // by doing a minimal re-encode rather than just copying the file
+          const { videoResolution } = await import('./videoProcessingHandler')
+            .then(module => module.getVideoDurationAndResolution(filePath));
+
+          // Check if this is a vertical video from mobile
+          if (videoResolution.height > videoResolution.width) {
+            logger.info(`Processing vertical mobile MP4 video. Preserving aspect ratio ${videoResolution.width}:${videoResolution.height}`);
+
+            await new Promise((resolve, reject) => {
+              ffmpeg(filePath)
+                .output(destPath)
+                .outputOptions([
+                  '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', // Ensure dimensions are even
+                  '-c:v', 'libx264',
+                  '-preset', 'medium',
+                  '-crf', '23',
+                  '-c:a', 'copy', // Copy audio stream without re-encoding
+                  '-aspect', `${videoResolution.width}:${videoResolution.height}` // Preserve aspect ratio
+                ])
+                .on('end', resolve)
+                .on('error', reject)
+                .run();
+            });
+          } else {
+            // For horizontal videos, just copy
+            fs.copyFileSync(filePath, destPath);
+          }
         }
-        
+
         // Generate thumbnail
         await generateThumbnail(filePath, thumbnailPath, {
           ...job.data,
           completed: true,
           folderName
         });
-        
+
         // Move directly to next step
         await addQueueItem(QUEUE_EVENTS.VIDEO_PROCESSED, {
           ...job.data,
@@ -103,7 +129,7 @@ const processingHandler = async (job: Job) => {
     logger.error('Error in processingHandler:', error);
     throw error;
   }
-  
+
   return;
 };
 
