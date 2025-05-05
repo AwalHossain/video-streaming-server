@@ -182,6 +182,11 @@ const generateThumbnail = async (
     const videoHandler = await import('./videoProcessingHandler');
     const { videoResolution } = await videoHandler.getVideoDurationAndResolution(filePath);
 
+    // Validate dimensions - catch invalid values
+    if (!videoResolution.width || !videoResolution.height || isNaN(videoResolution.width) || isNaN(videoResolution.height)) {
+      throw new Error(`Invalid video dimensions: ${videoResolution.width}x${videoResolution.height}`);
+    }
+
     // Calculate thumbnail size while preserving aspect ratio
     // Use max width/height of 640px but keep aspect ratio
     let thumbnailWidth, thumbnailHeight;
@@ -276,18 +281,78 @@ const generateThumbnail = async (
     console.log('Error getting video resolution:', error);
 
     // Use default size if we can't get the video resolution
+    const DEFAULT_SIZE = '320x240';
+    console.log(`Using default thumbnail size: ${DEFAULT_SIZE}`);
+
     await new Promise<void>((resolve) => {
       ffmpeg(filePath)
         .screenshots({
           timestamps: ['00:01'],
           filename: thumbnailFileName,
           folder: `${outputFolder}`,
-          size: '320x240', // Fallback to default size
+          size: DEFAULT_SIZE, // Default 4:3 size
         })
         .on('end', function () {
+          console.log(`Generated thumbnail with default size ${DEFAULT_SIZE}`);
+
+          // Still try to upload the thumbnail even with default size
+          try {
+            const videoId = jobData.id || `video-${Date.now()}`;
+            const userFolder = getUserFolder(jobData.userId, videoId);
+            const key = `${userFolder}/${thumbnailFileName}`;
+
+            // Read the thumbnail file
+            const thumbnailData = fs.readFileSync(thumbnailFilePath);
+
+            // Upload to Digital Ocean Spaces
+            s3.putObject({
+              Bucket: config.doSpaces.bucketName,
+              Key: key,
+              Body: thumbnailData,
+              ContentType: 'image/png',
+              ACL: 'public-read'
+            }).promise()
+              .then(() => {
+                // Generate thumbnail URL using helper function
+                const thumbnailUrl = getCdnUrl(key);
+
+                // Update metadata with thumbnail URL
+                const updateData = {
+                  id: jobData.id,
+                  thumbnailUrl: thumbnailUrl
+                };
+
+                // Send update to API server
+                RabbitMQ.sendToQueue(
+                  API_SERVER_EVENTS.VIDEO_THUMBNAIL_GENERATED_EVENT,
+                  updateData
+                );
+
+                console.log(`Thumbnail uploaded to ${thumbnailUrl}`);
+
+                // Notify users
+                RabbitMQ.sendToQueue(
+                  API_GATEWAY_EVENTS.NOTIFY_VIDEO_THUMBNAIL_GENERATED,
+                  {
+                    userId: jobData.userId,
+                    status: 'success',
+                    name: 'Video thumbnail',
+                    fileName: fileNameWithoutExt,
+                    message: 'Video thumbnail generated',
+                  }
+                );
+              })
+              .catch(err => {
+                errorLogger.error('Error uploading default thumbnail:', err.message);
+              });
+          } catch (uploadError) {
+            errorLogger.error('Error handling default thumbnail:', uploadError.message);
+          }
+
           resolve();
         })
-        .on('error', function () {
+        .on('error', function (err) {
+          errorLogger.error('Error generating default thumbnail:', err.message);
           resolve(); // Still resolve to avoid blocking the process
         });
     });

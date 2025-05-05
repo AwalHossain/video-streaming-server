@@ -38,6 +38,116 @@ const processMp4ToHls = async (
     const { videoResolution } = await getVideoDurationAndResolution(filePath);
     const aspectRatio = videoResolution.width / videoResolution.height;
 
+    // Check if we have valid dimensions or if we need to use fallback values
+    if (!videoResolution.width || !videoResolution.height || isNaN(aspectRatio)) {
+      logger.warn(`Invalid video dimensions detected (${videoResolution.width}x${videoResolution.height}). Using original video without dimension changes.`);
+
+      try {
+        // Instead of guessing dimensions, we'll use a single HLS stream and preserve the original video
+        // This avoids any distortion when we can't properly detect dimensions
+        await new Promise<void>((resolve, reject) => {
+          ffmpeg(filePath)
+            .output(`${outputFolder}/${fileNameWithoutExt}.m3u8`)
+            .outputOptions([
+              // Don't specify dimensions - keep original
+              `-c:v`, `libx264`,   // Video codec
+              `-crf`, `23`,        // Quality
+              `-preset`, `fast`,   // Encoding speed/compression tradeoff
+              `-c:a`, `aac`,       // Audio codec
+              `-hls_time`, `10`,
+              `-hls_playlist_type`, `vod`,
+              `-hls_flags`, `independent_segments`,
+              `-hls_list_size`, `0`,
+              `-hls_segment_filename`,
+              `${outputFolder}/${fileNameWithoutExt}_%03d.ts`,
+            ])
+            .on('start', function (commandLine: string) {
+              logger.info(`Spawned Ffmpeg fallback command: ${commandLine}`);
+            })
+            .on('error', function (err: Error) {
+              logger.error(`Error processing fallback conversion: ${err.message}`);
+              reject(err);
+            })
+            .on('end', function () {
+              logger.info(`Finished processing original-sized rendition`);
+              resolve();
+            })
+            .run();
+        });
+
+        let lastReportedProgress = 0;
+        const trackProgress = setInterval(() => {
+          lastReportedProgress += 10;
+          if (lastReportedProgress <= 90) {
+            const videoBitRateProcessingData = {
+              userId: jobData.userId,
+              status: 'processing',
+              name: 'Adaptive bit rate',
+              progress: lastReportedProgress,
+              fileName: fileNameWithoutExt,
+              message: 'Adaptive bit rate Processing',
+            };
+
+            RabbitMQ.sendToQueue(
+              API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+              videoBitRateProcessingData,
+            );
+          }
+        }, 5000);
+
+        // No need to wait for multiple promises
+        clearInterval(trackProgress);
+
+        const videoBitRateProcessedData = {
+          userId: jobData.userId,
+          status: 'completed',
+          name: 'Adaptive bit rate',
+          fileName: fileNameWithoutExt,
+          progress: 100,
+          message: 'Video HLS conversion completed successfully',
+        };
+
+        RabbitMQ.sendToQueue(
+          API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+          videoBitRateProcessedData,
+        );
+
+        const videoBitRateCompletedData = {
+          userId: jobData.userId,
+          status: 'success',
+          name: 'Adaptive bit rate',
+          fileName: fileNameWithoutExt,
+          message: 'Video Processed successfully',
+        };
+
+        RabbitMQ.sendToQueue(
+          API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED,
+          videoBitRateCompletedData,
+        );
+
+        // Create a simple master playlist for the single rendition
+        // Since we don't know dimensions, we'll simply reference the one stream
+        const masterPlaylistContent = `#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=2500000
+${fileNameWithoutExt}.m3u8
+`;
+        const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
+        fs.writeFileSync(outputFileName, masterPlaylistContent);
+
+        addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTED, {
+          ...jobData,
+          completed: true,
+          path: outputFileName,
+        });
+
+        return;
+      } catch (err) {
+        errorLogger.log('An error occurred in hls converter with fallback renditions', err);
+        throw err;
+      }
+    }
+
     // Calculate rendition dimensions while preserving aspect ratio exactly
     // We'll use height as the base and calculate width to maintain aspect ratio
     // Always ensure dimensions are even numbers (required by h.264)
