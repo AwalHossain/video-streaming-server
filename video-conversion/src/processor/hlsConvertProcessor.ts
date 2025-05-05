@@ -114,10 +114,11 @@ const processMp4ToHls = async (
           } else {
             // Apply resolution, bitrate and other settings
             ffmpegCommand.outputOptions([
+              `-threads 2`,
               `-s ${rendition.resolution}`,
               `-c:v libx264`,
-              `-crf 23`,
-              `-preset fast`,
+              `-crf 24`,
+              `-preset faster`,
               `-b:v ${rendition.bitrate}`,
               `-g 48`,
               `-hls_time 10`,
