@@ -45,6 +45,26 @@ const processMp4ToHls = async (
       try {
         // Instead of guessing dimensions, we'll use a single HLS stream and preserve the original video
         // This avoids any distortion when we can't properly detect dimensions
+        let lastReportedProgress = 0;
+        const trackProgressInterval = setInterval(() => {
+          lastReportedProgress += 5;
+          if (lastReportedProgress <= 90) {
+            const videoBitRateProcessingData = {
+              userId: jobData.userId,
+              status: 'processing',
+              name: 'Adaptive bit rate',
+              progress: lastReportedProgress,
+              fileName: fileNameWithoutExt,
+              message: 'Adaptive bit rate Processing',
+            };
+
+            RabbitMQ.sendToQueue(
+              API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+              videoBitRateProcessingData,
+            );
+          }
+        }, 2000);
+
         await new Promise<void>((resolve, reject) => {
           ffmpeg(filePath)
             .output(`${outputFolder}/${fileNameWithoutExt}.m3u8`)
@@ -64,40 +84,42 @@ const processMp4ToHls = async (
             .on('start', function (commandLine: string) {
               logger.info(`Spawned Ffmpeg fallback command: ${commandLine}`);
             })
+            .on('progress', function (progress) {
+              if (progress.percent) {
+                // Update progress based on actual ffmpeg progress when available
+                const currentProgress = Math.min(90, Math.round(progress.percent));
+                if (currentProgress > lastReportedProgress) {
+                  lastReportedProgress = currentProgress;
+                  const videoBitRateProcessingData = {
+                    userId: jobData.userId,
+                    status: 'processing',
+                    name: 'Adaptive bit rate',
+                    progress: lastReportedProgress,
+                    fileName: fileNameWithoutExt,
+                    message: 'Adaptive bit rate Processing',
+                  };
+
+                  RabbitMQ.sendToQueue(
+                    API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+                    videoBitRateProcessingData,
+                  );
+                }
+              }
+            })
             .on('error', function (err: Error) {
+              clearInterval(trackProgressInterval);
               logger.error(`Error processing fallback conversion: ${err.message}`);
               reject(err);
             })
             .on('end', function () {
+              clearInterval(trackProgressInterval);
               logger.info(`Finished processing original-sized rendition`);
               resolve();
             })
             .run();
         });
 
-        let lastReportedProgress = 0;
-        const trackProgress = setInterval(() => {
-          lastReportedProgress += 10;
-          if (lastReportedProgress <= 90) {
-            const videoBitRateProcessingData = {
-              userId: jobData.userId,
-              status: 'processing',
-              name: 'Adaptive bit rate',
-              progress: lastReportedProgress,
-              fileName: fileNameWithoutExt,
-              message: 'Adaptive bit rate Processing',
-            };
-
-            RabbitMQ.sendToQueue(
-              API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-              videoBitRateProcessingData,
-            );
-          }
-        }, 5000);
-
-        // No need to wait for multiple promises
-        clearInterval(trackProgress);
-
+        // Only after the conversion is complete, send the 100% notification
         const videoBitRateProcessedData = {
           userId: jobData.userId,
           status: 'completed',
@@ -128,10 +150,10 @@ const processMp4ToHls = async (
         // Create a simple master playlist for the single rendition
         // Since we don't know dimensions, we'll simply reference the one stream
         const masterPlaylistContent = `#EXTM3U
-#EXT-X-VERSION:3
-#EXT-X-STREAM-INF:BANDWIDTH=2500000
-${fileNameWithoutExt}.m3u8
-`;
+          #EXT-X-VERSION:3
+          #EXT-X-STREAM-INF:BANDWIDTH=2500000
+          ${fileNameWithoutExt}.m3u8
+          `;
         const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
         fs.writeFileSync(outputFileName, masterPlaylistContent);
 
