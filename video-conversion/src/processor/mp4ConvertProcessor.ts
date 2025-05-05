@@ -182,8 +182,9 @@ const generateThumbnail = async (
     const videoHandler = await import('./videoProcessingHandler');
     const { videoResolution } = await videoHandler.getVideoDurationAndResolution(filePath);
 
-    // Validate dimensions - catch invalid values
-    if (!videoResolution.width || !videoResolution.height || isNaN(videoResolution.width) || isNaN(videoResolution.height)) {
+    // Validate dimensions to avoid NaN errors
+    if (!videoResolution.width || !videoResolution.height ||
+      isNaN(videoResolution.width) || isNaN(videoResolution.height)) {
       throw new Error(`Invalid video dimensions: ${videoResolution.width}x${videoResolution.height}`);
     }
 

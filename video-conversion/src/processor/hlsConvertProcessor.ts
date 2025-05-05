@@ -7,6 +7,7 @@ import ApiError from '../errors/apiError';
 import { addQueueItem } from '../queues/addJobToQueue';
 import { errorLogger, logger } from '../shared/logger';
 import RabbitMQ from '../shared/rabbitMQ';
+import { FfmpegProgress } from '../types/common';
 import { getVideoDurationAndResolution } from './videoProcessingHandler';
 
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -34,227 +35,158 @@ const processMp4ToHls = async (
   logger.info(outputFolder, 'again checking output folder');
 
   try {
-    // Get video resolution to create proportional renditions
+    // Get video resolution to handle aspect ratio correctly
     const { videoResolution } = await getVideoDurationAndResolution(filePath);
-    const aspectRatio = videoResolution.width / videoResolution.height;
+    let renditions;
 
-    // Check if we have valid dimensions or if we need to use fallback values
-    if (!videoResolution.width || !videoResolution.height || isNaN(aspectRatio)) {
-      logger.warn(`Invalid video dimensions detected (${videoResolution.width}x${videoResolution.height}). Using original video without dimension changes.`);
+    // Check if we got valid dimensions
+    if (!videoResolution.width || !videoResolution.height || isNaN(videoResolution.width / videoResolution.height)) {
+      logger.warn(`Invalid video dimensions detected (${videoResolution.width}x${videoResolution.height}). Using default renditions.`);
+      // Use default renditions when dimensions can't be detected
+      renditions = [
+        { resolution: '854x480', bitrate: '800k', name: '480p' },
+        { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
+      ];
+    } else {
+      // Check if this is a vertical video (e.g. from mobile)
+      const isVertical = videoResolution.height > videoResolution.width;
 
-      try {
-        // Instead of guessing dimensions, we'll use a single HLS stream and preserve the original video
-        // This avoids any distortion when we can't properly detect dimensions
-        let lastReportedProgress = 0;
-        const trackProgressInterval = setInterval(() => {
-          lastReportedProgress += 5;
-          if (lastReportedProgress <= 90) {
-            const videoBitRateProcessingData = {
-              userId: jobData.userId,
-              status: 'processing',
-              name: 'Adaptive bit rate',
-              progress: lastReportedProgress,
-              fileName: fileNameWithoutExt,
-              message: 'Adaptive bit rate Processing',
-            };
+      if (isVertical) {
+        // For vertical videos, calculate dimensions that preserve aspect ratio
+        const aspectRatio = videoResolution.width / videoResolution.height;
 
-            RabbitMQ.sendToQueue(
-              API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-              videoBitRateProcessingData,
-            );
-          }
-        }, 2000);
+        // Calculate heights first, then calculate width based on exact aspect ratio
+        const height480 = 480;
+        let width480 = Math.round(height480 * aspectRatio);
+        // Ensure width is even (required by most codecs)
+        width480 = width480 % 2 === 0 ? width480 : width480 + 1;
 
-        await new Promise<void>((resolve, reject) => {
-          ffmpeg(filePath)
-            .output(`${outputFolder}/${fileNameWithoutExt}.m3u8`)
-            .outputOptions([
-              // Don't specify dimensions - keep original
-              `-c:v`, `libx264`,   // Video codec
-              `-crf`, `23`,        // Quality
-              `-preset`, `fast`,   // Encoding speed/compression tradeoff
-              `-c:a`, `aac`,       // Audio codec
-              `-hls_time`, `10`,
-              `-hls_playlist_type`, `vod`,
-              `-hls_flags`, `independent_segments`,
-              `-hls_list_size`, `0`,
-              `-hls_segment_filename`,
-              `${outputFolder}/${fileNameWithoutExt}_%03d.ts`,
-            ])
-            .on('start', function (commandLine: string) {
-              logger.info(`Spawned Ffmpeg fallback command: ${commandLine}`);
-            })
-            .on('progress', function (progress) {
-              if (progress.percent) {
-                // Update progress based on actual ffmpeg progress when available
-                const currentProgress = Math.min(90, Math.round(progress.percent));
-                if (currentProgress > lastReportedProgress) {
-                  lastReportedProgress = currentProgress;
-                  const videoBitRateProcessingData = {
-                    userId: jobData.userId,
-                    status: 'processing',
-                    name: 'Adaptive bit rate',
-                    progress: lastReportedProgress,
-                    fileName: fileNameWithoutExt,
-                    message: 'Adaptive bit rate Processing',
-                  };
+        const height1080 = 1080;
+        let width1080 = Math.round(height1080 * aspectRatio);
+        // Ensure width is even
+        width1080 = width1080 % 2 === 0 ? width1080 : width1080 + 1;
 
-                  RabbitMQ.sendToQueue(
-                    API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-                    videoBitRateProcessingData,
-                  );
-                }
-              }
-            })
-            .on('error', function (err: Error) {
-              clearInterval(trackProgressInterval);
-              logger.error(`Error processing fallback conversion: ${err.message}`);
-              reject(err);
-            })
-            .on('end', function () {
-              clearInterval(trackProgressInterval);
-              logger.info(`Finished processing original-sized rendition`);
-              resolve();
-            })
-            .run();
-        });
+        renditions = [
+          { resolution: `${width480}x${height480}`, bitrate: '800k', name: '480p' },
+          { resolution: `${width1080}x${height1080}`, bitrate: '5000k', name: '1080p' },
+        ];
 
-        // Only after the conversion is complete, send the 100% notification
-        const videoBitRateProcessedData = {
-          userId: jobData.userId,
-          status: 'completed',
-          name: 'Adaptive bit rate',
-          fileName: fileNameWithoutExt,
-          progress: 100,
-          message: 'Video HLS conversion completed successfully',
-        };
-
-        RabbitMQ.sendToQueue(
-          API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-          videoBitRateProcessedData,
-        );
-
-        const videoBitRateCompletedData = {
-          userId: jobData.userId,
-          status: 'success',
-          name: 'Adaptive bit rate',
-          fileName: fileNameWithoutExt,
-          message: 'Video Processed successfully',
-        };
-
-        RabbitMQ.sendToQueue(
-          API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED,
-          videoBitRateCompletedData,
-        );
-
-        // Create a simple master playlist for the single rendition
-        // Since we don't know dimensions, we'll simply reference the one stream
-        const masterPlaylistContent = `#EXTM3U
-          #EXT-X-VERSION:3
-          #EXT-X-STREAM-INF:BANDWIDTH=2500000
-          ${fileNameWithoutExt}.m3u8
-          `;
-        const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
-        fs.writeFileSync(outputFileName, masterPlaylistContent);
-
-        addQueueItem(QUEUE_EVENTS.VIDEO_HLS_CONVERTED, {
-          ...jobData,
-          completed: true,
-          path: outputFileName,
-        });
-
-        return;
-      } catch (err) {
-        errorLogger.log('An error occurred in hls converter with fallback renditions', err);
-        throw err;
+        logger.info(`Processing vertical video with aspect ratio ${aspectRatio.toFixed(2)}. Using custom renditions.`);
+      } else {
+        // Standard landscape video uses standard resolutions
+        renditions = [
+          { resolution: '854x480', bitrate: '800k', name: '480p' },
+          { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
+        ];
       }
     }
 
-    // Calculate rendition dimensions while preserving aspect ratio exactly
-    // We'll use height as the base and calculate width to maintain aspect ratio
-    // Always ensure dimensions are even numbers (required by h.264)
+    const renditionProgress: { [key: string]: number } = {};
 
-    // 360p rendition
-    const height360 = 360;
-    let width360 = Math.round(height360 * aspectRatio);
-    width360 = width360 % 2 === 0 ? width360 : width360 + 1;
+    renditions.forEach((rendition) => {
+      renditionProgress[rendition.name] = 0;
+    });
 
-    // 720p rendition
-    const height720 = 720;
-    let width720 = Math.round(height720 * aspectRatio);
-    width720 = width720 % 2 === 0 ? width720 : width720 + 1;
-
-    // Create renditions list with calculated dimensions
-    const renditions = [
-      { height: height360, width: width360, bitrate: '800k', name: '360p' },
-      { height: height720, width: width720, bitrate: '2500k', name: '720p' }
-    ];
-
-    logger.info(`Processing video with original aspect ratio ${aspectRatio.toFixed(4)}`);
-    logger.info(`Creating proportional renditions: 360p (${width360}x${height360}), 720p (${width720}x${height720})`);
-
+    let lastReportedProgress = 0;
     try {
-      // Process each rendition while maintaining aspect ratio
-      const promises = renditions.map(rendition => {
+      // Create renditions
+      const promises = renditions.map((rendition) => {
         return new Promise<void>((resolve, reject) => {
           ffmpeg(filePath)
-            .output(`${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`)
+            .output(
+              `${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`,
+            )
             .outputOptions([
-              // Set exact dimensions that preserve aspect ratio
-              `-vf`, `scale=${rendition.width}:${rendition.height}`,
-              `-c:v`, `libx264`,
-              `-crf`, `23`,
-              `-preset`, `fast`,
-              `-b:v`, `${rendition.bitrate}`,
-              `-maxrate`, `${rendition.bitrate}`,
-              `-bufsize`, `${parseInt(rendition.bitrate)}*2k`,
-              `-g`, `48`,
-              `-hls_time`, `10`,
-              `-hls_playlist_type`, `vod`,
-              `-hls_flags`, `independent_segments`,
-              `-hls_list_size`, `0`,
+              `-s ${rendition.resolution}`,
+              `-c:v libx264`,
+              `-crf 23`,
+              `-preset fast`,
+              `-b:v ${rendition.bitrate}`,
+              `-g 48`,
+              `-hls_time 10`,
+              `-hls_list_size 0`,
               `-hls_segment_filename`,
               `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
             ])
             .on('start', function (commandLine: string) {
-              logger.info(`Spawned Ffmpeg for ${rendition.name}: ${commandLine}`);
+              logger.info('Spawned Ffmpeg with command: ' + commandLine);
+
+              const initBitRateProcessingData = {
+                userId: jobData.userId,
+                status: 'processing',
+                name: 'Adaptive bit rate',
+                fileName: fileNameWithoutExt,
+                progress: 1,
+                message: 'Adaptive bit rate is Processing',
+              };
+              RabbitMQ.sendToQueue(
+                API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+                initBitRateProcessingData,
+              );
             })
-            .on('error', function (err: Error) {
-              logger.error(`Error processing ${rendition.name}: ${err.message}`);
-              reject(err);
+            .on('progress', function (progress: FfmpegProgress) {
+              console.log(
+                jobData.fileName,
+                `is Processing: ${progress.percent}% done for ${rendition.name}`,
+              );
+
+              renditionProgress[rendition.name] = progress.percent;
+
+              // calculate the overall progress
+              const totalProgress = Object.values(renditionProgress).reduce(
+                (a, b) => a + b,
+                0,
+              );
+              const overallProgress = Math.round(
+                totalProgress / renditions.length,
+              );
+              console.log(`Overall progress: ${overallProgress}%`);
+
+              if (overallProgress - lastReportedProgress >= 10) {
+                lastReportedProgress = overallProgress;
+
+                const videoBitRateProcessingData = {
+                  userId: jobData.userId,
+                  status: 'processing',
+                  name: 'Adaptive bit rate',
+                  progress: lastReportedProgress,
+                  fileName: fileNameWithoutExt,
+                  message: 'Adaptive bit rate Processing',
+                };
+
+                RabbitMQ.sendToQueue(
+                  API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+                  videoBitRateProcessingData,
+                );
+              }
             })
             .on('end', function () {
-              logger.info(`Finished processing ${rendition.name} rendition`);
               resolve();
+            })
+            .on('error', function (err: Error) {
+              errorLogger.log('An error occurred: ', err.message);
+              const videoBitRateProcessingData = {
+                userId: jobData.userId,
+                status: 'failed',
+                name: 'Adaptive bit rate',
+                progress: 0,
+                fileName: fileNameWithoutExt,
+                message: 'Video hls convering Processed failed',
+              };
+
+              RabbitMQ.sendToQueue(
+                API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+                videoBitRateProcessingData,
+              );
+
+              reject(err);
             })
             .run();
         });
       });
 
-      // Add progress tracking
-      let lastReportedProgress = 0;
-      const trackProgress = setInterval(() => {
-        lastReportedProgress += 10;
-        if (lastReportedProgress <= 90) {
-          const videoBitRateProcessingData = {
-            userId: jobData.userId,
-            status: 'processing',
-            name: 'Adaptive bit rate',
-            progress: lastReportedProgress,
-            fileName: fileNameWithoutExt,
-            message: 'Adaptive bit rate Processing',
-          };
-
-          RabbitMQ.sendToQueue(
-            API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-            videoBitRateProcessingData,
-          );
-        }
-      }, 5000);
-
       // Wait for all renditions to complete
       await Promise.all(promises);
-      clearInterval(trackProgress);
 
       const videoBitRateProcessedData = {
         userId: jobData.userId,
@@ -262,13 +194,23 @@ const processMp4ToHls = async (
         name: 'Adaptive bit rate',
         fileName: fileNameWithoutExt,
         progress: 100,
-        message: 'Video HLS conversion completed successfully',
+        message: 'Video hls convering Processed successfully',
       };
 
       RabbitMQ.sendToQueue(
         API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
         videoBitRateProcessedData,
       );
+
+      // io.to(jobData.userId).emit(
+      //   NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSED,
+      //   {
+      //     status: 'success',
+      //     name: 'Adaptive bit rate',
+      //     fileName: fileNameWithoutExt,
+      //     message: 'Video Processed successfully',
+      //   },
+      // );
 
       const videoBitRateCompletedData = {
         userId: jobData.userId,
@@ -283,13 +225,15 @@ const processMp4ToHls = async (
         videoBitRateCompletedData,
       );
 
-      // Create master playlist
+      // Create master playlist file
       const masterPlaylistContent = `#EXTM3U
 #EXT-X-VERSION:3
-${renditions.map(rendition =>
-        `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate) * 1000},RESOLUTION=${rendition.width}x${rendition.height}
-${fileNameWithoutExt}_${rendition.name}.m3u8`
-      ).join('\n')}
+${renditions
+          .map(
+            (rendition) =>
+              `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate)}000,RESOLUTION=${rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`,
+          )
+          .join('\n')}
 `;
       const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
       fs.writeFileSync(outputFileName, masterPlaylistContent);
@@ -302,7 +246,17 @@ ${fileNameWithoutExt}_${rendition.name}.m3u8`
 
       return;
     } catch (err) {
-      errorLogger.log('An error occurred in hls converter ', err);
+      errorLogger.log('An error occurredm in hls converter ', err);
+      // io.to(jobData.userId).emit(
+      //   NOTIFY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+      //   {
+      //     status: 'failed',
+      //     name: 'Video hls',
+      //     progress: 0,
+      //     fileName: fileNameWithoutExt,
+      //     message: 'Video hls convering Processed failed',
+      //   },
+      // );
 
       const videoBitRateFailedData = {
         userId: jobData.userId,
@@ -310,7 +264,7 @@ ${fileNameWithoutExt}_${rendition.name}.m3u8`
         name: 'Video hls',
         progress: 0,
         fileName: fileNameWithoutExt,
-        message: 'Video hls converting failed',
+        message: 'Video hls convering Processed failed',
       };
 
       RabbitMQ.sendToQueue(
@@ -329,7 +283,7 @@ ${fileNameWithoutExt}_${rendition.name}.m3u8`
       name: 'Video hls',
       progress: 0,
       fileName: fileNameWithoutExt,
-      message: 'Video hls converting failed',
+      message: 'Video hls convering Processed failed',
     };
 
     RabbitMQ.sendToQueue(
