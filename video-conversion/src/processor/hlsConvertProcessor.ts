@@ -38,14 +38,15 @@ const processMp4ToHls = async (
     // Get video resolution to handle aspect ratio correctly
     const { videoResolution } = await getVideoDurationAndResolution(filePath);
     let renditions;
+    let useOriginalDimensions = false;
 
     // Check if we got valid dimensions
     if (!videoResolution.width || !videoResolution.height || isNaN(videoResolution.width / videoResolution.height)) {
-      logger.warn(`Invalid video dimensions detected (${videoResolution.width}x${videoResolution.height}). Using default renditions.`);
-      // Use default renditions when dimensions can't be detected
+      logger.warn(`Invalid video dimensions detected (${videoResolution.width}x${videoResolution.height}). Using original file without dimension changes.`);
+      // Don't apply scaling when dimensions can't be detected
+      useOriginalDimensions = true;
       renditions = [
-        { resolution: '854x480', bitrate: '800k', name: '480p' },
-        { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
+        { resolution: 'copy', bitrate: '0', name: 'original' },
       ];
     } else {
       // Check if this is a vertical video (e.g. from mobile)
@@ -92,11 +93,27 @@ const processMp4ToHls = async (
       // Create renditions
       const promises = renditions.map((rendition) => {
         return new Promise<void>((resolve, reject) => {
-          ffmpeg(filePath)
+          const ffmpegCommand = ffmpeg(filePath)
             .output(
               `${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`,
-            )
-            .outputOptions([
+            );
+
+          // Apply different options based on whether we detected dimensions
+          if (useOriginalDimensions) {
+            // Keep original dimensions and codec settings
+            ffmpegCommand.outputOptions([
+              `-c:v libx264`,
+              `-crf 23`,
+              `-preset fast`,
+              `-g 48`,
+              `-hls_time 10`,
+              `-hls_list_size 0`,
+              `-hls_segment_filename`,
+              `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
+            ]);
+          } else {
+            // Apply resolution, bitrate and other settings
+            ffmpegCommand.outputOptions([
               `-s ${rendition.resolution}`,
               `-c:v libx264`,
               `-crf 23`,
@@ -107,7 +124,10 @@ const processMp4ToHls = async (
               `-hls_list_size 0`,
               `-hls_segment_filename`,
               `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
-            ])
+            ]);
+          }
+
+          ffmpegCommand
             .on('start', function (commandLine: string) {
               logger.info('Spawned Ffmpeg with command: ' + commandLine);
 
@@ -130,34 +150,60 @@ const processMp4ToHls = async (
                 `is Processing: ${progress.percent}% done for ${rendition.name}`,
               );
 
+              // Store progress, ensuring it's a number (without defaulting to 0)
               renditionProgress[rendition.name] = progress.percent;
 
-              // calculate the overall progress
-              const totalProgress = Object.values(renditionProgress).reduce(
-                (a, b) => a + b,
-                0,
-              );
-              const overallProgress = Math.round(
-                totalProgress / renditions.length,
-              );
-              console.log(`Overall progress: ${overallProgress}%`);
+              // For undefined dimensions, use the progress value directly
+              if (useOriginalDimensions) {
+                // Just use whatever progress value we have, even if it's NaN
+                const overallProgress = Math.round(progress.percent || 0);
+                console.log(`Overall progress: ${overallProgress}%`);
 
-              if (overallProgress - lastReportedProgress >= 10) {
-                lastReportedProgress = overallProgress;
+                if (overallProgress - lastReportedProgress >= 10) {
+                  lastReportedProgress = overallProgress;
 
-                const videoBitRateProcessingData = {
-                  userId: jobData.userId,
-                  status: 'processing',
-                  name: 'Adaptive bit rate',
-                  progress: lastReportedProgress,
-                  fileName: fileNameWithoutExt,
-                  message: 'Adaptive bit rate Processing',
-                };
+                  const videoBitRateProcessingData = {
+                    userId: jobData.userId,
+                    status: 'processing',
+                    name: 'Adaptive bit rate',
+                    progress: lastReportedProgress,
+                    fileName: fileNameWithoutExt,
+                    message: 'Adaptive bit rate Processing',
+                  };
 
-                RabbitMQ.sendToQueue(
-                  API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
-                  videoBitRateProcessingData,
+                  RabbitMQ.sendToQueue(
+                    API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+                    videoBitRateProcessingData,
+                  );
+                }
+              } else {
+                // For normal videos with dimensions, calculate combined progress
+                const totalProgress = Object.values(renditionProgress).reduce(
+                  (a, b) => a + (isNaN(b) ? 0 : b),
+                  0,
                 );
+                const overallProgress = Math.round(
+                  totalProgress / renditions.length,
+                );
+                console.log(`Overall progress: ${overallProgress}%`);
+
+                if (overallProgress - lastReportedProgress >= 10) {
+                  lastReportedProgress = overallProgress;
+
+                  const videoBitRateProcessingData = {
+                    userId: jobData.userId,
+                    status: 'processing',
+                    name: 'Adaptive bit rate',
+                    progress: lastReportedProgress,
+                    fileName: fileNameWithoutExt,
+                    message: 'Adaptive bit rate Processing',
+                  };
+
+                  RabbitMQ.sendToQueue(
+                    API_GATEWAY_EVENTS.NOTIFY_EVENTS_VIDEO_BIT_RATE_PROCESSING,
+                    videoBitRateProcessingData,
+                  );
+                }
               }
             })
             .on('end', function () {
@@ -231,7 +277,7 @@ const processMp4ToHls = async (
 ${renditions
           .map(
             (rendition) =>
-              `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate)}000,RESOLUTION=${rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`,
+              `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate) || 5000}000,RESOLUTION=${rendition.resolution === 'copy' ? 'auto' : rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`,
           )
           .join('\n')}
 `;
