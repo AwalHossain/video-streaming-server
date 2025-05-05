@@ -43,27 +43,32 @@ const processMp4ToHls = async (
     let renditions;
 
     if (isVertical) {
-      // For vertical videos (like 9:16 shorts), maintain aspect ratio
+      // For vertical videos, calculate EXACT dimensions that maintain original aspect ratio
+      // and ensure dimensions are even numbers (required by h.264)
       const aspectRatio = videoResolution.width / videoResolution.height;
 
-      // Calculate resolutions maintaining aspect ratio
+      // Calculate heights first, then calculate width based on exact aspect ratio
       const height480 = 480;
-      const width480 = Math.round(height480 * aspectRatio);
+      let width480 = Math.round(height480 * aspectRatio);
+      // Ensure width is even (required by most codecs)
+      width480 = width480 % 2 === 0 ? width480 : width480 + 1;
 
-      const height1080 = 1080;
-      const width1080 = Math.round(height1080 * aspectRatio);
+      const height720 = 720;
+      let width720 = Math.round(height720 * aspectRatio);
+      // Ensure width is even
+      width720 = width720 % 2 === 0 ? width720 : width720 + 1;
 
       renditions = [
         { resolution: `${width480}x${height480}`, bitrate: '800k', name: '480p' },
-        { resolution: `${width1080}x${height1080}`, bitrate: '5000k', name: '1080p' },
+        { resolution: `${width720}x${height720}`, bitrate: '2500k', name: '720p' },
       ];
 
-      logger.info(`Processing vertical video with aspect ratio ${aspectRatio.toFixed(2)}. Using custom resolutions.`);
+      logger.info(`Processing vertical video with exact dimensions - 480p: ${width480}x${height480}, 720p: ${width720}x${height720}`);
     } else {
-      // Standard landscape video (16:9) uses standard resolutions
+      // Standard landscape video uses standard resolutions (already even numbers)
       renditions = [
         { resolution: '854x480', bitrate: '800k', name: '480p' },
-        { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
+        { resolution: '1280x720', bitrate: '2500k', name: '720p' },
       ];
     }
 
@@ -83,17 +88,17 @@ const processMp4ToHls = async (
               `${outputFolder}/${fileNameWithoutExt}_${rendition.name}.m3u8`,
             )
             .outputOptions([
-              `-s ${rendition.resolution}`,
-              `-c:v libx264`,
-              `-crf 23`,
-              `-preset fast`,
-              `-b:v ${rendition.bitrate}`,
-              `-g 48`,
-              `-hls_time 10`,
-              `-aspect`, `${videoResolution.width}:${videoResolution.height}`,
-              `-hls_playlist_type vod`,                                    // Indicate Video on Demand type (adds #EXT-X-ENDLIST)
-              `-hls_flags independent_segments`,                           // Ensures each segment starts with a keyframe
-              `-hls_list_size 0`,
+              // Simplify scaling - just use the resolution and avoid force_original_aspect_ratio
+              `-vf`, `scale=${rendition.resolution}`,
+              `-c:v`, `libx264`,
+              `-crf`, `23`,
+              `-preset`, `fast`,
+              `-b:v`, `${rendition.bitrate}`,
+              `-g`, `48`,
+              `-hls_time`, `10`,
+              `-hls_playlist_type`, `vod`,
+              `-hls_flags`, `independent_segments`,
+              `-hls_list_size`, `0`,
               `-hls_segment_filename`,
               `${outputFolder}/${fileNameWithoutExt}_${rendition.name}_%03d.ts`,
             ])

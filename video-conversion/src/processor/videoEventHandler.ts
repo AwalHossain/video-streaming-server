@@ -77,18 +77,18 @@ const processingHandler = async (job: Job) => {
 
           // Check if this is a vertical video from mobile
           if (videoResolution.height > videoResolution.width) {
-            logger.info(`Processing vertical mobile MP4 video. Preserving aspect ratio ${videoResolution.width}:${videoResolution.height}`);
+            logger.info(`Processing vertical mobile MP4 video. Resolution: ${videoResolution.width}x${videoResolution.height}`);
 
             await new Promise((resolve, reject) => {
               ffmpeg(filePath)
                 .output(destPath)
                 .outputOptions([
-                  '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2', // Ensure dimensions are even
+                  // Simple scaling that maintains dimensions
+                  '-vf', 'scale=trunc(iw/2)*2:trunc(ih/2)*2',
                   '-c:v', 'libx264',
                   '-preset', 'medium',
                   '-crf', '23',
-                  '-c:a', 'copy', // Copy audio stream without re-encoding
-                  '-aspect', `${videoResolution.width}:${videoResolution.height}` // Preserve aspect ratio
+                  '-c:a', 'copy' // Copy audio stream without re-encoding
                 ])
                 .on('end', resolve)
                 .on('error', reject)
