@@ -33,31 +33,31 @@ const processMp4ToHls = async (
   const fileExt = path.extname(filePath);
   const fileNameWithoutExt = path.basename(filePath, fileExt);
   logger.info(outputFolder, 'again checking output folder');
-  
+
   try {
     // Get video resolution to maintain aspect ratio
     const { videoResolution } = await getVideoDurationAndResolution(filePath);
     const isVertical = videoResolution.height > videoResolution.width;
-    
+
     // Create appropriate renditions based on original aspect ratio
     let renditions;
-    
+
     if (isVertical) {
       // For vertical videos (like 9:16 shorts), maintain aspect ratio
       const aspectRatio = videoResolution.width / videoResolution.height;
-      
+
       // Calculate resolutions maintaining aspect ratio
       const height480 = 480;
       const width480 = Math.round(height480 * aspectRatio);
-      
+
       const height1080 = 1080;
       const width1080 = Math.round(height1080 * aspectRatio);
-      
+
       renditions = [
         { resolution: `${width480}x${height480}`, bitrate: '800k', name: '480p' },
         { resolution: `${width1080}x${height1080}`, bitrate: '5000k', name: '1080p' },
       ];
-      
+
       logger.info(`Processing vertical video with aspect ratio ${aspectRatio.toFixed(2)}. Using custom resolutions.`);
     } else {
       // Standard landscape video (16:9) uses standard resolutions
@@ -90,6 +90,7 @@ const processMp4ToHls = async (
               `-b:v ${rendition.bitrate}`,
               `-g 48`,
               `-hls_time 10`,
+              `-aspect`, `${videoResolution.width}:${videoResolution.height}`,
               `-hls_playlist_type vod`,                                    // Indicate Video on Demand type (adds #EXT-X-ENDLIST)
               `-hls_flags independent_segments`,                           // Ensures each segment starts with a keyframe
               `-hls_list_size 0`,
@@ -217,11 +218,11 @@ const processMp4ToHls = async (
       const masterPlaylistContent = `#EXTM3U
 #EXT-X-VERSION:3
 ${renditions
-  .map(
-    (rendition) =>
-      `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate)}000,RESOLUTION=${rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`,
-  )
-  .join('\n')}
+          .map(
+            (rendition) =>
+              `#EXT-X-STREAM-INF:BANDWIDTH=${parseInt(rendition.bitrate)}000,RESOLUTION=${rendition.resolution}\n${fileNameWithoutExt}_${rendition.name}.m3u8`,
+          )
+          .join('\n')}
 `;
       const outputFileName = `${outputFolder}/${fileNameWithoutExt}_master.m3u8`;
       fs.writeFileSync(outputFileName, masterPlaylistContent);
