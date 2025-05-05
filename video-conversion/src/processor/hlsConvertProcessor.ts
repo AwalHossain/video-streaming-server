@@ -57,27 +57,27 @@ const processMp4ToHls = async (
         const aspectRatio = videoResolution.width / videoResolution.height;
 
         // Calculate heights first, then calculate width based on exact aspect ratio
-        const height360 = 360;
-        let width360 = Math.round(height360 * aspectRatio);
+        const height480 = 480;
+        let width480 = Math.round(height480 * aspectRatio);
         // Ensure width is even (required by most codecs)
-        width360 = width360 % 2 === 0 ? width360 : width360 + 1;
+        width480 = width480 % 2 === 0 ? width480 : width480 + 1;
 
-        const height720 = 720;
-        let width720 = Math.round(height720 * aspectRatio);
+        const height1080 = 1080;
+        let width1080 = Math.round(height1080 * aspectRatio);
         // Ensure width is even
-        width720 = width720 % 2 === 0 ? width720 : width720 + 1;
+        width1080 = width1080 % 2 === 0 ? width1080 : width1080 + 1;
 
         renditions = [
-          { resolution: `${width360}x${height360}`, bitrate: '500k', name: '360p' },
-          { resolution: `${width720}x${height720}`, bitrate: '2500k', name: '720p' },
+          { resolution: `${width480}x${height480}`, bitrate: '800k', name: '480p' },
+          { resolution: `${width1080}x${height1080}`, bitrate: '5000k', name: '1080p' },
         ];
 
         logger.info(`Processing vertical video with aspect ratio ${aspectRatio.toFixed(2)}. Using custom renditions.`);
       } else {
         // Standard landscape video uses standard resolutions
         renditions = [
-          { resolution: '640x360', bitrate: '500k', name: '360p' },
-          { resolution: '1280x720', bitrate: '2500k', name: '720p' },
+          { resolution: '854x480', bitrate: '800k', name: '480p' },
+          { resolution: '1920x1080', bitrate: '5000k', name: '1080p' },
         ];
       }
     }
@@ -114,6 +114,7 @@ const processMp4ToHls = async (
           } else {
             // Apply resolution, bitrate and other settings
             ffmpegCommand.outputOptions([
+              `-threads 2`,
               `-s ${rendition.resolution}`,
               `-c:v libx264`,
               `-crf 24`,
